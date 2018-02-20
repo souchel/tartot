@@ -1,8 +1,10 @@
-package team23.network;
+package team23.tartot.network;
 import java.util.List;
 
+import team23.tartot.core.Announce;
+import team23.tartot.core.Card;
+import team23.tartot.core.Player;
 import team23.tartot.core.iPlayer;
-import team23.tartot.core.iCard;
 
 /**
  * Created by neuracr on 01/02/2018.
@@ -25,17 +27,6 @@ public interface iNetworkToCore {
      */
     public void leaveLobby();
 
-    /**
-     * get the list a the friends of the player
-     * @return list of friends
-     */
-    public List<iPlayer> getFriendsList();
-
-    /**
-     * Add a player to the friends
-     * @param newFriend
-     */
-    public void addToFriends(iPlayer newFriend);
 
     /**
      * Invite the player in parameter in the lobby occupied by us.
@@ -64,9 +55,25 @@ public interface iNetworkToCore {
      */
     public void onInLobbyDataReceive();
 
+
+    /**
+     * deal the cards to the other players.
+     * Raise an exception if the player is not in game.
+     * No other verification is done.
+     * @param destination: the player we send the cards to
+     * @param cards: the cards delt
+     */
+    public void dealCards(Player destination, Card[] cards);
+
     /**
      * notify other players the card we chosed to play
      * @param card
      */
-    public void playCard(iCard card);
+    public void playCard(Card card);
+
+    /**
+     * Inform other players of an announce. Raise an exception if we are not in game
+     * @param announce: the announce to broadcast
+     */
+    public void announce(Announce announce);
 }
