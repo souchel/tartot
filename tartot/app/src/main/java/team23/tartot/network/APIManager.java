@@ -1,5 +1,12 @@
 package team23.tartot.network;
 
+import android.app.Activity;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.RealTimeMultiplayerClient;
+
 import team23.tartot.core.Announce;
 import team23.tartot.core.Card;
 import team23.tartot.core.Player;
@@ -10,6 +17,24 @@ import team23.tartot.core.iPlayer;
  */
 
 public class APIManager implements iCoreToNetwork {
+
+    RealTimeMultiplayerClient client;
+
+    /**
+     * constructor
+     * Initialize the google play RealTimeMultiplayerClient instance in order to be able to use its functions.
+     */
+    public APIManager(Activity mainMenuActivity){
+        //we determine if the player is already signed in to the google play services
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+
+
+        GoogleSignIn .getLastSignedInAccount(mainMenuActivity);
+
+        this.client = Games.getRealTimeMultiplayerClient(mainMenuActivity, )
+
+    }
     /**
      * creates a new empty lobby
      */
