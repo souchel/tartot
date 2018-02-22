@@ -48,9 +48,9 @@ public class Card {
 			{
 		      case 11: return "V"; 
 		      case 12: return "C";
-		      case 13: return "Q";
-		      case 14: return "K"; 
-		      case 22: return "J"; 
+		      case 13: return "D";
+		      case 14: return "R"; 
+		      case 22: return "*"; 
 		      default : return "Invalid";
 		    }
 		}		
