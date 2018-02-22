@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Deck {
 	private Team team = null;
-	private List<Card> myList = new ArrayList<>();
+	private List<Card> cardList = new ArrayList<>();
 	
 	//TODO
 	public Deck() {
@@ -14,22 +14,38 @@ public class Deck {
 	
 	//TODO
 	public double countPoints() {
-		
+		double points = 0;
+		for (Card card : cardList) {
+			points += card.pointValue();
+		}
+		return points;
 	}
 	
-	//TODO
 	public int countOudlers() {
-		
+		int nbOudler = 0;
+		for (Card card : cardList) {
+			if (card.getSuit() == Suit.TRUMP) {
+				int cardValue = card.getValue();
+				if (cardValue == 1 || cardValue == 21 || cardValue == 22) {
+					nbOudler += 1;
+				}
+			}
+		}
+		return nbOudler;
 	}
 	
-	//TODO
-	public void addCard(Card cradToAdd) {
-		
+	public void addCard(Card cardToAdd) {
+		cardList.add(cardToAdd);
 	}
 	
-	//TODO
-	public void removeCard(Card cradToRemove) {
-		
+	//if card not in the list, nothing happen
+	//can remove many times the same card but it's not suppose to be possible
+	public void removeCard(Card cardToRemove) {
+		for (Card card : cardList){
+			if (card == cardToRemove) {
+				cardList.remove(card);
+			}
+		}
 	}
 	
 	//TODO
