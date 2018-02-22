@@ -7,7 +7,6 @@ public class Deck {
 	private Team team;
 	private List<Card> cardList = new ArrayList<>();
 	
-	//TODO
 	public Deck() {
 		
 	}
@@ -41,7 +40,7 @@ public class Deck {
 	//can remove many times the same card but it's not suppose to be possible
 	public void removeCard(Card cardToRemove) {
 		for (Card card : cardList){
-			if (card == cardToRemove) {
+			if (card.isEqual(cardToRemove)) {
 				cardList.remove(card);
 			}
 		}

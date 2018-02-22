@@ -55,4 +55,10 @@ public class Card {
 		    }
 		}		
 	}
+	
+	public boolean isEqual(Card cardToCompare) {
+		if (cardToCompare.getSuit() == suit && cardToCompare.getValue() == value) {
+			return true;
+		} else return false;
+	}
 }
