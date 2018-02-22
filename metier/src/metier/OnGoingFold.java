@@ -62,4 +62,8 @@ public class OnGoingFold extends Deck{
 	public Suit getSuit(Suit suit) {
 		return askedSuit;
 	}
+	
+	public String getWiningPlayer() {
+		return winingPlayer;
+	}
 }
