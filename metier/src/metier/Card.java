@@ -50,7 +50,7 @@ public class Card {
 		      case 12: return "C";
 		      case 13: return "Q";
 		      case 14: return "K"; 
-		      case 22: return "J"; 
+		      case 22: return "*"; 
 		      default : return "Invalid";
 		    }
 		}		
