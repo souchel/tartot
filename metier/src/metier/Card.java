@@ -36,4 +36,23 @@ public class Card {
 	{
 		return suit;
 	}
+	public String valueToString()
+	{
+		if ((suit == Suit.TRUMP && value != 22) ||(value < 10))
+		{
+			return ""+value ;
+		}
+		else
+		{
+			switch (value) 
+			{
+		      case 11: return "V"; 
+		      case 12: return "C";
+		      case 13: return "Q";
+		      case 14: return "K"; 
+		      case 22: return "J"; 
+		      default : return "Invalid";
+		    }
+		}		
+	}
 }
