@@ -8,13 +8,12 @@ public class OnGoingFold extends Deck{
 	private Card winingCard;
 	private String winingPlayer;
 	
-	public OnGoingFold(String startingPlayer) {
-		winingPlayer = startingPlayer;
+	public OnGoingFold() {
 	}
 	
 	//should get suit on the first card but if it doesn't it'll take suit from the following card
 	public void addCard(Card addedCard, String playerName) {
-		if (askedSuit == null) {
+		if (askedSuit == null && addedCard.isEqual(new Card(Suit.TRUMP, 22)) == false) {
 			askedSuit = addedCard.getSuit();
 		}
 		super.addCard(addedCard);
@@ -27,13 +26,15 @@ public class OnGoingFold extends Deck{
 	//return false in an not planned case
 	//return true if winingPlayer isn't set
 	private boolean isBetterCard(Card addedCard) {
+		if (winingCard == null) {
+			if (addedCard.isEqual(new Card(Suit.TRUMP, 22)) == false) {
+				return true;
+			}else return false;
+		}
 		Suit addedCardSuit = addedCard.getSuit();
 		int addedCardValue = addedCard.getValue();
 		Suit winingCardSuit = winingCard.getSuit();
 		int winingCardValue = winingCard.getValue();
-		if (winingPlayer == null) {
-			return true;
-		}
 		if (addedCardSuit == Suit.TRUMP && addedCardValue == 22) {
 			return false;
 		}
@@ -59,7 +60,7 @@ public class OnGoingFold extends Deck{
 		return false;
 	}
 	
-	public Suit getSuit(Suit suit) {
+	public Suit getSuit() {
 		return askedSuit;
 	}
 	

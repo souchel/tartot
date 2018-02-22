@@ -34,7 +34,7 @@ public class TestP {
 		System.out.println("points dans deck: "+deck.countPoints());
 		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
 		
-		//removeCard crash if carte twice in the deck
+		//removeCard crash if card twice in the deck
 //		System.out.println("suppression d'une carte en double");
 //		deck.removeCard(new Card(Suit.TRUMP, 22));
 //		System.out.println("points dans deck: "+deck.countPoints());
@@ -49,5 +49,43 @@ public class TestP {
 		System.out.println("merge des deck");
 		System.out.println("points dans deck: "+deck.countPoints());
 		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
+		
+		OnGoingFold fold = new OnGoingFold();
+		System.out.println("suit pas instancié : "+fold.getSuit());
+		
+		System.out.println("ajout d'une carte :");
+		fold.addCard(new Card(Suit.TRUMP, 22), "Paul");
+		System.out.println("joueur gagnant non instancié :"+fold.getWiningPlayer());
+		System.out.println("suit pas instancié : "+fold.getSuit());
+		
+		System.out.println("ajout d'une carte :");
+		fold.addCard(new Card(Suit.DIAMOND, 7), "Laure");
+		System.out.println("joueur gagnant Laure :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
+		
+		System.out.println("ajout d'une carte plus faible:");
+		fold.addCard(new Card(Suit.DIAMOND, 4), "Hugo");
+		System.out.println("joueur gagnant Laure :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
+		
+		System.out.println("ajout d'une mauvaise couleur mais plus forte :");
+		fold.addCard(new Card(Suit.HEART, 10), "Gui");
+		System.out.println("joueur gagnant Laure :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
+		
+		System.out.println("ajout d'une plus forte bonne couleur :");
+		fold.addCard(new Card(Suit.DIAMOND, 12), "Thomas");
+		System.out.println("joueur gagnant Thomas :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
+		
+		System.out.println("coupé :");
+		fold.addCard(new Card(Suit.TRUMP, 7), "Paul");
+		System.out.println("joueur gagnant Paul :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
+		
+		System.out.println("excuse :");
+		fold.addCard(new Card(Suit.TRUMP, 22), "Laure");
+		System.out.println("joueur gagnant Paul :"+fold.getWiningPlayer());
+		System.out.println("suit diamond: "+fold.getSuit());
 	}
 }

@@ -37,7 +37,7 @@ public class Deck {
 	}
 	
 	//if card not in the list, nothing happen
-	//can remove many times the same card but it's not suppose to be possible
+	//bug if many times the the same card in deck but it's not suppose to happen
 	public void removeCard(Card cardToRemove) {
 		for (Card card : cardList){
 			if (card.isEqual(cardToRemove)) {
