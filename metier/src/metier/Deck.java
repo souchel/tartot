@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Deck {
-	private Team team = null;
+	private Team team;
 	private List<Card> cardList = new ArrayList<>();
 	
 	//TODO
@@ -12,7 +12,6 @@ public class Deck {
 		
 	}
 	
-	//TODO
 	public double countPoints() {
 		double points = 0;
 		for (Card card : cardList) {
@@ -48,8 +47,22 @@ public class Deck {
 		}
 	}
 	
-	//TODO
-	public void mergeDeck(Deck firstDeck, Deck secondDeck) {
-		
+	//add the cards from a deck to this deck
+	public void mergeDeck(Deck mergeDeck) {
+		for (Card card : mergeDeck.getCardList()){
+			cardList.add(card);
+		}
+	}
+	
+	public List<Card> getCardList() {
+		return cardList;
+	}
+	
+	public void setTeam(Team teamSet) {
+		team = teamSet;
+	}
+	
+	public Team getTeam() {
+		return team;
 	}
 }
