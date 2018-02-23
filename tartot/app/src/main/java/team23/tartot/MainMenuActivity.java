@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
@@ -28,7 +29,19 @@ public class MainMenuActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_menu);
 
         final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
+        final Button goToLobbyButton = findViewById(R.id.text_view_go_to_lobby);
+
         String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
         welcomeTextView.setText(welcome);
+
+        goToLobbyButton.setOnClickListener(new View.OnClickListener() {
+                                               public void onClick(View view) {
+               Intent goToLobbyIntent = new Intent(MainMenuActivity.this, LobbyActivity.class);
+               startActivity(goToLobbyIntent);
+                                               }
+                                           }
+        );
+
+
     }
 }

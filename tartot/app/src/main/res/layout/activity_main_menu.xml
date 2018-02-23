@@ -31,6 +31,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_view_title_main_menu" />
+        app:layout_constraintTop_toBottomOf="@+id/text_view_title_main_menu"
+        app:layout_constraintVertical_bias="0.298" />
+
+    <Button
+        android:id="@+id/text_view_go_to_lobby"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_go_to_lobby"
+        tools:layout_editor_absoluteX="136dp"
+        tools:layout_editor_absoluteY="332dp" />
 
 </android.support.constraint.ConstraintLayout>

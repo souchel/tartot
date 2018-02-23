@@ -64,7 +64,7 @@ public class FirstLogActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     //methods for sign in
     private void signInSilently(Activity activity){
         final GoogleSignInClient signInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);

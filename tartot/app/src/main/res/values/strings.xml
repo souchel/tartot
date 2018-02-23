@@ -24,4 +24,5 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
     <string name="signin_other_error">unknown error during sign in.</string>
     <string name="app_id">491051549235</string>
+    <string name="action_go_to_lobby">Go to lobby</string>
 </resources>
