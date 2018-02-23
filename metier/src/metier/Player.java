@@ -23,5 +23,29 @@ public class Player {
 	public Deck getDeck()
 	{
 		return deck;
+	}	
+	//methods to check existing card in deck
+	public boolean haveSuit(Suit suit) {
+		for (Card card : deck.getCardList()) {
+			if (card.getSuit() == suit) {
+				return true;
+			}
+		} return false;
+	}
+	public boolean haveTrump() {
+		for (Card card : deck.getCardList()) {
+			if (card.getSuit() == Suit.TRUMP) {
+				return true;
+			}
+		} return false;
+	}
+	public boolean haveHigherTrump(int value) {
+		for (Card card : deck.getCardList()) {
+			if (card.getSuit() == Suit.TRUMP) {
+				if (card.getValue() > value) {
+					return true;
+				}
+			}
+		} return false;
 	}
 }
