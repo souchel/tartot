@@ -23,11 +23,10 @@ public class Player {
 	{
 		return team;
 	}
-	
-	
-	
-	
-	
+	public Deck getDeck()
+	{
+		return deck;
+	}	
 	//methods to check existing card in deck
 	public boolean haveSuit(Suit suit) {
 		for (Card card : hand.getCardList()) {
