@@ -67,4 +67,8 @@ public class OnGoingFold extends Deck{
 	public String getWiningPlayer() {
 		return winingPlayer;
 	}
+	
+	public Card getWiningCard() {
+		return winingCard;
+	}
 }
