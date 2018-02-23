@@ -12,6 +12,7 @@ public class Player {
 		//quand les players sont crees ils n ont pas encore d equipe d ou ils sont dans l equipe none
 		team = Team.NONE;
 		fold = new Deck();
+		hand = new Deck();
 		//TODO
 		//hand ?
 	}

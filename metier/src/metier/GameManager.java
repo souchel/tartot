@@ -2,7 +2,7 @@ package metier;
 
 public class GameManager {
 	private Game game;
-	private Player
+	private Player player;
 	
 	public GameManager(Game onGoingGame) {
 		this.game = onGoingGame;
@@ -13,7 +13,8 @@ public class GameManager {
 	}
 	
 	private Player getPlayerAtPosition(int i) {
-		
+		//reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
+		return player;
 	}
 	
 	//return if the card can be played, unless false

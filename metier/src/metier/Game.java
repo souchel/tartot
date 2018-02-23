@@ -10,7 +10,7 @@ public class Game {
 	//suivis des points de chaque joueur
 	int points;
 	int oudlersNumber ;
-	Deck deck;
+	private Deck deck;
 	Player[] players;
 	OnGoingFold onGoingFold ; 
 	Player dealer ;
@@ -76,7 +76,7 @@ public class Game {
 			int index = rndGenerator.nextInt(23);
 			//On pioche jusqu a avoir un index different de ceux deja dans la liste
 			while (alreadyInArray(indexes, index))
-				index = rndGenerator.nextInt(23);
+				index = rndGenerator.nextInt(23);				
 			indexes[j] = index ;
 		}
 		//On distribue les cartes 3 par 3 aux 4 joueurs
@@ -84,14 +84,35 @@ public class Game {
 		{
 			//on donne 3 cartes au joueur i modulo 4
 			for (int j = 1 ; j <= 3 ; j++)
-				players[(i/4)-1].getDeck().addCard(deck.removeCardByIndex(0));
+			{
+				Card card = deck.removeCardByIndex(0);
+				players[(i-1)%4].getHand().addCard(card);
+				
+			}
 			//si c est l un des tours ou on est cense mettre dans le chien, on met une carte dans le chien
-			if (alreadyInArray(indexes, i))
+			if (alreadyInArray(indexes, i - 1))
+			{
 				chien.addCard(deck.removeCardByIndex(0));
+			}
+		}
+	}
+	public void cutTheDeck()
+	{
+		Random rndGenerator = new Random();
+		int position = rndGenerator.nextInt(73)+3;
+		for (int i = 1; i<=position; i++)
+		{
+			Card card = deck.removeCardByIndex(0);
+			deck.addCard(card);
 		}
 	}
 	public OnGoingFold getOnGoingFold()
 	{
 		return onGoingFold ;
 	}
+	public Deck getDeck() {
+		return deck;
+	}
+	
+	
 }

@@ -86,4 +86,12 @@ public class Deck {
 	{
 		return cardList.remove(index);
 	}
+	public String toString()
+	//methode purement pour simplifier les tests
+	{
+		String stringDeck = "";
+		for (Card card : cardList)
+			stringDeck = stringDeck + card.getSuit() + card.getValue()+" " ;
+		return stringDeck;
+	}
 }
