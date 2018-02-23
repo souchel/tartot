@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -21,5 +22,13 @@ import com.google.android.gms.common.SignInButton;
 
 public class MainMenuActivity extends AppCompatActivity {
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main_menu);
 
+        final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
+        String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
+        welcomeTextView.setText(welcome);
+    }
 }

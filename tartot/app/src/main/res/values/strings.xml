@@ -3,9 +3,15 @@
     <string name="title_activity_first_log">Tartot</string>
 
 
+    <!-- Strings related to FirstLogActivity -->
     <string name="text_view_first_log">Bienvenue dans Tartot, quel est ton pseudo ?</string>
     <string name="edit_text_first_log">Entrer un pseudo</string>
     <string name="button_first_log">Accéder au menu</string>
+
+    <!-- Strings related to MainMenuActivity -->
+    <string name="text_view_title_main_menu">Avec Tartot, au tarot t\'y joueras tard ou tôt !</string>
+    <string name="text_view_welcome_main_menu">Bienvenue </string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
