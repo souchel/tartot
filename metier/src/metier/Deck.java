@@ -1,5 +1,7 @@
 package metier;
 
+import java.util.Random;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,5 +65,25 @@ public class Deck {
 	
 	public Team getTeam() {
 		return team;
+	}
+	
+	public void shuffle()
+	{
+		Random rndGenerator = new Random();
+		for (int i = 1 ; i <= 100 ; i++)
+		{
+			int num1 = rndGenerator.nextInt(78);
+			Card card = cardList.remove(0);
+			cardList.add(num1, card);
+
+		}
+		
+
+	}
+	
+	//remove the card number index - 1 from cardList
+	public Card removeCardByIndex(int index)
+	{
+		return cardList.remove(index);
 	}
 }
