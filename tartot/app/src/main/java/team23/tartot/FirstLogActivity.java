@@ -1,5 +1,7 @@
 package team23.tartot;
 
+import team23.tartot.core.Player;
+
 import android.content.Intent;
 
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -39,7 +42,8 @@ public class FirstLogActivity extends AppCompatActivity {
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToMainMenuIntent = new Intent(FirstLogActivity.this, MainMenuActivity.class);
-                //Player newPlayer = Player(username);
+                String username = ((EditText)findViewById(R.id.edit_text_first_log)).getText().toString();
+                Player newPlayer = new Player(username);
                 //goToMainMenuIntent.putExtra(newPlayer);
                 startActivity(goToMainMenuIntent);
             }
