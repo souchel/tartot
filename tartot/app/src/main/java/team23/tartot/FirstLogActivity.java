@@ -22,6 +22,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.SignInButton;
@@ -52,7 +53,7 @@ public class FirstLogActivity extends AppCompatActivity {
         findViewById(R.id.logInBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view){
                 // start the asynchronous sign in flow
-                Log.i("coucou", "coucou");
+                Log.i("coucou", "bienvenue");
                 startSignInIntent();
             }
         });
@@ -122,8 +123,23 @@ public class FirstLogActivity extends AppCompatActivity {
     }/*/
 
     private void startSignInIntent() {
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         Intent intent = signInClient.getSignInIntent();
         startActivityForResult(intent, RC_SIGN_IN);
     }
+
+    private void signOut() {
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        signInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // at this point, the user is signed out.
+                        Log.i("info", "Déconnexion réussie");
+                    }
+                });
+    }
+
 }
