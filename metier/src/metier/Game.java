@@ -1,6 +1,7 @@
 package metier;
 import java.util.Random;
 
+// multiplicateurs 1, 2, 4, 6
 
 public class Game {
 	//the announce
