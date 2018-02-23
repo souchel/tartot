@@ -1,6 +1,7 @@
 package team23.tartot.network;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -8,6 +9,8 @@ import android.view.WindowManager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
@@ -15,6 +18,9 @@ import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
 
 import java.util.List;
 
@@ -40,14 +46,16 @@ public class APIManager implements iCoreToNetwork {
     public APIManager(Activity mainMenuActivity){
         //we determine if the player is already signed in to the google play services
 
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(mainMenuActivity);
 
 
         GoogleSignIn .getLastSignedInAccount(mainMenuActivity);
 
-        this.client = Games.getRealTimeMultiplayerClient(mainMenuActivity, )
+        //this.client = Games.getRealTimeMultiplayerClient(mainMenuActivity, )
 
     }
+
+
     /**
      * creates a new empty lobby - an empty room.
      */
@@ -63,8 +71,8 @@ public class APIManager implements iCoreToNetwork {
         mJoinedRoom = roomConfig;
 
         // Create the room
-        Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
-                .create(roomConfig);
+        //Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
+        //        .create(roomConfig);
     }
 
     /**
@@ -88,7 +96,7 @@ public class APIManager implements iCoreToNetwork {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
             } else {
-                Log.w(TAG, "Error joining room: " + code);
+            //    Log.w(TAG, "Error joining room: " + code);
             }
         }
 
