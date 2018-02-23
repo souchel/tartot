@@ -64,11 +64,7 @@ public class FirstLogActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
-
+    
     //methods for sign in
     private void signInSilently(Activity activity){
         final GoogleSignInClient signInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
@@ -101,7 +97,6 @@ public class FirstLogActivity extends AppCompatActivity {
     //    } */
     //}
 
-            /*/
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -120,7 +115,7 @@ public class FirstLogActivity extends AppCompatActivity {
                         .setNeutralButton(android.R.string.ok, null).show();
             }
         }
-    }/*/
+    }
 
     private void startSignInIntent() {
         GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
