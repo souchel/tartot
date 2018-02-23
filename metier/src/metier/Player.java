@@ -23,9 +23,9 @@ public class Player {
 	{
 		return team;
 	}
-	public Deck getDeck()
+	public Deck getHand()
 	{
-		return deck;
+		return hand;
 	}	
 	//methods to check existing card in deck
 	public boolean haveSuit(Suit suit) {

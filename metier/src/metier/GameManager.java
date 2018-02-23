@@ -70,7 +70,7 @@ public class GameManager {
 		} else if (!player.haveHigherTrump(winingValue)) {
 			return true;
 		//have trump higher but don't play it
-		} else if (cardValue < winingVlue) {
+		} else if (cardValue < winingValue) {
 			return false;
 		//have trump card and play it
 		} else return true;
