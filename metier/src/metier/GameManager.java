@@ -3,7 +3,7 @@ package metier;
 import java.util.List;
 import java.util.Random;
 
-public class GameManager {
+public class GameManager implements ICoreToNetwork, INetworkToCore{
 	private Game game;
 	private Player[] players;
 	
@@ -228,5 +228,50 @@ public class GameManager {
 			return false;
 		}
 		return true;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	//TODO all implemented methods
+	@Override
+	public void createLobby() {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void startGame() {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void dealCards(Player destination, Card[] cards) {
+		// TODO Auto-generated method stub	
+	}
+	@Override
+	public void PlayCard(Card card) {
+		// TODO Auto-generated method stub	
+	}
+	@Override
+	public void Announces(metier.Announces announces) {
+		// TODO Auto-generated method stub	
+	}
+	@Override
+	public void onInvitationReceived() {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void onPlayCard(Player player, Card card) {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void onCardsDelt(Card[] cards) {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void onAnnounce(Player player, metier.Announces announces) {
+		// TODO Auto-generated method stub
 	}
 }
