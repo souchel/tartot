@@ -115,6 +115,11 @@ public class Game {
 	public Deck getDeck() {
 		return deck;
 	}
-	
+	public Player[] getPlayers() {
+		return players;
+	}
+	public Player getDealer() {
+		return dealer;
+	}
 	
 }
