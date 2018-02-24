@@ -20,7 +20,7 @@ public class Points {
 			points[i]=0;
 		}
 	}
-	public void updatePointsAndBid(Player attack, Bid bid, int attackOudlerNumber, ArrayList<Announces>[] annonces, int pointsAttack)
+	public void updatePointsAndBid(Player attack, Bid bid, int attackOudlerNumber, ArrayList<ArrayList<Announces>> annonces, int pointsAttack)
 	{
 		double[] pointsGame = new double[players.length];
 		double pointsNeeded = Game.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
@@ -38,38 +38,61 @@ public class Points {
 					pointsGame[index] += -25 * bid.getMultiplicant() - (pointsAttack - pointsNeeded)*bid.getMultiplicant() ;
 				}
 			}
-			for (int i = 0 ; i < annonces.length ; i++)
+			for (int i = 0 ; i < annonces.size() ; i++)
 			{
-				if (annonces[i].size()>0)
+				if (annonces.get(i).size()>0)
 				{
-					for (Announces a2 : annonces[i])
+					for (Announces a2 : annonces.get(i))
+					{
 						switch (a2) 
 						{
 					      case SLAM : break;
-					      case SIMPLE_HANDFUL : break ;
-					      case DOUBLE_HANDFUL : break;
-					      case TRIPLE_HANDFUL : break;
+					      case SIMPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 20, Game.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
+					      case DOUBLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 30, Game.theAttackWins(pointsNeeded, pointsAttack), attack); break;
+					      case TRIPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 40, Game.theAttackWins(pointsNeeded, pointsAttack), attack); break;
 					      case PETIT_AU_BOUT : break;
 						  case MISERY: break;
 						  default: break;
 					    }
+					}
 				}
 			}
 		}
+		updatePoints(pointsGame);
 	}
-	public double[] updatePointsHandful(double[] pointsGame, int playerIndex)
+	public double[] updatePointsHandful(double[] pointsGame, int playerIndex, double gain, boolean attackWon, Player attack)
 	{
+		int multiplier ;
+		if (attackWon )
+		{
+			multiplier = 1 ;			
+		}
+		else
+		{
+			multiplier = -1;
+		}
+		for (int index = 0 ; index < pointsGame.length ; index ++)
+		{
+			if (playerIndex == index)
+			{
+				pointsGame[index] += gain * 3 * multiplier ;
+			}
+			else
+			{
+				pointsGame[index] += -gain * multiplier;
+			}
+		}
 		return pointsGame ;
 	}
-	public double[] updatePointsMisery( double[] pointsGame, ArrayList<Announces>[] annonces)//Attention deux joueurs ne peuvent pas avoir le mm nom d utilisateur
+	public double[] updatePointsMisery( double[] pointsGame, ArrayList<ArrayList<Announces>> annonces)//Attention deux joueurs ne peuvent pas avoir le mm nom d utilisateur
 	{
 		ArrayList<Integer> miserers = new ArrayList<Integer>();
 		ArrayList<Integer> nonMiserers = new ArrayList<Integer>();
 		for (int index = 0 ; index < players.length ; index ++)
 		{
-			if (annonces.length > 0)
+			if (annonces.size() > 0)
 			{
-				for (Announces annonce : annonces[index])
+				for (Announces annonce : annonces.get(index))
 				{
 					if (annonce == Announces.MISERY)
 					{
@@ -114,5 +137,21 @@ public class Points {
 	public ArrayList<Card> getCardsCalled()
 	{
 		return cardsCalled ;
+	}
+	public void updatePoints(double[] gamePoints)
+	{
+		for (int index = 0 ; index < points.length ; index ++)
+		{
+			points[index]+= gamePoints[index];
+		}
+	}
+	public String toString()
+	{
+		String stats = "";
+		for (int index = 0 ; index < players.length ; index++)
+		{
+			stats += players[index].getUsername()+ " a " + points[index]+"\t";
+		}
+		return stats ;
 	}
 }

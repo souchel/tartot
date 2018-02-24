@@ -3,11 +3,7 @@ package metier;
 // multiplicateurs 1, 2, 4, 6
 
 public class Game {
-	//the announce
-	private Bid bid;
-	// ???
-	private boolean done;
-	//suivis des points de chaque joueur
+	private Points stats ;
 	int points;
 	int oudlersNumber ;
 	private Deck deck;
@@ -29,6 +25,7 @@ public class Game {
 		indexDealer = 0 ;
 		dealer = players[indexDealer];
 		chien = new Deck();
+		stats = new Points(players);
 	}
 	public void initializeGame()
 	{
@@ -153,5 +150,8 @@ public class Game {
 	{
 		return deckAttack.countPoints() ;
 	}
-	
+	public Points getStats()
+	{
+		return stats ;
+	}
 }
