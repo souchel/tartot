@@ -38,6 +38,7 @@ public class FirstLogActivity extends AppCompatActivity {
     int RC_SIGN_IN = 23;
 
     private GoogleSignInAccount userAccount;
+    private com.google.android.gms.games.Player googlePlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
