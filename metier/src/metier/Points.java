@@ -25,6 +25,7 @@ public class Points {
 		double[] pointsGame = new double[players.length];
 		double pointsNeeded = Game.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
 		pointsGame = updatePointsMisery(pointsGame, annonces);
+		
 		if (Game.theAttackWins(pointsNeeded, pointsAttack))
 		{
 			for (int index = 0 ; index < players.length ; index++)
@@ -86,30 +87,34 @@ public class Points {
 	}
 	public double[] updatePointsMisery( double[] pointsGame, ArrayList<ArrayList<Announces>> annonces)//Attention deux joueurs ne peuvent pas avoir le mm nom d utilisateur
 	{
+		
 		ArrayList<Integer> miserers = new ArrayList<Integer>();
 		ArrayList<Integer> nonMiserers = new ArrayList<Integer>();
 		for (int index = 0 ; index < players.length ; index ++)
 		{
-			if (annonces.size() > 0)
+			
+			for (Announces annonce : annonces.get(index))
 			{
-				for (Announces annonce : annonces.get(index))
+				
+				if (annonce == Announces.MISERY)
 				{
-					if (annonce == Announces.MISERY)
-					{
-						miserers.add(index);
-					}
-					else
-						nonMiserers.add(index);
+					miserers.add(index);
 				}
+				else
+					nonMiserers.add(index);
 			}
-			else
+			if (annonces.get(index).size()==0)
+			{
 				nonMiserers.add(index);
+			}
 		}
 		if (miserers.size() > 0)
 		{
+			
 			for (int indexNonMiserer : nonMiserers)
 			{
 				pointsGame[indexNonMiserer] += -10 * miserers.size();
+				
 			}
 			for (int indexMiserer : miserers)
 			{
