@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
-        debug {
+        config {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
-            storeFile file('/home/thomas/StudioProjects/tartot/debug.keystore')
+            storeFile file('C:/Users/Hugo Selle/AndroidStudioProjects/tartot/debug.keystore')
             storePassword 'android'
         }
     }
