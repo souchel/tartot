@@ -5,6 +5,7 @@ public class Player {
 	private Team team;
 	private Deck hand;
 	private Deck fold;
+	private int position;
 	
 	public Player(String username)
 	{
@@ -14,7 +15,8 @@ public class Player {
 		fold = new Deck();
 		hand = new Deck();
 		//TODO
-		//hand ?
+		//hand?
+		//position?
 	}
 	public String getUsername()
 	{

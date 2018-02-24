@@ -8,6 +8,7 @@ public class GameManager {
 	
 	public GameManager(Game onGoingGame) {
 		this.game = onGoingGame;
+		this.players = game.getPlayers();
 	}
 	
 	//TODO
@@ -16,10 +17,11 @@ public class GameManager {
 	}
 	
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
-	private Player[] getPlayerAtPosition(int i) {
-		
-		return players;
-	}
+	//inutil en v1?
+//	private Player[] getPlayerAtPosition(int i) {
+//		
+//		return players;
+//	}
 	
 	//return if the card can be played, unless false
 	public boolean checkCard(Card card, Player player) {
@@ -139,6 +141,28 @@ public class GameManager {
 							res = false;
 						}
 				}
+					break;
+				case SLAM:
+					break;
+				case PETIT_AU_BOUT:
+					break;
+			}
+		}
+		return res;
+	}
+
+	//TODO
+	public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
+		boolean res = true;
+		for (Announces announce : announces) {
+			switch (announce) {
+				case MISERY: 
+					break;
+				case SIMPLE_HANDFUL:
+					break;
+				case DOUBLE_HANDFUL:
+					break;
+				case TRIPLE_HANDFUL:
 					break;
 				case SLAM:
 					break;
