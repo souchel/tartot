@@ -103,7 +103,12 @@ public class Game {
 		return players;
 	}
 	public Player getDealer() {
-		return dealer;
+		return players[indexDealer];
+	}
+	public void setNextDealer(){
+		if (indexDealer < 3) {
+			indexDealer += 1;
+		} else indexDealer = 0;
 	}
 	public int bidIntoMultiplier(Bid bid)
 	{
