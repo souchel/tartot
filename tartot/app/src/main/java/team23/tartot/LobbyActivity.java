@@ -195,9 +195,12 @@ public class LobbyActivity extends AppCompatActivity {
             Invitation invitation = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
             if (invitation != null) {
 
+                Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
+                
                 RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
                         .setOnMessageReceivedListener(mMessageReceivedHandler)
                         .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                        .setAutoMatchCriteria(autoMatchCriteria)
                         .setInvitationIdToAccept(invitation.getInvitationId());
                 mJoinedRoomConfig = builder.build();
                 Games.getRealTimeMultiplayerClient(this,
