@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -15,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
+import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
@@ -38,6 +40,8 @@ public class LobbyActivity extends AppCompatActivity {
     private String roomID = null;
     private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
     private RoomConfig mJoinedRoomConfig;
+
+    private static final int RC_INVITATION_INBOX = 9008;
 
 
     @Override
@@ -72,8 +76,32 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
 
+        // List and respond to invitations
+        final Button goToInvitationInbox = findViewById(R.id.button_go_to_invitation_inbox);
+        goToInvitationInbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showInvitationInbox();
+            }
+        });
+
+
         // Create waiting room / lobby
         //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match
+    }
+
+    /**
+     * This method will display Google default UI for listing invitations.
+     */
+    private void showInvitationInbox() {
+        Games.getInvitationsClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                .getInvitationInboxIntent()
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_INVITATION_INBOX);
+                    }
+                });
     }
 
 
@@ -152,6 +180,51 @@ public class LobbyActivity extends AppCompatActivity {
             mJoinedRoomConfig = roomBuilder.build();
             Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
                     .create(mJoinedRoomConfig);
+        }
+        /**
+         * Called when the player gets back to the lobby from the invitation inbox.
+         * If he has accepted an invitation, he should be redirected to the concerned room.
+         */
+        else if (requestCode == RC_INVITATION_INBOX) {
+            if (resultCode != Activity.RESULT_OK) {
+                // Canceled or some error.
+                Log.i("error", "Error when returning from invitation inbox");
+                return;
+            }
+
+            Invitation invitation = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
+            if (invitation != null) {
+
+                RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
+                        .setOnMessageReceivedListener(mMessageReceivedHandler)
+                        .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                        .setInvitationIdToAccept(invitation.getInvitationId());
+                mJoinedRoomConfig = builder.build();
+                Games.getRealTimeMultiplayerClient(this,
+                        GoogleSignIn.getLastSignedInAccount(this))
+                        .join(mJoinedRoomConfig);
+                // prevent screen from sleeping during handshake
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                // Create the room
+                Task<Void> roomCreation = RTMClient.create(mJoinedRoomConfig);
+
+                roomCreation.addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // Task completed successfully
+                            Log.i("info", "success on creating room");
+                        } else {
+                            // Task failed with an exception
+                            Exception exception = task.getException();
+                            Log.i("error", "exception occured during room creation " +
+                                    exception.getMessage());
+                        }
+
+                    }
+                });
+            }
         }
     }
 
@@ -283,5 +356,7 @@ public class LobbyActivity extends AppCompatActivity {
      * to a new player in lobby. Deletes the lobby otherwise.
      */
     public void leaveLobby() {}
+
+
 
 }
