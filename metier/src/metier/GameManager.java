@@ -205,4 +205,28 @@ public class GameManager {
 		}
 		return false;
 	}
+	
+	//default (if bid null?) return false
+	public boolean checkBid(Bid bid) {
+		Bid onGoingBid = game.getBid();
+		switch (onGoingBid) {
+		case SMALL :
+			if (bid == Bid.SMALL) {
+				return false;
+			} break;
+		case GUARD :
+			if (bid == Bid.SMALL || bid == Bid.GUARD) {
+				return false;
+			} break;
+		case GUARD_WITHOUT :
+			if (bid == Bid.SMALL || bid == Bid.GUARD || bid == Bid.GUARD_WITHOUT) {
+				return false;
+			} break;
+		case GUARD_AGAINST :
+			return false;
+		default :
+			return false;
+		}
+		return true;
+	}
 }
