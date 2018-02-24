@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -106,6 +107,15 @@ public class FirstLogActivity extends AppCompatActivity {
                 // The signed in account is stored in the result.
                 Log.i("coucou", "SUCCESSSSSSSS");
                 GoogleSignInAccount signedInAccount = result.getSignInAccount();
+
+                // The Player can now go to the MainMenu and if there is no username, it will be its Google username
+                TextView usernameTextView = findViewById(R.id.text_view_first_log);
+                String username = usernameTextView.getText().toString();
+                Log.i("le-nom",username);
+                if (username == "" || username == null) {
+                    usernameTextView.setText(signedInAccount.getDisplayName());
+                }
+                findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
             } else {
                 String message = result.getStatus().getStatusMessage();
                 if (message == null || message.isEmpty()) {
