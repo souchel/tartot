@@ -27,8 +27,13 @@ public class Player {
 	public Deck getHand()
 	{
 		return hand;
-	}	
-	//methods to check existing card in deck
+	}
+	
+	
+	
+	
+	
+	//methods to check existing card in deck (or count trump at the end)
 	public boolean haveSuit(Suit suit) {
 		for (Card card : hand.getCardList()) {
 			if (card.getSuit() == suit) {
@@ -60,5 +65,13 @@ public class Player {
 				return true;
 			}
 		} return false;
+	}
+	public int countTrump() {
+		int total = 0;
+		for (Card card : hand.getCardList()) {
+			if (card.getSuit() == Suit.TRUMP) {
+				total += 1;
+			}
+		} return total;
 	}
 }

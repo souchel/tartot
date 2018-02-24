@@ -4,19 +4,21 @@ import java.util.List;
 
 public class GameManager {
 	private Game game;
-	private Player player;
+	private Player[] players;
 	
 	public GameManager(Game onGoingGame) {
 		this.game = onGoingGame;
 	}
 	
+	//TODO
 	private void nextDealer() {
 		
 	}
 	
-	private Player getPlayerAtPosition(int i) {
-		//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
-		return player;
+	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
+	private Player[] getPlayerAtPosition(int i) {
+		
+		return players;
 	}
 	
 	//return if the card can be played, unless false
@@ -79,9 +81,10 @@ public class GameManager {
 		} else return true;
 	}
 	
-	//TODO unfinished
+	//default true
 	public boolean checkAnnouncesBegining(List<Announces> announces, Player player) {
-		boolean res = false;
+		boolean res = true;
+		int nbPlayers = players.length;
 		for (Announces announce : announces) {
 			switch (announce) {
 				case MISERY: 
@@ -90,6 +93,56 @@ public class GameManager {
 					}
 					break;
 				case SIMPLE_HANDFUL:
+					switch(nbPlayers) {
+						case 3:
+							if (player.countTrump() < 13) {
+								res = false;
+							}
+						case 4:
+							if (player.countTrump() < 10) {
+								res = false;
+							}
+						case 5:
+							if (player.countTrump() < 8) {
+								res = false;
+							}
+					}
+					break;
+				case DOUBLE_HANDFUL:
+					switch(nbPlayers) {
+					case 3:
+						if (player.countTrump() < 15) {
+							res = false;
+						}
+					case 4:
+						if (player.countTrump() < 13) {
+							res = false;
+						}
+					case 5:
+						if (player.countTrump() < 10) {
+							res = false;
+						}
+				}
+					break;
+				case TRIPLE_HANDFUL:
+					switch(nbPlayers) {
+					case 3:
+						if (player.countTrump() < 18) {
+							res = false;
+						}
+					case 4:
+						if (player.countTrump() < 15) {
+							res = false;
+						}
+					case 5:
+						if (player.countTrump() < 13) {
+							res = false;
+						}
+				}
+					break;
+				case SLAM:
+					break;
+				case PETIT_AU_BOUT:
 					break;
 			}
 		}
