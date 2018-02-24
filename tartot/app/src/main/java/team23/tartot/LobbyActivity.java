@@ -15,6 +15,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
+import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.Room;
@@ -22,8 +23,10 @@ import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
@@ -33,6 +36,9 @@ public class LobbyActivity extends AppCompatActivity {
     private RealTimeMultiplayerClient RTMClient;
     private RoomConfig mJoinedRoom = null;
     private String roomID = null;
+    private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
+    private RoomConfig mJoinedRoomConfig;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +64,16 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
 
+        final Button button_invite_players = findViewById(R.id.inviteBtn);
+        button_invite_players.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                invitePlayers();
+            }
+        });
+
         // Create waiting room / lobby
-        createLobby();
+        //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match
     }
 
 
@@ -93,6 +107,54 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void invitePlayers() {
+        // launch the player selection screen
+        // minimum: 1 other player; maximum: 3 other players
+        Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                .getSelectOpponentsIntent(1, 3, true)
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_SELECT_PLAYERS);
+                    }
+                });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //return of the invitation of players
+        if (requestCode == RC_SELECT_PLAYERS) {
+            if (resultCode != Activity.RESULT_OK) {
+                // Canceled or some other error.
+                return;
+            }
+
+            // Get the invitee list.
+            final ArrayList<String> invitees = data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+
+            // Get Automatch criteria.
+            int minAutoPlayers = data.getIntExtra(Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+            int maxAutoPlayers = data.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+
+            // Create the room configuration.
+            RoomConfig.Builder roomBuilder = RoomConfig.builder(mRoomUpdateCallback)
+                    .setOnMessageReceivedListener(mMessageReceivedHandler)
+                    .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                    .addPlayersToInvite(invitees);
+            if (minAutoPlayers > 0) {
+                roomBuilder.setAutoMatchCriteria(
+                        RoomConfig.createAutoMatchCriteria(minAutoPlayers, maxAutoPlayers, 0));
+            }
+
+            // Save the roomConfig so we can use it if we call leave().
+            mJoinedRoomConfig = roomBuilder.build();
+            Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                    .create(mJoinedRoomConfig);
+        }
+    }
+
 
     /**
      * Callbacks to handle reception of messages.
