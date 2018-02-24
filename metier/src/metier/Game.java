@@ -15,7 +15,7 @@ public class Game {
 	Player[] players;
 	OnGoingFold onGoingFold ; 
 	Player dealer ;
-	int indexDealer = 0 ;
+	int indexDealer ;
 	Deck chien;
 	
 	public Game(String[] usernames)
@@ -27,6 +27,7 @@ public class Game {
 		{
 			players[i] = new Player(usernames[i]);
 		}
+		indexDealer = 0 ;
 		dealer = players[indexDealer];
 		chien = new Deck();
 	}
