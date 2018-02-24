@@ -29,4 +29,5 @@
     <string name="action_go_to_lobby">Go to lobby</string>
     <string name="invite_players">invite players</string>
     <string name="auto_match">auto match players</string>
+    <string name="button_label_invitation_inbox">Invitations</string>
 </resources>
