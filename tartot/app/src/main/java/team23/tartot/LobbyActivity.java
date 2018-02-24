@@ -203,25 +203,23 @@ public class LobbyActivity extends AppCompatActivity {
                         .setAutoMatchCriteria(autoMatchCriteria)
                         .setInvitationIdToAccept(invitation.getInvitationId());
                 mJoinedRoomConfig = builder.build();
-                Games.getRealTimeMultiplayerClient(this,
-                        GoogleSignIn.getLastSignedInAccount(this))
-                        .join(mJoinedRoomConfig);
+                Task<Void> joinTask = Games.getRealTimeMultiplayerClient(this,
+                            GoogleSignIn.getLastSignedInAccount(this))
+                            .join(mJoinedRoomConfig);
+
                 // prevent screen from sleeping during handshake
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-                // Create the room
-                Task<Void> roomCreation = RTMClient.create(mJoinedRoomConfig);
-
-                roomCreation.addOnCompleteListener(new OnCompleteListener<Void>() {
+                joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             // Task completed successfully
-                            Log.i("info", "success on creating room");
+                            Log.i("info", "success on joining room");
                         } else {
                             // Task failed with an exception
                             Exception exception = task.getException();
-                            Log.i("error", "exception occured during room creation " +
+                            Log.i("error", "exception occurred during room joining " +
                                     exception.getMessage());
                         }
 

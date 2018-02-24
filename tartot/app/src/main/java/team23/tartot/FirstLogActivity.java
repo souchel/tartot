@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -104,12 +105,15 @@ public class FirstLogActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.i("le-nom","test");
+
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result.isSuccess()) {
                 // The signed in account is stored in the result
                 userAccount = result.getSignInAccount();
                 retrieveGooglePlayer(userAccount);
+
             } else {
                 String message = result.getStatus().getStatusMessage();
                 if (message == null || message.isEmpty()) {
@@ -152,10 +156,21 @@ public class FirstLogActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // Task completed successfully
                     googlePlayer = task.getResult();
+                    Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
 
-                    //test to read username
-                    Log.i("debug", googlePlayer.getDisplayName() + googlePlayer.getName());
+                    // The Player can now go to the MainMenu and if there is no username, it will be its Google username
+                    EditText usernameET = findViewById(R.id.edit_text_first_log);
+                    Log.i("le-nom","ici");
+                    String username = usernameET.getText().toString();
+                    Log.i("le-nom",username +" ");
+                    if (username.equals("")) {
+                        Log.i("nom",googlePlayer.getDisplayName());
+                        usernameET.setText(googlePlayer.getDisplayName());
+                    }
+                    findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
 
+
+                    /*
                     ///////////////////////////////////////////////temporaire
                     Intent goToMainMenuIntent = new Intent(FirstLogActivity.this, MainMenuActivity.class);
                     String username = ((EditText) findViewById(R.id.edit_text_first_log)).getText().toString();
@@ -163,7 +178,7 @@ public class FirstLogActivity extends AppCompatActivity {
                     //goToMainMenuIntent.putExtra(newPlayer);
                     startActivity(goToMainMenuIntent);
                     ///////////////////////////////////////////////temporaire
-
+                    */
                 } else {
                     // Task failed with an exception
                     Exception exception = task.getException();
