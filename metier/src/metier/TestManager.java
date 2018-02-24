@@ -1,9 +1,14 @@
 package metier;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class TestManager {
 	public static void main(String[] args) throws IOException {
+		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
+		Game game = new Game(usernames);
+		GameManager gameManager = new GameManager(game);
 		Player laure = new Player("Laure");
 		Player paul = new Player("Paul");
 		Player hugo = new Player("Hugo");
@@ -50,5 +55,24 @@ public class TestManager {
 		System.out.println("pas d'atout"+paul.countTrump());
 		System.out.println("2 atouts :"+blu.countTrump());
 		System.out.println("2 atouts :"+hugo.countTrump()+"\n");
+		//testCheckAnnouncesBegining
+		System.out.println("test checkAnnouncesBegining");
+		System.out.println("pas de misère mais misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), blu));
+		System.out.println("double misère et misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), paul));
+		System.out.println("simple misère et misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), gui));
+		System.out.println("excuse mais misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), laure));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 11));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 12));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 13));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 14));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 15));
+		System.out.println("simple annoncée mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 16));
+		System.out.println("simple annoncée et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
+		System.out.println("double annoncée mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 17));
+		blu.getHand().addCard(new Card(Suit.TRUMP, 18));
+		System.out.println("double annoncée et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
+
 	}
 }
