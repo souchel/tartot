@@ -1,6 +1,7 @@
 package metier;
 
 import java.util.List;
+import java.util.Random;
 
 public class GameManager {
 	private Game game;
@@ -19,6 +20,7 @@ public class GameManager {
 //	}
 	
 	//return if the card can be played, unless false
+	//TODO pas testé
 	public boolean checkCard(Card card, Player player) {
 		Card winingCard = game.getOnGoingFold().getWiningCard();
 		Suit askedSuit = game.getOnGoingFold().getSuit();
@@ -166,5 +168,36 @@ public class GameManager {
 			}
 		}
 		return res;
+	}
+	
+	public int[] getPositionDistribution() {
+		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
+		//On cree une liste de moments qui ne peuvent pas exister
+				
+		//Partie qui sert à rien
+		int[] indexes = {25,25,25,25,25,25};
+		Random rndGenerator = new Random();
+		//on pioche 6 entiers entre 0 et 22 sachant qu'on distribue 3 fois 24 cartes mais qu on ne 
+		//peut pas mettre la derniere carte dans le chien
+		for (int j = 0 ; j < 6 ; j ++)
+		{
+			int index = rndGenerator.nextInt(23);
+			//On pioche jusqu a avoir un index different de ceux deja dans la liste
+			while (alreadyInArray(indexes, index))
+				index = rndGenerator.nextInt(23);				
+			indexes[j] = index ;
+		}
+		return indexes;
+	}
+	//TODO en double dans game et gamemanager
+	private boolean alreadyInArray(int[] array, int number)
+	//return true if number is already in the array of int called array and false if not
+	{
+		for (int i = 0 ; i < array.length ; i ++)
+		{
+			if (array[i]==number)
+				return true ;
+		}
+		return false;
 	}
 }

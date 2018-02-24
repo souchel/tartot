@@ -65,27 +65,7 @@ public class Game {
 		return false;
 	}
 	public void distribute(int[] indexes)
-	{
-		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
-		//On cree une liste de moments qui ne peuvent pas exister
-		
-		//Partie qui sert à rien
-		/*
-		int[] indexes = {25,25,25,25,25,25};
-		Random rndGenerator = new Random();
-		//on pioche 6 entiers entre 0 et 22 sachant qu'on distribue 3 fois 24 cartes mais qu on ne 
-		//peut pas mettre la derniere carte dans le chien
-		for (int j = 0 ; j < 6 ; j ++)
-		{
-			int index = rndGenerator.nextInt(23);
-			//On pioche jusqu a avoir un index different de ceux deja dans la liste
-			while (alreadyInArray(indexes, index))
-				index = rndGenerator.nextInt(23);				
-			indexes[j] = index ;
-		}
-		*/
-		
-		
+	{	
 		//On distribue les cartes 3 par 3 aux 4 joueurs
 		for (int i = 1; i <= 24 ; i++)
 		{
