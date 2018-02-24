@@ -11,6 +11,7 @@ public class Game {
 	OnGoingFold onGoingFold ; 
 	int indexDealer ;
 	Deck chien;
+	Bid bid;
 	
 	public Game(String[] usernames)
 	{
@@ -24,6 +25,7 @@ public class Game {
 		indexDealer = 0 ;
 		chien = new Deck();
 		stats = new Points(players);
+		bid = null;
 	}
 	public void initializeGame()
 	{
@@ -91,6 +93,9 @@ public class Game {
 			Card card = deck.removeCardByIndex(0);
 			deck.addCard(card);
 		}
+	}
+	public Bid getBid() {
+		return bid;
 	}
 	public OnGoingFold getOnGoingFold()
 	{
