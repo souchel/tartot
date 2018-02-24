@@ -7,18 +7,30 @@
     tools:context="team23.tartot.LobbyActivity">
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button_lobby_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="280dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="Lobby ID :"
-        tools:layout_editor_absoluteX="147dp"
-        tools:layout_editor_absoluteY="105dp" />
+        app:layout_constraintBottom_toTopOf="@+id/button_leave_lobby"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
-        android:id="@+id/text_view_leave_lobby"
+        android:id="@+id/button_leave_lobby"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:text="Quitter le lobby"
-        tools:layout_editor_absoluteX="119dp"
-        tools:layout_editor_absoluteY="379dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </android.support.constraint.ConstraintLayout>

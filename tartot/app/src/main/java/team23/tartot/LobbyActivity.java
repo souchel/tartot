@@ -1,11 +1,14 @@
 package team23.tartot;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -18,6 +21,8 @@ import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
@@ -25,8 +30,9 @@ import static android.content.ContentValues.TAG;
 
 public class LobbyActivity extends AppCompatActivity {
 
-    RealTimeMultiplayerClient RTMClient;
-    RoomConfig mJoinedRoom = null;
+    private RealTimeMultiplayerClient RTMClient;
+    private RoomConfig mJoinedRoom = null;
+    private String roomID = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,21 +45,53 @@ public class LobbyActivity extends AppCompatActivity {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         this.RTMClient = Games.getRealTimeMultiplayerClient(this, account);
 
+        // Handle leaving the lobby
+        final Button button_leave_lobby = findViewById(R.id.button_leave_lobby);
+        button_leave_lobby.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RTMClient.leave(mJoinedRoom, roomID);
+
+                // Sending to main menu again
+                Intent goToMainMenuIntent = new Intent(LobbyActivity.this, MainMenuActivity.class);
+                startActivity(goToMainMenuIntent);
+            }
+        });
+
         // Create waiting room / lobby
         createLobby();
     }
 
 
     public void createLobby() {
+        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
+
         RoomConfig roomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mMessageReceivedHandler)
                 .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
 
         mJoinedRoom = roomConfig;
 
         // Create the room
-        RTMClient.create(roomConfig);
+        Task<Void> roomCreation = RTMClient.create(roomConfig);
+
+        roomCreation.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    Log.i("info", "success on creating room");
+                } else {
+                    // Task failed with an exception
+                    Exception exception = task.getException();
+                    Log.i("error", "exception occured during room creation " +
+                            exception.getMessage());
+                }
+
+            }
+        });
     }
 
     /**
@@ -67,6 +105,7 @@ public class LobbyActivity extends AppCompatActivity {
 
                 }
             };
+
     /**
      * Callbacks to handle errors during the creation of a room.
      * Very close to doc examples.
@@ -76,7 +115,10 @@ public class LobbyActivity extends AppCompatActivity {
         public void onRoomCreated(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
-                Log.d(TAG, "Room " + room.getRoomId() + " created.");
+                roomID = room.getRoomId();
+                Log.d(TAG, "Room " + roomID + " created.");
+                final Button button_lobby_id = findViewById(R.id.button_lobby_id);
+                button_lobby_id.setText("Lobby ID : " + roomID); // TODO: Locale
             } else {
                 Log.w(TAG, "Error creating room: " + i);
             }
@@ -88,13 +130,15 @@ public class LobbyActivity extends AppCompatActivity {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
             } else {
-                //    Log.w(TAG, "Error joining room: " + code);
+                    Log.w(TAG, "Error joining room:");
             }
         }
 
         @Override
         public void onLeftRoom(int i, @NonNull String s) {
-            Log.d(TAG, "Left room" + s);
+            final Button button_lobby_id = findViewById(R.id.button_lobby_id);
+            button_lobby_id.setText("No room"); // TODO: Locale
+            Log.i("info", "Room left");
         }
 
         @Override
@@ -134,17 +178,16 @@ public class LobbyActivity extends AppCompatActivity {
 
         @Override
         public void onPeerJoined(@Nullable Room room, @NonNull List<String> list) {
-
+            Log.i("info", "A player joined the room !");
         }
 
         @Override
         public void onPeerLeft(@Nullable Room room, @NonNull List<String> list) {
-
         }
 
         @Override
         public void onConnectedToRoom(@Nullable Room room) {
-
+            Log.i("info", "Congratulations, you just connected to a room");
         }
 
         @Override
@@ -154,7 +197,7 @@ public class LobbyActivity extends AppCompatActivity {
 
         @Override
         public void onPeersConnected(@Nullable Room room, @NonNull List<String> list) {
-
+            Log.i("info", "Several new players joined the room !");
         }
 
         @Override
@@ -164,7 +207,7 @@ public class LobbyActivity extends AppCompatActivity {
 
         @Override
         public void onP2PConnected(@NonNull String s) {
-
+            Log.i("info", "Connection established to " + s);
         }
 
         @Override
