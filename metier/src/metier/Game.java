@@ -121,5 +121,28 @@ public class Game {
 	public Player getDealer() {
 		return dealer;
 	}
+	public int bidIntoMultiplier(Bid bid)
+	{
+		return bid.getMultiplicant();
+	}
+	public int oudlerNumberIntoPointsNeeded(int oudlerNumber)
+	{
+		switch (oudlerNumber) 
+		{
+	      case 1: return 51; 
+	      case 2: return 41;
+	      case 3: return 36;
+	      case 0: return 56; 
+	      default : return 0;
+	    }
+	}
+	public boolean theAttackWins(int pointsNeeded, int pointsWon)
+	{
+		return pointsNeeded <= pointsWon ;
+	}
+	public double pointsCounter(Deck deckAttack)
+	{
+		return deckAttack.countPoints() ;
+	}
 	
 }
