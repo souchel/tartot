@@ -1,5 +1,6 @@
 package metier;
 import java.io.*;
+import java.util.ArrayList;
 
 public class Test {
 	public static void main(String[] args) throws IOException {
@@ -34,5 +35,17 @@ public class Test {
 		System.out.println("jeu de Thomas : "+game.players[3].getHand() );
 		System.out.println("chien : "+game.chien );
 		System.out.println("il ne devrait plus y avoir de cartes dans le paquet : "+ game.getDeck());
+		
+		System.out.println("chaque joueur devrait avoir 0 points");
+		System.out.println(game.getStats());
+		System.out.println("Hugo gagne de 0 points");
+		ArrayList<ArrayList<Announces>> annonces = new ArrayList<ArrayList<Announces>>();
+		for (int index = 0 ; index < 4 ; index ++)
+			annonces.add(new ArrayList<Announces>());
+		annonces.get(0).add(Announces.MISERY);
+		annonces.get(0).add(Announces.SIMPLE_HANDFUL);
+		game.getStats().updatePointsAndBid(game.getPlayers()[0], Bid.SMALL, 3, annonces, 36);
+		System.out.println(game.getStats());
+		
 	}
 }
