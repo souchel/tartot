@@ -15,7 +15,7 @@ public class Game {
 	Player[] players;
 	OnGoingFold onGoingFold ; 
 	Player dealer ;
-	int indexDealer = 0 ;
+	int indexDealer ;
 	Deck chien;
 	
 	public Game(String[] usernames)
@@ -27,6 +27,7 @@ public class Game {
 		{
 			players[i] = new Player(usernames[i]);
 		}
+		indexDealer = 0 ;
 		dealer = players[indexDealer];
 		chien = new Deck();
 	}
@@ -87,7 +88,7 @@ public class Game {
 			for (int j = 1 ; j <= 3 ; j++)
 			{
 				Card card = deck.removeCardByIndex(0);
-				players[(i-1)%4].getHand().addCard(card);
+				players[(i + indexDealer )%4].getHand().addCard(card);
 				
 			}
 			//si c est l un des tours ou on est cense mettre dans le chien, on met une carte dans le chien
@@ -119,6 +120,29 @@ public class Game {
 	}
 	public Player getDealer() {
 		return dealer;
+	}
+	public int bidIntoMultiplier(Bid bid)
+	{
+		return bid.getMultiplicant();
+	}
+	public int oudlerNumberIntoPointsNeeded(int oudlerNumber)
+	{
+		switch (oudlerNumber) 
+		{
+	      case 1: return 51; 
+	      case 2: return 41;
+	      case 3: return 36;
+	      case 0: return 56; 
+	      default : return 0;
+	    }
+	}
+	public boolean theAttackWins(int pointsNeeded, int pointsWon)
+	{
+		return pointsNeeded <= pointsWon ;
+	}
+	public double pointsCounter(Deck deckAttack)
+	{
+		return deckAttack.countPoints() ;
 	}
 	
 }
