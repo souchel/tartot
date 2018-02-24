@@ -1,5 +1,7 @@
 package metier;
 
+import java.util.List;
+
 public class GameManager {
 	private Game game;
 	private Player player;
@@ -13,7 +15,7 @@ public class GameManager {
 	}
 	
 	private Player getPlayerAtPosition(int i) {
-		//reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
+		//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
 		return player;
 	}
 	
@@ -75,6 +77,22 @@ public class GameManager {
 			return false;
 		//have trump card and play it
 		} else return true;
-
+	}
+	
+	//TODO unfinished
+	public boolean checkAnnouncesBegining(List<Announces> announces, Player player) {
+		boolean res = false;
+		for (Announces announce : announces) {
+			switch (announce) {
+				case MISERY: 
+					if (player.haveTrump() && player.haveHead()) {
+						res = false;
+					}
+					break;
+				case SIMPLE_HANDFUL:
+					break;
+			}
+		}
+		return res;
 	}
 }

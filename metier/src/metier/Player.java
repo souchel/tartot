@@ -52,4 +52,13 @@ public class Player {
 			}
 		} return false;
 	}
+	public boolean haveHead() {
+		for (Card card : hand.getCardList()) {
+			if (card.getSuit() != Suit.TRUMP && card.getValue() > 10) {
+				return true;
+			} else if (card.getSuit() == Suit.TRUMP && card.getValue() == 22){
+				return true;
+			}
+		} return false;
+	}
 }
