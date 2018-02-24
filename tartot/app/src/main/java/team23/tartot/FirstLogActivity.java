@@ -24,9 +24,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.SignInButton;
+
+import static com.google.android.gms.games.Games.getPlayersClient;
 
 public class FirstLogActivity extends AppCompatActivity {
 
@@ -44,7 +48,7 @@ public class FirstLogActivity extends AppCompatActivity {
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToMainMenuIntent = new Intent(FirstLogActivity.this, MainMenuActivity.class);
-                String username = ((EditText)findViewById(R.id.edit_text_first_log)).getText().toString();
+                String username = ((EditText) findViewById(R.id.edit_text_first_log)).getText().toString();
                 Player newPlayer = new Player(username);
                 //goToMainMenuIntent.putExtra(newPlayer);
                 startActivity(goToMainMenuIntent);
@@ -52,33 +56,42 @@ public class FirstLogActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.logInBtn).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view){
+            public void onClick(View view) {
                 // start the asynchronous sign in flow
                 Log.i("coucou", "bienvenue");
                 startSignInIntent();
             }
         });
-        findViewById(R.id.logOutBtn).setOnClickListener( new View.OnClickListener() {
-            public void onClick(View view){
+        findViewById(R.id.logOutBtn).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
                 // start the asynchronous sign in flow
                 Log.i("coucou", "coucou");
             }
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("coucou", "onResume");
+        signInSilently();
+    }
+
     //methods for sign in
-    private void signInSilently(Activity activity){
-        final GoogleSignInClient signInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        signInClient.silentSignIn().addOnCompleteListener(activity, new OnCompleteListener<GoogleSignInAccount>() {
+    private void signInSilently() {
+        final GoogleSignInClient signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        signInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
             @Override
             public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                 if (task.isSuccessful()) {
                     // The signed in account is stored in the task's result.
-                    GoogleSignInAccount signedInAccount = task.getResult();
+                    userAccount = task.getResult();
+                    retrieveInfo(userAccount);
+
                 } else {
                     // Player will need to sign-in explicitly using via UI
-                    Intent intent = signInClient.getSignInIntent();
-                    startActivityForResult(intent, RC_SIGN_IN);
+                    // Intent intent = signInClient.getSignInIntent();
+                    //startActivityForResult(intent, RC_SIGN_IN);
                 }
             }
         });
@@ -87,12 +100,12 @@ public class FirstLogActivity extends AppCompatActivity {
 
     //public void onClick(View view) {
     //    if (view.getId() == R.id.logInBtn) {
-            // start the asynchronous sign in flow
+    // start the asynchronous sign in flow
     //        startSignInIntent();
     //    } /* else if (view.getId() == R.id.logOutBtn) {
-            // sign out.
+    // sign out.
     //        signOut();
-            // show sign-in button, hide the sign-out button
+    // show sign-in button, hide the sign-out button
     //        findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
     //        findViewById(R.id.sign_out_button).setVisibility(View.GONE);
     //    } */
@@ -105,17 +118,8 @@ public class FirstLogActivity extends AppCompatActivity {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result.isSuccess()) {
                 // The signed in account is stored in the result.
-                Log.i("coucou", "SUCCESSSSSSSS");
-                GoogleSignInAccount signedInAccount = result.getSignInAccount();
-
-                // The Player can now go to the MainMenu and if there is no username, it will be its Google username
-                TextView usernameTextView = findViewById(R.id.text_view_first_log);
-                String username = usernameTextView.getText().toString();
-                Log.i("le-nom",username);
-                if (username == "" || username == null) {
-                    usernameTextView.setText(signedInAccount.getDisplayName());
-                }
-                findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
+                userAccount = result.getSignInAccount();
+                retrieveInfo(userAccount);
             } else {
                 String message = result.getStatus().getStatusMessage();
                 if (message == null || message.isEmpty()) {
@@ -147,4 +151,25 @@ public class FirstLogActivity extends AppCompatActivity {
                 });
     }
 
+    private void retrieveInfo(GoogleSignInAccount account) {
+        PlayersClient playersClient = getPlayersClient(this, account);
+        Task<com.google.android.gms.games.Player> playerTask = playersClient.getCurrentPlayer(); //carefull, use Player object from google and not from tartot
+        playerTask.addOnCompleteListener(new OnCompleteListener<com.google.android.gms.games.Player>() {
+            @Override
+            public void onComplete(@NonNull Task<com.google.android.gms.games.Player> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    googlePlayer = task.getResult();
+
+                    //test to read username
+                    Log.i("debug", googlePlayer.getDisplayName() + googlePlayer.getName());
+
+                } else {
+                    // Task failed with an exception
+                    Exception exception = task.getException();
+                    Log.i("exception", exception.toString());
+                }
+            }
+        });
+    }
 }
