@@ -134,7 +134,7 @@ public class Game {
 	{
 		return bid.getMultiplicant();
 	}
-	public int oudlerNumberIntoPointsNeeded(int oudlerNumber)
+	public static double oudlerNumberIntoPointsNeeded(int oudlerNumber)
 	{
 		switch (oudlerNumber) 
 		{
@@ -145,7 +145,7 @@ public class Game {
 	      default : return 0;
 	    }
 	}
-	public boolean theAttackWins(int pointsNeeded, int pointsWon)
+	public static boolean theAttackWins(double pointsNeeded, double pointsWon)
 	{
 		return pointsNeeded <= pointsWon ;
 	}
