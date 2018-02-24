@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 
 import android.support.annotation.NonNull;
@@ -15,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -24,11 +22,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
-import com.google.android.gms.games.Games;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.common.SignInButton;
 
 import static com.google.android.gms.games.Games.getPlayersClient;
 
@@ -39,6 +35,7 @@ public class FirstLogActivity extends AppCompatActivity {
 
     private GoogleSignInAccount userAccount;
     private com.google.android.gms.games.Player googlePlayer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,29 +53,35 @@ public class FirstLogActivity extends AppCompatActivity {
             }
         });
 
+        //logInBtn connects to googlePlay service to retrieve player's google account and his google game account
+        //this button manually connects to google accounts if the silent signIn in the onResume does not work.
         findViewById(R.id.logInBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                // start the asynchronous sign in flow
-                Log.i("coucou", "bienvenue");
+                // start the asynchronous sign in flow by starting an activityForResult dealing with the sign in
+                //If the return is successfull, the
                 startSignInIntent();
             }
         });
+
+        //logOutBtn callback
         findViewById(R.id.logOutBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                // start the asynchronous sign in flow
-                Log.i("coucou", "coucou");
+                signOut();
             }
         });
     }
 
+
+    //onResume tries to silently sign in. It connects to the last google account used or use one already logged in.
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("coucou", "onResume");
-        signInSilently();
+        if (userAccount == null) {
+            signInSilently();
+        }
     }
 
-    //methods for sign in
+    //tries to log in silently and automatically without prompt. If it succeeds, it connects to the google game account and retrieve google Player object.
     private void signInSilently() {
         final GoogleSignInClient signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         signInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
@@ -87,40 +90,26 @@ public class FirstLogActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // The signed in account is stored in the task's result.
                     userAccount = task.getResult();
-                    retrieveInfo(userAccount);
+                    retrieveGooglePlayer(userAccount);
 
                 } else {
-                    // Player will need to sign-in explicitly using via UI
-                    // Intent intent = signInClient.getSignInIntent();
-                    //startActivityForResult(intent, RC_SIGN_IN);
+                    //automatic log in failed.
+                    //todo : notify user that he has to log in manually
                 }
             }
         });
     }
 
-
-    //public void onClick(View view) {
-    //    if (view.getId() == R.id.logInBtn) {
-    // start the asynchronous sign in flow
-    //        startSignInIntent();
-    //    } /* else if (view.getId() == R.id.logOutBtn) {
-    // sign out.
-    //        signOut();
-    // show sign-in button, hide the sign-out button
-    //        findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-    //        findViewById(R.id.sign_out_button).setVisibility(View.GONE);
-    //    } */
-    //}
-
+    //handles the return of the intent of external activity log in
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result.isSuccess()) {
-                // The signed in account is stored in the result.
+                // The signed in account is stored in the result
                 userAccount = result.getSignInAccount();
-                retrieveInfo(userAccount);
+                retrieveGooglePlayer(userAccount);
             } else {
                 String message = result.getStatus().getStatusMessage();
                 if (message == null || message.isEmpty()) {
@@ -132,6 +121,7 @@ public class FirstLogActivity extends AppCompatActivity {
         }
     }
 
+    //start external log in activity to retrieve google player's account
     private void startSignInIntent() {
         GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
                 GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
@@ -152,7 +142,8 @@ public class FirstLogActivity extends AppCompatActivity {
                 });
     }
 
-    private void retrieveInfo(GoogleSignInAccount account) {
+    //retrieve google Player object from the google account
+    private void retrieveGooglePlayer(GoogleSignInAccount account) {
         PlayersClient playersClient = getPlayersClient(this, account);
         Task<com.google.android.gms.games.Player> playerTask = playersClient.getCurrentPlayer(); //carefull, use Player object from google and not from tartot
         playerTask.addOnCompleteListener(new OnCompleteListener<com.google.android.gms.games.Player>() {
