@@ -53,7 +53,7 @@ public class Player {
 	public boolean haveHigherTrump(int value) {
 		for (Card card : hand.getCardList()) {
 			if (card.getSuit() == Suit.TRUMP) {
-				if (card.getValue() > value) {
+				if (card.getValue() > value && card.getValue() != 22) {
 					return true;
 				}
 			}

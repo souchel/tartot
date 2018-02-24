@@ -11,11 +11,6 @@ public class GameManager {
 		this.players = game.getPlayers();
 	}
 	
-	//TODO
-	private void nextDealer() {
-		
-	}
-	
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
 	//inutil en v1?
 //	private Player[] getPlayerAtPosition(int i) {
