@@ -22,10 +22,11 @@ public class Test {
 		System.out.println("deck une fois melange :" + game.getDeck());
 		System.out.println("taille du paquet : "+ game.getDeck().getCardList().size());
 		System.out.println("On coupe");
-		game.cutTheDeck();
+		game.cutTheDeck(6);
 		System.out.println("le paquet : "+ game.getDeck());		
-		System.out.println("On distribue les cartes");		
-		game.distribute();
+		System.out.println("On distribue les cartes");	
+		int[] indexes = {1,2,3,4,5,6};
+		game.distribute(indexes) ;
 		System.out.println("Chaque personne devrait avoir 18 cartes : Hugo\t"+game.players[0].getHand().getCardList().size());
 		System.out.println("jeu de Hugo : "+game.players[0].getHand() );
 		System.out.println("jeu de Guillaume : "+game.players[1].getHand() );

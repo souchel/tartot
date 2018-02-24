@@ -1,5 +1,4 @@
 package metier;
-import java.util.Random;
 
 // multiplicateurs 1, 2, 4, 6
 
@@ -65,10 +64,13 @@ public class Game {
 		}
 		return false;
 	}
-	public void distribute()
+	public void distribute(int[] indexes)
 	{
 		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
 		//On cree une liste de moments qui ne peuvent pas exister
+		
+		//Partie qui sert à rien
+		/*
 		int[] indexes = {25,25,25,25,25,25};
 		Random rndGenerator = new Random();
 		//on pioche 6 entiers entre 0 et 22 sachant qu'on distribue 3 fois 24 cartes mais qu on ne 
@@ -81,6 +83,9 @@ public class Game {
 				index = rndGenerator.nextInt(23);				
 			indexes[j] = index ;
 		}
+		*/
+		
+		
 		//On distribue les cartes 3 par 3 aux 4 joueurs
 		for (int i = 1; i <= 24 ; i++)
 		{
@@ -98,10 +103,14 @@ public class Game {
 			}
 		}
 	}
-	public void cutTheDeck()
+	public void cutTheDeck(int position)
 	{
+		/*
 		Random rndGenerator = new Random();
 		int position = rndGenerator.nextInt(73)+3;
+		*/
+		
+		
 		for (int i = 1; i<=position; i++)
 		{
 			Card card = deck.removeCardByIndex(0);
