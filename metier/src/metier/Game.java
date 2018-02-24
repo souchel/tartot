@@ -88,7 +88,7 @@ public class Game {
 			for (int j = 1 ; j <= 3 ; j++)
 			{
 				Card card = deck.removeCardByIndex(0);
-				players[(i-1)%4].getHand().addCard(card);
+				players[(i + indexDealer )%4].getHand().addCard(card);
 				
 			}
 			//si c est l un des tours ou on est cense mettre dans le chien, on met une carte dans le chien
