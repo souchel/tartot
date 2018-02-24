@@ -156,6 +156,14 @@ public class FirstLogActivity extends AppCompatActivity {
                     //test to read username
                     Log.i("debug", googlePlayer.getDisplayName() + googlePlayer.getName());
 
+                    ///////////////////////////////////////////////temporaire
+                    Intent goToMainMenuIntent = new Intent(FirstLogActivity.this, MainMenuActivity.class);
+                    String username = ((EditText) findViewById(R.id.edit_text_first_log)).getText().toString();
+                    Player newPlayer = new Player(username);
+                    //goToMainMenuIntent.putExtra(newPlayer);
+                    startActivity(goToMainMenuIntent);
+                    ///////////////////////////////////////////////temporaire
+
                 } else {
                     // Task failed with an exception
                     Exception exception = task.getException();
