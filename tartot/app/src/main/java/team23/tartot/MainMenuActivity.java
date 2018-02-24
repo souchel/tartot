@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -32,20 +33,22 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+
+        // Management of the welcome TextView displaying
         final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
         final Button goToLobbyButton = findViewById(R.id.text_view_go_to_lobby);
-
         String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
         welcomeTextView.setText(welcome);
 
+        // setOnClickListener of what ???
         goToLobbyButton.setOnClickListener(new View.OnClickListener() {
-                                               public void onClick(View view) {
-               Intent goToLobbyIntent = new Intent(MainMenuActivity.this, LobbyActivity.class);
-               startActivity(goToLobbyIntent);
-                                               }
-                                           }
-        );
+            public void onClick(View view) {
+                Intent goToLobbyIntent = new Intent(MainMenuActivity.this, LobbyActivity.class);
+                startActivity(goToLobbyIntent);
+            }
+        });
 
     }
 
