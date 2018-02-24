@@ -9,7 +9,6 @@ public class Game {
 	private Deck deck;
 	Player[] players;
 	OnGoingFold onGoingFold ; 
-	Player dealer ;
 	int indexDealer ;
 	Deck chien;
 	
@@ -23,7 +22,6 @@ public class Game {
 			players[i] = new Player(usernames[i]);
 		}
 		indexDealer = 0 ;
-		dealer = players[indexDealer];
 		chien = new Deck();
 		stats = new Points(players);
 	}

@@ -4,7 +4,7 @@ public class Player {
 	private String username;
 	private Team team;
 	private Deck hand;
-	private Deck fold;
+	private Deck deck;
 	private int position;
 	
 	public Player(String username)
@@ -12,7 +12,7 @@ public class Player {
 		this.username = username;
 		//quand les players sont crees ils n ont pas encore d equipe d ou ils sont dans l equipe none
 		team = Team.NONE;
-		fold = new Deck();
+		deck = new Deck();
 		hand = new Deck();
 		//TODO
 		//hand?
@@ -29,6 +29,10 @@ public class Player {
 	public Deck getHand()
 	{
 		return hand;
+	}
+	public Deck getDeck()
+	{
+		return deck;
 	}
 	
 	

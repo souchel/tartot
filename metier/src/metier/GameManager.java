@@ -164,6 +164,11 @@ public class GameManager {
 				case SLAM:
 					break;
 				case PETIT_AU_BOUT:
+					//vérifie juste que le petit a bien été mis au bout, pas que le pli est gagné
+					boolean petit = false;
+					//TODO if (Card player.getDeck().getCardList().get(//TODO récupérer lindice)) {
+						;
+					//}
 					break;
 			}
 		}
