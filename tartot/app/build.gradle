@@ -1,14 +1,6 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        debug {
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-            storeFile file('/home/thomas/StudioProjects/tartot/debug.keystore')
-            storePassword 'android'
-        }
-    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "team23.tartot"
