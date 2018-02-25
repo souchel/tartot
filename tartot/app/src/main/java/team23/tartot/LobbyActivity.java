@@ -96,6 +96,14 @@ public class LobbyActivity extends AppCompatActivity {
         //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        currentRoom = savedInstanceState.getParcelable("currentRoom");
+        roomID = currentRoom.getRoomId();
+
+    }
+
     /**
      * This method will display Google default UI for listing invitations.
      */
