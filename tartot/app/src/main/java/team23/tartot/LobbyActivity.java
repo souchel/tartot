@@ -267,6 +267,7 @@ public class LobbyActivity extends AppCompatActivity {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 roomID = room.getRoomId();
                 Log.d(TAG, "Room " + roomID + " created.");
+                showWaitingRoom(room, 4);
                 final Button button_lobby_id = findViewById(R.id.button_lobby_id);
                 button_lobby_id.setText("Lobby ID : " + roomID); // TODO: Locale
             } else {
