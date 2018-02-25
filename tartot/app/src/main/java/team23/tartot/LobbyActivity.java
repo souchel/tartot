@@ -2,17 +2,14 @@ package team23.tartot;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -42,7 +39,6 @@ public class LobbyActivity extends AppCompatActivity {
     private RealTimeMultiplayerClient RTMClient;
     private RoomConfig mJoinedRoom = null;
     private String roomID = null;
-    private RoomConfig mJoinedRoomConfig;
     private Room currentRoom = null; //the room we belong to. Null otherwise
 
     private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
@@ -53,6 +49,7 @@ public class LobbyActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("debug", "LobbyActivity.onCreate");
         setContentView(R.layout.activity_lobby);
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -100,6 +97,7 @@ public class LobbyActivity extends AppCompatActivity {
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState){
         super.onRestoreInstanceState(savedInstanceState);
+        Log.i("debug", "LobbyActivity.onRestoreInstanceState");
         currentRoom = savedInstanceState.getParcelable("currentRoom");
         roomID = currentRoom.getRoomId();
 
@@ -178,6 +176,8 @@ public class LobbyActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.i("debug", "LobbyActivity.onActivityResult");
+        Log.i("debug", "currentRoom : " + currentRoom);
         //return of the invitation of players
         if (requestCode == RC_SELECT_PLAYERS) {
             if (resultCode != Activity.RESULT_OK) {
@@ -203,9 +203,9 @@ public class LobbyActivity extends AppCompatActivity {
             }
 
             // Save the roomConfig so we can use it if we call leave().
-            mJoinedRoomConfig = roomBuilder.build();
+            mJoinedRoom = roomBuilder.build();
             Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
-                    .create(mJoinedRoomConfig);
+                    .create(mJoinedRoom);
         }
 
         /**
@@ -229,10 +229,10 @@ public class LobbyActivity extends AppCompatActivity {
                         .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
                         .setAutoMatchCriteria(autoMatchCriteria)
                         .setInvitationIdToAccept(invitation.getInvitationId());
-                mJoinedRoomConfig = builder.build();
+                mJoinedRoom = builder.build();
                 Task<Void> joinTask = Games.getRealTimeMultiplayerClient(this,
                             GoogleSignIn.getLastSignedInAccount(this))
-                            .join(mJoinedRoomConfig);
+                            .join(mJoinedRoom);
 
                 // prevent screen from sleeping during handshake
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -257,7 +257,7 @@ public class LobbyActivity extends AppCompatActivity {
         /**
          * returns from the waiting room UI
          */
-        if (requestCode == RC_WAITING_ROOM) {
+        else if (requestCode == RC_WAITING_ROOM) {
 
             // Look for finishing the waiting room from code, for example if a
             // "start game" message is received.  In this case, ignore the result.
@@ -278,7 +278,7 @@ public class LobbyActivity extends AppCompatActivity {
                 // player wants to leave the room.
                 Games.getRealTimeMultiplayerClient(this,
                         GoogleSignIn.getLastSignedInAccount(this))
-                        .leave(mJoinedRoomConfig, currentRoom.getRoomId());
+                        .leave(mJoinedRoom, currentRoom.getRoomId());
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         }
@@ -308,6 +308,7 @@ public class LobbyActivity extends AppCompatActivity {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 roomID = room.getRoomId();
+                currentRoom = room;
                 Log.d(TAG, "Room " + roomID + " created.");
                 showWaitingRoom(room, 4);
                 final Button button_lobby_id = findViewById(R.id.button_lobby_id);
@@ -321,7 +322,10 @@ public class LobbyActivity extends AppCompatActivity {
         public void onJoinedRoom(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
+                currentRoom = room;
+                roomID = room.getRoomId();
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
+                Log.i("debug", "currentRoomBeforeWaitingRoom : " + currentRoom);
                 showWaitingRoom(room, 4);
 
             } else {
@@ -417,9 +421,10 @@ public class LobbyActivity extends AppCompatActivity {
      */
     public void leaveLobby() {}
 
-    public void onSavedInstanceState(Bundle savedInstanceState) {
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-
+        Log.i("debug", "LobbyActivity.onSaveInstanceState");
         savedInstanceState.putParcelable("currentRoom", this.currentRoom);
     }
 
