@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -213,7 +214,7 @@ public class LobbyActivity extends AppCompatActivity {
             if (invitation != null) {
 
                 Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
-                
+
                 RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
                         .setOnMessageReceivedListener(mMessageReceivedHandler)
                         .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
@@ -397,7 +398,7 @@ public class LobbyActivity extends AppCompatActivity {
 
         @Override
         public void onP2PDisconnected(@NonNull String s) {
-
+            Log.i("info", s + "left the room");
         }
     };
 
