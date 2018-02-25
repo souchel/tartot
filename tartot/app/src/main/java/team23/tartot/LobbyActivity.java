@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.MalformedJsonException;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -67,7 +68,11 @@ public class LobbyActivity extends AppCompatActivity {
         button_leave_lobby.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RTMClient.leave(mJoinedRoom, roomID);
+                if (mJoinedRoom != null && roomID != null) {
+                    RTMClient.leave(mJoinedRoom, roomID);
+                    mJoinedRoom = null;
+                    roomID = null;
+                }
 
                 // Sending to main menu again
                 Intent goToMainMenuIntent = new Intent(LobbyActivity.this, MainMenuActivity.class);
@@ -110,14 +115,6 @@ public class LobbyActivity extends AppCompatActivity {
         //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match
     }
 
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState){
-        super.onRestoreInstanceState(savedInstanceState);
-        Log.i("debug", "LobbyActivity.onRestoreInstanceState");
-        currentRoom = savedInstanceState.getParcelable("currentRoom");
-        roomID = currentRoom.getRoomId();
-
-    }
 
     /**
      * This method will display Google default UI for listing invitations.
@@ -254,6 +251,7 @@ public class LobbyActivity extends AppCompatActivity {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                 joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
@@ -290,12 +288,16 @@ public class LobbyActivity extends AppCompatActivity {
                 // continue to connect in the background.
 
                 //On fait quoi nous ?
+                // Minimize ?
             } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
                 // player wants to leave the room.
                 Games.getRealTimeMultiplayerClient(this,
                         GoogleSignIn.getLastSignedInAccount(this))
                         .leave(mJoinedRoom, currentRoom.getRoomId());
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                if (RTMClient != null && mJoinedRoom != null && roomID != null)
+                    this.RTMClient.leave(mJoinedRoom, roomID);
             }
         }
 
@@ -437,6 +439,10 @@ public class LobbyActivity extends AppCompatActivity {
      */
     public void leaveLobby() {}
 
+    /**
+     * Deal with important parameters to save between stop / resume activityLobby
+     * @param savedInstanceState
+     */
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
@@ -444,5 +450,21 @@ public class LobbyActivity extends AppCompatActivity {
         savedInstanceState.putParcelable("currentRoom", this.currentRoom);
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.i("debug", "LobbyActivity.onRestoreInstanceState");
+        currentRoom = savedInstanceState.getParcelable("currentRoom");
+        roomID = currentRoom.getRoomId();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        if (RTMClient != null && mJoinedRoom != null && roomID != null)
+            this.RTMClient.leave(mJoinedRoom, roomID);
+
+        super.onDestroy();
+    }
 
 }
