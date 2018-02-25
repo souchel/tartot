@@ -3,7 +3,13 @@ package metier;
 import java.util.List;
 import java.util.Random;
 
-public class GameManager implements ICoreToNetwork, INetworkToCore{
+import team23.tartot.network.*;
+import team23.tartot.core.*;
+import team23.tartot.*;
+
+
+
+public class GameManager implements iCoreToNetwork, iNetworkToCore {
 	private Game game;
 	private Player[] players;
 	
@@ -229,49 +235,89 @@ public class GameManager implements ICoreToNetwork, INetworkToCore{
 		}
 		return true;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	//TODO all implemented methods
-	@Override
-	public void createLobby() {
-		// TODO Auto-generated method stub
-	}
-	@Override
-	public void startGame() {
-		// TODO Auto-generated method stub
-	}
-	@Override
-	public void dealCards(Player destination, Card[] cards) {
-		// TODO Auto-generated method stub	
-	}
-	@Override
-	public void PlayCard(Card card) {
-		// TODO Auto-generated method stub	
-	}
-	@Override
-	public void Announces(metier.Announces announces) {
-		// TODO Auto-generated method stub	
-	}
+
 	@Override
 	public void onInvitationReceived() {
 		// TODO Auto-generated method stub
+		
 	}
+
 	@Override
-	public void onPlayCard(Player player, Card card) {
+	public void onPlayCard(team23.tartot.core.Player player, team23.tartot.core.Card card) {
 		// TODO Auto-generated method stub
+		
 	}
+
 	@Override
-	public void onCardsDelt(Card[] cards) {
+	public void onCardsDelt(team23.tartot.core.Card[] cards) {
 		// TODO Auto-generated method stub
+		
 	}
+
 	@Override
-	public void onAnnounce(Player player, metier.Announces announces) {
+	public void onAnnounce(team23.tartot.core.Player player, Announce announce) {
 		// TODO Auto-generated method stub
+		
 	}
+
+	@Override
+	public void createLobby() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void leaveLobby() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void inviteFriend(iPlayer player) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startGame() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void leaveGame() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onInGameDataReceive(Object data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onInLobbyDataReceive() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dealCards(team23.tartot.core.Player destination, team23.tartot.core.Card[] cards) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playCard(team23.tartot.core.Card card) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void announce(Announce announce) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
