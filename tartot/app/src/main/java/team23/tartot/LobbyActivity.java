@@ -15,6 +15,7 @@ import android.widget.Button;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Invitation;
@@ -40,6 +41,7 @@ public class LobbyActivity extends AppCompatActivity {
     private RoomConfig mJoinedRoom = null;
     private String roomID = null;
     private RoomConfig mJoinedRoomConfig;
+    private Room currentRoom = null; //the room we belong to. Null otherwise
 
     private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
     private static final int RC_WAITING_ROOM = 9007;
@@ -195,6 +197,7 @@ public class LobbyActivity extends AppCompatActivity {
             Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
                     .create(mJoinedRoomConfig);
         }
+
         /**
          * Called when the player gets back to the lobby from the invitation inbox.
          * If he has accepted an invitation, he should be redirected to the concerned room.
@@ -241,6 +244,35 @@ public class LobbyActivity extends AppCompatActivity {
                 });
             }
         }
+        /**
+         * returns from the waiting room UI
+         */
+        if (requestCode == RC_WAITING_ROOM) {
+
+            // Look for finishing the waiting room from code, for example if a
+            // "start game" message is received.  In this case, ignore the result.
+            /*if (mWaitingRoomFinishedFromCode) {
+                return;
+            }*/
+
+            if (resultCode == Activity.RESULT_OK) {
+                // Start the game!
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Waiting room was dismissed with the back button. The meaning of this
+                // action is up to the game. You may choose to leave the room and cancel the
+                // match, or do something else like minimize the waiting room and
+                // continue to connect in the background.
+
+                //On fait quoi nous ?
+            } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
+                // player wants to leave the room.
+                Games.getRealTimeMultiplayerClient(this,
+                        GoogleSignIn.getLastSignedInAccount(this))
+                        .leave(mJoinedRoomConfig, currentRoom.getRoomId());
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        }
+
     }
 
 
