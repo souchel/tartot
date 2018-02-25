@@ -437,7 +437,10 @@ public class LobbyActivity extends AppCompatActivity {
      * Leaves the current lobby. If we were lobby leader, assign leader role
      * to a new player in lobby. Deletes the lobby otherwise.
      */
-    public void leaveLobby() {}
+    public void leaveLobby() {
+        if (RTMClient != null && mJoinedRoom != null && roomID != null)
+            this.RTMClient.leave(mJoinedRoom, roomID);
+    }
 
     /**
      * Deal with important parameters to save between stop / resume activityLobby
