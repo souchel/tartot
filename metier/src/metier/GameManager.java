@@ -351,8 +351,14 @@ public class GameManager {
 		return true;
 	}
 
-	
-	
+	public Player[] getPlayers()
+	{
+		return players;
+	}
+	public Deck getDeck()
+	{
+		return deck ;
+	}
 	
 	
 	
