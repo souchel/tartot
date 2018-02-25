@@ -39,9 +39,10 @@ public class LobbyActivity extends AppCompatActivity {
     private RealTimeMultiplayerClient RTMClient;
     private RoomConfig mJoinedRoom = null;
     private String roomID = null;
-    private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
     private RoomConfig mJoinedRoomConfig;
 
+    private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
+    private static final int RC_WAITING_ROOM = 9007;
     private static final int RC_INVITATION_INBOX = 9008;
 
 
@@ -49,7 +50,7 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         Log.i("info", "Welcome to the lobby, tester !");
 
@@ -147,6 +148,17 @@ public class LobbyActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Intent intent) {
                         startActivityForResult(intent, RC_SELECT_PLAYERS);
+                    }
+                });
+    }
+
+    private void showWaitingRoom(Room room, int maxPlayersToStartGame) {
+        Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                .getWaitingRoomIntent(room, maxPlayersToStartGame)
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        startActivityForResult(intent, RC_WAITING_ROOM);
                     }
                 });
     }
@@ -267,6 +279,8 @@ public class LobbyActivity extends AppCompatActivity {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
+                showWaitingRoom(room, 4);
+
             } else {
                     Log.w(TAG, "Error joining room:");
             }

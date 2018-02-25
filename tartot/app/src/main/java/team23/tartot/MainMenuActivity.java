@@ -33,7 +33,8 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //à quoi ça sert ?
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 
         // Management of the welcome TextView displaying
