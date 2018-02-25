@@ -92,6 +92,19 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
 
+        //display the waiting room corresponding to the currentRoom
+        final Button displayWaitingRoom = findViewById(R.id.displayWaitingRoom);
+        displayWaitingRoom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (currentRoom != null){
+                    showWaitingRoom(currentRoom, 4);
+                }
+                else{
+                    Log.i("debug", "dans aucune room en ce moment");
+                }
+            }
+        });
 
         // Create waiting room / lobby
         //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match

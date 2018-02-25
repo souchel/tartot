@@ -30,4 +30,5 @@
     <string name="invite_players">invite players</string>
     <string name="auto_match">auto match players</string>
     <string name="button_label_invitation_inbox">Invitations</string>
+    <string name="displayWaitingRoom">display waiting room</string>
 </resources>
