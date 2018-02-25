@@ -7,8 +7,7 @@ import java.util.List;
 public class TestManager {
 	public static void main(String[] args) throws IOException {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
-		Game game = new Game(usernames);
-		GameManager gameManager = new GameManager(game);
+		GameManager gameManager = new GameManager(usernames);
 		Player laure = new Player("Laure");
 		Player paul = new Player("Paul");
 		Player hugo = new Player("Hugo");
