@@ -2,6 +2,7 @@ package team23.tartot;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -416,6 +417,11 @@ public class LobbyActivity extends AppCompatActivity {
      */
     public void leaveLobby() {}
 
+    public void onSavedInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putParcelable("currentRoom", this.currentRoom);
+    }
 
 
 }

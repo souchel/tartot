@@ -73,3 +73,4 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 build.gradle
+tartot/app/build.gradle
