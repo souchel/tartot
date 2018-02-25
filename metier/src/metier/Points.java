@@ -23,10 +23,10 @@ public class Points {
 	public void updatePointsAndBid(Player attack, Bid bid, int attackOudlerNumber, ArrayList<ArrayList<Announces>> annonces, int pointsAttack)
 	{
 		double[] pointsGame = new double[players.length];
-		double pointsNeeded = Game.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
+		double pointsNeeded = GameManager.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
 		pointsGame = updatePointsMisery(pointsGame, annonces);
 		
-		if (Game.theAttackWins(pointsNeeded, pointsAttack))
+		if (GameManager.theAttackWins(pointsNeeded, pointsAttack))
 		{
 			for (int index = 0 ; index < players.length ; index++)
 			{
@@ -48,9 +48,9 @@ public class Points {
 						switch (a2) 
 						{
 					      case SLAM : break;
-					      case SIMPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 20, Game.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
-					      case DOUBLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 30, Game.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-					      case TRIPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 40, Game.theAttackWins(pointsNeeded, pointsAttack), attack); break;
+					      case SIMPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
+					      case DOUBLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
+					      case TRIPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
 					      case PETIT_AU_BOUT : break;
 						  case MISERY: break;
 						  default: break;
