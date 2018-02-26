@@ -391,14 +391,14 @@ public class GameManager {
 //	public void onPlayCard(team23.tartot.core.Player player, team23.tartot.core.Card card) {
 //		// TODO Auto-generated method stub
 //	}
-	@Override
-	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
-		for (Player player : players) {
-			if (player == concernedPlayer) {
-				player.setHand(cards);
-			}
-		}
-	}
+//	@Override
+//	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
+//		for (Player player : players) {
+//			if (player == concernedPlayer) {
+//				player.setHand(cards);
+//			}
+//		}
+//	}
 //	@Override
 //	public void onAnnounce(team23.tartot.core.Player player, Announce announce) {
 //		// TODO Auto-generated method stub
