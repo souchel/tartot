@@ -87,8 +87,8 @@ public class Points {
 			{
 				if (players[i].getTeam() == Team.ATTACK)
 				{
-					pointsGame[i]+= 600 ;
-					System.out.println("l attaque reçoit 600 "+pointsGame[i]);
+					pointsGame[i]+= 1200 ;
+					System.out.println("l attaque reçoit 1200 "+pointsGame[i]);
 
 				}
 				else
