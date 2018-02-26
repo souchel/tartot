@@ -1,5 +1,7 @@
 package metier;
 
+import java.util.List;
+
 public class Player {
 	private String username;
 	private Team team;
@@ -33,6 +35,9 @@ public class Player {
 	public Deck getDeck()
 	{
 		return deck;
+	}
+	public void setHand(List<Card> cards) {
+		hand.setDeck(cards);
 	}
 	
 	

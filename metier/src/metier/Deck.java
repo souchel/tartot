@@ -66,6 +66,9 @@ public class Deck {
 	public Team getTeam() {
 		return team;
 	}
+	public void setDeck(List<Card> cards) {
+		cardList = cards;
+	}
 	
 	public void shuffle()
 	{
