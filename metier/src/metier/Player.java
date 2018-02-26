@@ -20,6 +20,9 @@ public class Player {
 		//hand?
 		//position?
 	}
+	public void setTeam(Team team) {
+		this.team = team;
+	}
 	public String getUsername()
 	{
 		return username ;

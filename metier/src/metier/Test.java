@@ -42,11 +42,17 @@ public class Test {
 		ArrayList<ArrayList<Announces>> annonces = new ArrayList<ArrayList<Announces>>();
 		for (int index = 0 ; index < 4 ; index ++)
 			annonces.add(new ArrayList<Announces>());
-		annonces.get(1).add(Announces.MISERY);
-		annonces.get(0).add(Announces.MISERY);
+		Announces a = Announces.SLAM;
+		a.setOwner(gameManager.getPlayers()[0]);
+		gameManager.getPlayers()[0].setTeam(Team.ATTACK);
+		annonces.get(0).add(Announces.SLAM);
+
+		//annonces.get(0).add(Announces.MISERY);
 		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 3, annonces, 36);
 		System.out.println(gameManager.getStats());
 		
+		a.setOwner(gameManager.getPlayers()[0]);
+		System.out.println(a.getOwner().getUsername() + " a déclaré une misère");
 		
 	}
 }

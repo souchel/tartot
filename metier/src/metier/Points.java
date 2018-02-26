@@ -47,11 +47,11 @@ public class Points {
 					{
 						switch (a2) 
 						{
-					      case SLAM : break;
+					      case SLAM : updatePointsSlam(pointsGame, a2); break;
 					      case SIMPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
 					      case DOUBLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
 					      case TRIPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-					      case PETIT_AU_BOUT : break;
+					      case PETIT_AU_BOUT : pointsGame = updatePointsPetitAuBout(pointsGame , a2, bid, attack);
 						  case MISERY: break;
 						  default: break;
 					    }
@@ -60,6 +60,61 @@ public class Points {
 			}
 		}
 		updatePoints(pointsGame);
+	}
+	public void updatePointsSlam(double[] pointsGame, Announces announce)
+	{
+		if (announce.getOwner().getTeam() == Team.DEFENSE)
+		{
+			for(int i = 0 ; i < players.length ; i++)
+			{
+				if (players[i].getTeam() == Team.ATTACK)
+					pointsGame[i]+= -200*3 ;
+				else
+					pointsGame[i]+= 200 ;
+			}
+		}
+		else
+		{
+			for(int i = 0 ; i < players.length ; i++)
+			{
+				if (players[i].getTeam() == Team.ATTACK)
+				{
+					pointsGame[i]+= 600 ;
+					System.out.println("l attaque reçoit 600 "+pointsGame[i]);
+
+				}
+				else
+				{
+					pointsGame[i]+= -200 ;
+					System.out.println("la défense perd 200 "+pointsGame[i]);
+
+				}
+			}
+		}
+			
+	}
+	public double[] updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid, Player attack)
+	{
+		if (annonce.getOwner().getTeam() == Team.ATTACK) {
+			for(int i = 0 ; i < players.length ; i++)
+			{
+				if (players[i].getTeam() == Team.ATTACK)
+					pointsGame[i]+= bid.getMultiplicant()*10*3 ;
+				else
+					pointsGame[i]+= -bid.getMultiplicant()*10 ;
+			}
+		}
+		else
+		{
+			for(int i = 0 ; i < players.length ; i++)
+			{
+				if (players[i].getTeam() == Team.ATTACK)
+					pointsGame[i]+= - bid.getMultiplicant()*10*3 ;
+				else
+					pointsGame[i]+= bid.getMultiplicant()*10 ;
+			}
+		}
+		return pointsGame ;
 	}
 	public double[] updatePointsHandful(double[] pointsGame, int playerIndex, double gain, boolean attackWon, Player attack)
 	{
