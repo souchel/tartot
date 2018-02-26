@@ -32,6 +32,10 @@ public class GameManager {
 	}
 	
 	
+	public void restartGame() {
+		
+	}
+	
 	//initialize
 	public void initializeGame()
 	{
@@ -80,6 +84,11 @@ public class GameManager {
 				chien.addCard(deck.removeCardByIndex(0));
 			}
 		}
+		//sending cards to player via network
+		for (Player player : players) {
+			dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
+		}
+		
 	}
 	public void cutTheDeck(int position)
 	{
@@ -301,7 +310,7 @@ public class GameManager {
 		}
 		return res;
 	}
-	//TODO
+	//TODO inutil, à gérer dans la partie comptage de points?
 	public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
 		boolean res = true;
 		for (Announces announce : announces) {
@@ -391,56 +400,20 @@ public class GameManager {
 //	public void onPlayCard(team23.tartot.core.Player player, team23.tartot.core.Card card) {
 //		// TODO Auto-generated method stub
 //	}
-//	@Override
-//	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
-//		for (Player player : players) {
-//			if (player == concernedPlayer) {
-//				player.setHand(cards);
-//			}
-//		}
-//	}
+	@Override
+	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
+		for (Player player : players) {
+			if (player == concernedPlayer) {
+				player.setHand(cards);
+			}
+		}
+	}
 //	@Override
 //	public void onAnnounce(team23.tartot.core.Player player, Announce announce) {
 //		// TODO Auto-generated method stub
 //	}
-//	@Override
-//	public void createLobby() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void leaveLobby() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void inviteFriend(iPlayer player) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void startGame() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void leaveGame() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onInGameDataReceive(Object data) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onInLobbyDataReceive() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void dealCards(team23.tartot.core.Player destination, team23.tartot.core.Card[] cards) {
-//		// TODO Auto-generated method stub	
-//	}
-//	@Override
-//	public void playCard(team23.tartot.core.Card card) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void announce(Announce announce) {
-//		// TODO Auto-generated method stub
-//	}
+	@Override
+	public void onBid(team23.tartot.core.Bid newBid) {
+		bid = newBid;
+	}
 }
