@@ -45,9 +45,9 @@ public class Test {
 		Announces a = Announces.SLAM;
 		a.setOwner(gameManager.getPlayers()[0]);
 		gameManager.getPlayers()[0].setTeam(Team.ATTACK);
-		annonces.get(0).add(Announces.SLAM);
+		//annonces.get(0).add(Announces.SLAM);
 
-		//annonces.get(0).add(Announces.MISERY);
+		annonces.get(1).add(Announces.MISERY);
 		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 3, annonces, 36);
 		System.out.println(gameManager.getStats());
 		

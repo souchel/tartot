@@ -24,41 +24,49 @@ public class Points {
 	{
 		double[] pointsGame = new double[players.length];
 		double pointsNeeded = GameManager.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
-		pointsGame = updatePointsMisery(pointsGame, annonces);
+		updatePointsMisery(pointsGame, annonces);
 		
+		int multiplier ;
 		if (GameManager.theAttackWins(pointsNeeded, pointsAttack))
 		{
-			for (int index = 0 ; index < players.length ; index++)
+			multiplier = 1 ;
+		}
+		else
+		{
+			multiplier = -1;
+		}
+		for (int index = 0 ; index < players.length ; index++)
+		{
+			if (players[index].getUsername()== attack.getUsername())
 			{
-				if (players[index].getUsername()== attack.getUsername())
-				{
-					pointsGame[index] += 75 * bid.getMultiplicant() + (pointsAttack - pointsNeeded)*bid.getMultiplicant() * 3 ;
-				}
-				else
-				{
-					pointsGame[index] += -25 * bid.getMultiplicant() - (pointsAttack - pointsNeeded)*bid.getMultiplicant() ;
-				}
+				pointsGame[index] += multiplier * 75 * bid.getMultiplicant() + (pointsAttack - pointsNeeded)*bid.getMultiplicant() * 3 ;
 			}
-			for (int i = 0 ; i < annonces.size() ; i++)
+			else
 			{
-				if (annonces.get(i).size()>0)
+				pointsGame[index] += -1 * multiplier * 25 * bid.getMultiplicant() - (pointsAttack - pointsNeeded)*bid.getMultiplicant() ;
+			}
+		}
+		for (int i = 0 ; i < annonces.size() ; i++)
+		{
+			if (annonces.get(i).size()>0)
+			{
+				for (Announces a2 : annonces.get(i))
 				{
-					for (Announces a2 : annonces.get(i))
+					switch (a2) 
 					{
-						switch (a2) 
-						{
-					      case SLAM : updatePointsSlam(pointsGame, a2); break;
-					      case SIMPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
-					      case DOUBLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-					      case TRIPLE_HANDFUL : pointsGame = updatePointsHandful(pointsGame, i, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-					      case PETIT_AU_BOUT : pointsGame = updatePointsPetitAuBout(pointsGame , a2, bid, attack);
-						  case MISERY: break;
-						  default: break;
-					    }
-					}
+				      case SLAM : updatePointsSlam(pointsGame, a2); break;
+				      case SIMPLE_HANDFUL : updatePointsHandful(pointsGame, i, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
+				      case DOUBLE_HANDFUL : updatePointsHandful(pointsGame, i, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
+				      case TRIPLE_HANDFUL : updatePointsHandful(pointsGame, i, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
+				      case PETIT_AU_BOUT : updatePointsPetitAuBout(pointsGame , a2, bid, attack);
+					  case MISERY: break;
+					  default: break;
+				    }
 				}
 			}
 		}
+			
+	
 		updatePoints(pointsGame);
 	}
 	public void updatePointsSlam(double[] pointsGame, Announces announce)
@@ -93,7 +101,7 @@ public class Points {
 		}
 			
 	}
-	public double[] updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid, Player attack)
+	public void updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid, Player attack)
 	{
 		if (annonce.getOwner().getTeam() == Team.ATTACK) {
 			for(int i = 0 ; i < players.length ; i++)
@@ -114,9 +122,8 @@ public class Points {
 					pointsGame[i]+= bid.getMultiplicant()*10 ;
 			}
 		}
-		return pointsGame ;
 	}
-	public double[] updatePointsHandful(double[] pointsGame, int playerIndex, double gain, boolean attackWon, Player attack)
+	public void updatePointsHandful(double[] pointsGame, int playerIndex, double gain, boolean attackWon, Player attack)
 	{
 		int multiplier ;
 		if (attackWon )
@@ -138,9 +145,8 @@ public class Points {
 				pointsGame[index] += -gain * multiplier;
 			}
 		}
-		return pointsGame ;
 	}
-	public double[] updatePointsMisery( double[] pointsGame, ArrayList<ArrayList<Announces>> annonces)//Attention deux joueurs ne peuvent pas avoir le mm nom d utilisateur
+	public void updatePointsMisery( double[] pointsGame, ArrayList<ArrayList<Announces>> annonces)//Attention deux joueurs ne peuvent pas avoir le mm nom d utilisateur
 	{
 		
 		ArrayList<Integer> miserers = new ArrayList<Integer>();
@@ -176,7 +182,6 @@ public class Points {
 				pointsGame[indexMiserer] += 10 *(players.length - miserers.size());
 			}
 		}
-		return pointsGame ;
 	}
 	public void addPass()
 	{
