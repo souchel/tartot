@@ -76,4 +76,7 @@ public interface iCoreToNetwork {
      * @param announce: the announce to broadcast
      */
     public void announce(Announce announce);
+
+    //inform other players of a bid
+    public void bid(Bid bid);
 }

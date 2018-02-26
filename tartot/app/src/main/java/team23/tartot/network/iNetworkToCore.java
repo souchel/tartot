@@ -30,4 +30,6 @@ public interface iNetworkToCore {
     public void onCardsDelt(Card[] cards);
 
     public void onAnnounce(Player player, Announce announce);
+
+    public void onBid(Bid bid);
 }
