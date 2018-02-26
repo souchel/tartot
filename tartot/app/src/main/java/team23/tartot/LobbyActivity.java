@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Spinner;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
+import static java.lang.Integer.valueOf;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -145,7 +147,11 @@ public class LobbyActivity extends AppCompatActivity {
 
 
     public void startQuickGame() {
-        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(3, 3, 0);
+        Spinner sp = findViewById(R.id.playerNbSpinner);
+        int nbOfPlayers = valueOf(sp.getSelectedItem().toString());
+
+        //we want to match n-1 other players
+        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(nbOfPlayers-1, nbOfPlayers-1, 0);
 
         currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mMessageReceivedHandler)
@@ -205,7 +211,11 @@ public class LobbyActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.i("debug", "LobbyActivity.onActivityResult");
         Log.i("debug", "currentRoom : " + currentRoom);
-        //return of the invitation of players
+
+
+        /**
+         * called after the player pickup in the invitation activity
+         */
         if (requestCode == RC_SELECT_PLAYERS) {
             if (resultCode != Activity.RESULT_OK) {
                 // Canceled or some other error.
@@ -248,13 +258,9 @@ public class LobbyActivity extends AppCompatActivity {
 
             Invitation invitation = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
             if (invitation != null) {
-
-                Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
-
                 RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
                         .setOnMessageReceivedListener(mMessageReceivedHandler)
                         .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
-                        .setAutoMatchCriteria(autoMatchCriteria)
                         .setInvitationIdToAccept(invitation.getInvitationId());
                 currentRoomConfig = builder.build();
                 Task<Void> joinTask = Games.getRealTimeMultiplayerClient(this,
@@ -294,6 +300,7 @@ public class LobbyActivity extends AppCompatActivity {
 
             if (resultCode == Activity.RESULT_OK) {
                 // Start the game!
+
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Waiting room was dismissed with the back button. The meaning of this
                 // action is up to the game. You may choose to leave the room and cancel the
