@@ -7,13 +7,14 @@ public enum Bid {
 	GUARD_AGAINST(6);
 	
 	int multiplicant ;
-	private Player player = null;
+	//default -1, for unknown
+	private int playerPosition = -1;
 	
-	public void setPlayer(Player playerToSet) {
-		player = playerToSet;
+	public void setPlayerPosition(int playerToSet) {
+		playerPosition = playerToSet;
 	}
-	public Player getPlayer() {
-		return player;
+	public int getPlayerPosition() {
+		return playerPosition;
 	}
  	private Bid(int i)
 	{

@@ -18,9 +18,27 @@ public class GameManager {
 	Bid bid;
 	private List<Announces> playersAnnounces;
 	private boolean[] gotAnnounces = new boolean[4];
+	private boolean[] saidBid = new boolean[4];
+	private int position;
 
 	
 	public GameManager(String[] usernames) {
+		deck = new Deck();
+		onGoingFold = new OnGoingFold();
+		players = new Player[usernames.length];
+		for (int i = 0 ; i < usernames.length; i++)
+		{
+			players[i] = new Player(usernames[i]);
+			gotAnnounces[i] = false;
+			saidBid[i] = false;
+		}
+		indexDealer = 0 ;
+		chien = new Deck();
+		stats = new Points(players);
+		bid = null;
+	}
+	
+	public GameManager(String[] usernames, int position) {
 		deck = new Deck();
 		onGoingFold = new OnGoingFold();
 		players = new Player[usernames.length];
@@ -33,6 +51,7 @@ public class GameManager {
 		chien = new Deck();
 		stats = new Points(players);
 		bid = null;
+		this.position = position;
 	}
 	
 	
@@ -134,6 +153,20 @@ public class GameManager {
 	}
 	
 	
+	
+	
+	//bid phase
+	private void StartRound() {
+		boolean check = true;
+		for (boolean pos : saidBid) {
+			if (!pos) {
+				check = false;
+			}
+		}
+		if (check) {
+			//TODO , must start the round if all bid received
+		}
+	}
 	
 	
 	
@@ -421,6 +454,10 @@ public class GameManager {
 	}
 	@Override
 	public void onBid(team23.tartot.core.Bid newBid) {
-		bid = newBid;
+		if (checkBid(newBid)) {
+			bid = newBid;
+		}
+		saidBid[newBid.getPlayerPosition()] = true;
+		StartRound();
 	}
 }
