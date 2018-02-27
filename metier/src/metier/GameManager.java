@@ -16,6 +16,9 @@ public class GameManager {
 	int indexDealer ;
 	Deck chien;
 	Bid bid;
+	private List<Announces> playersAnnounces;
+	private boolean[] gotAnnounces = new boolean[4];
+
 	
 	public GameManager(String[] usernames) {
 		deck = new Deck();
@@ -24,6 +27,7 @@ public class GameManager {
 		for (int i = 0 ; i < usernames.length; i++)
 		{
 			players[i] = new Player(usernames[i]);
+			gotAnnounces[i] = false;
 		}
 		indexDealer = 0 ;
 		chien = new Deck();
@@ -408,10 +412,13 @@ public class GameManager {
 			}
 		}
 	}
-//	@Override
-//	public void onAnnounce(team23.tartot.core.Player player, Announce announce) {
-//		// TODO Auto-generated method stub
-//	}
+	@Override
+	public void onAnnounce(team23.tartot.core.Player player, List<Announce> announces) {
+		for (int i = 0 ; i < announces.length; i++) {
+			playersAnnounces.add(announces[i]);
+		}
+		gotAnnounces[player.getPosition()] = true;
+	}
 	@Override
 	public void onBid(team23.tartot.core.Bid newBid) {
 		bid = newBid;

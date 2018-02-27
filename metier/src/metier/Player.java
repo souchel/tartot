@@ -42,6 +42,9 @@ public class Player {
 	public void setHand(List<Card> cards) {
 		hand.setDeck(cards);
 	}
+	public int getPosition() {
+		return position;
+	}
 	
 	
 	
