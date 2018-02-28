@@ -117,7 +117,7 @@ public class FirstLogActivity extends AppCompatActivity {
             } else {
                 String message = result.getStatus().getStatusMessage();
                 if (message == null || message.isEmpty()) {
-                    message = getString(R.string.signin_other_error);
+                    message = result.getStatus().toString() + " | error" ;
                 }
                 new AlertDialog.Builder(this).setMessage(message)
                         .setNeutralButton(android.R.string.ok, null).show();

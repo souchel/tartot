@@ -300,7 +300,8 @@ public class LobbyActivity extends AppCompatActivity {
 
             if (resultCode == Activity.RESULT_OK) {
                 // Start the game!
-
+                Intent goToGameIntent = new Intent(LobbyActivity.this, GameActivity.class);
+                startActivity(goToGameIntent);
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Waiting room was dismissed with the back button. The meaning of this
                 // action is up to the game. You may choose to leave the room and cancel the
