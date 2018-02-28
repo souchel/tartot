@@ -2,17 +2,15 @@ package team23.tartot;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.Spinner;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -31,16 +29,18 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.games.GamesCallbackStatusCodes;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
+import static java.lang.Integer.valueOf;
 
 public class LobbyActivity extends AppCompatActivity {
 
     private RealTimeMultiplayerClient RTMClient;
-    private RoomConfig mJoinedRoom = null;
+    private RoomConfig currentRoomConfig = null;
     private String roomID = null;
     private Room currentRoom = null; //the room we belong to. Null otherwise
 
@@ -67,8 +67,7 @@ public class LobbyActivity extends AppCompatActivity {
         button_leave_lobby.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RTMClient.leave(mJoinedRoom, roomID);
-
+                leaveLobby();
                 // Sending to main menu again
                 Intent goToMainMenuIntent = new Intent(LobbyActivity.this, MainMenuActivity.class);
                 startActivity(goToMainMenuIntent);
@@ -106,8 +105,20 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
 
-        // Create waiting room / lobby
-        //createLobby(); //commenté car il vaut mieux créer le lobby après invitation de joueurs ou auto match
+        final Button autoPlayersBtn = findViewById(R.id.autoPlayersBtn);
+        autoPlayersBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (currentRoom == null){
+                    startQuickGame();
+                }
+                else{
+                    Log.i("debug", "déjà dans une room");
+                }
+            }
+        });
+
+
     }
 
     @Override
@@ -115,8 +126,9 @@ public class LobbyActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
         Log.i("debug", "LobbyActivity.onRestoreInstanceState");
         currentRoom = savedInstanceState.getParcelable("currentRoom");
-        roomID = currentRoom.getRoomId();
-
+        if (currentRoom != null){
+            roomID = currentRoom.getRoomId();
+        }
     }
 
     /**
@@ -134,19 +146,24 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
 
-    public void createLobby() {
-        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
+    public void startQuickGame() {
+        Spinner sp = findViewById(R.id.playerNbSpinner);
+        int nbOfPlayers = valueOf(sp.getSelectedItem().toString());
 
-        RoomConfig roomConfig = RoomConfig.builder(mRoomUpdateCallback)
+        //we want to match n-1 other players
+        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(nbOfPlayers-1, nbOfPlayers-1, 0);
+
+        currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mMessageReceivedHandler)
                 .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
                 .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
 
-        mJoinedRoom = roomConfig;
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Create the room
-        Task<Void> roomCreation = RTMClient.create(roomConfig);
+        Task<Void> roomCreation = RTMClient.create(currentRoomConfig);
 
         roomCreation.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -194,7 +211,11 @@ public class LobbyActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.i("debug", "LobbyActivity.onActivityResult");
         Log.i("debug", "currentRoom : " + currentRoom);
-        //return of the invitation of players
+
+
+        /**
+         * called after the player pickup in the invitation activity
+         */
         if (requestCode == RC_SELECT_PLAYERS) {
             if (resultCode != Activity.RESULT_OK) {
                 // Canceled or some other error.
@@ -219,9 +240,9 @@ public class LobbyActivity extends AppCompatActivity {
             }
 
             // Save the roomConfig so we can use it if we call leave().
-            mJoinedRoom = roomBuilder.build();
+            currentRoomConfig = roomBuilder.build();
             Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(this))
-                    .create(mJoinedRoom);
+                    .create(currentRoomConfig);
         }
 
         /**
@@ -237,18 +258,14 @@ public class LobbyActivity extends AppCompatActivity {
 
             Invitation invitation = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
             if (invitation != null) {
-
-                Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(4, 4, 0);
-
                 RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
                         .setOnMessageReceivedListener(mMessageReceivedHandler)
                         .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
-                        .setAutoMatchCriteria(autoMatchCriteria)
                         .setInvitationIdToAccept(invitation.getInvitationId());
-                mJoinedRoom = builder.build();
+                currentRoomConfig = builder.build();
                 Task<Void> joinTask = Games.getRealTimeMultiplayerClient(this,
                             GoogleSignIn.getLastSignedInAccount(this))
-                            .join(mJoinedRoom);
+                            .join(currentRoomConfig);
 
                 // prevent screen from sleeping during handshake
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -283,6 +300,7 @@ public class LobbyActivity extends AppCompatActivity {
 
             if (resultCode == Activity.RESULT_OK) {
                 // Start the game!
+
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Waiting room was dismissed with the back button. The meaning of this
                 // action is up to the game. You may choose to leave the room and cancel the
@@ -292,9 +310,7 @@ public class LobbyActivity extends AppCompatActivity {
                 //On fait quoi nous ?
             } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
                 // player wants to leave the room.
-                Games.getRealTimeMultiplayerClient(this,
-                        GoogleSignIn.getLastSignedInAccount(this))
-                        .leave(mJoinedRoom, currentRoom.getRoomId());
+                leaveLobby();
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         }
@@ -351,9 +367,17 @@ public class LobbyActivity extends AppCompatActivity {
 
         @Override
         public void onLeftRoom(int i, @NonNull String s) {
-            final Button button_lobby_id = findViewById(R.id.button_lobby_id);
-            button_lobby_id.setText("No room"); // TODO: Locale
-            Log.i("info", "Room left");
+            if (i == GamesCallbackStatusCodes.INTERNAL_ERROR){
+                Log.i("info", "failed to leave the room");
+            }
+            else {
+                final Button button_lobby_id = findViewById(R.id.button_lobby_id);
+                button_lobby_id.setText("No room"); // TODO: Locale
+                Log.i("info", "Room left");
+                currentRoom = null;
+                currentRoomConfig = null;
+                roomID = null;
+            }
         }
 
         @Override
@@ -435,7 +459,17 @@ public class LobbyActivity extends AppCompatActivity {
      * Leaves the current lobby. If we were lobby leader, assign leader role
      * to a new player in lobby. Deletes the lobby otherwise.
      */
-    public void leaveLobby() {}
+    public void leaveLobby() {
+        Log.i("info", "in leaveLobby");
+        if (currentRoom != null){
+            Log.i("info", "yes");
+            RTMClient.leave(currentRoomConfig, roomID);
+        }
+        //done in the leave method
+        //currentRoom = null;
+        //currentRoomConfig = null;
+        //roomID = null;
+    }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -446,3 +480,6 @@ public class LobbyActivity extends AppCompatActivity {
 
 
 }
+
+
+
