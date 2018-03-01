@@ -19,8 +19,12 @@ public class GameManager {
 	private List<Announces> playersAnnounces;
 	private boolean[] gotAnnounces = new boolean[4];
 	private boolean[] saidBid = new boolean[4];
+	//position of the local player
 	private int position;
-
+	//position of the next player to act
+	private int playerTurn;
+	//nb of round already over
+	private int nbDone = 0;
 	
 	public GameManager(String[] usernames) {
 		deck = new Deck();
@@ -54,9 +58,19 @@ public class GameManager {
 		this.position = position;
 	}
 	
-	
-	public void restartGame() {
-		
+	//TODO cut the deck would be rather at the end of the round
+	//TODO not finished
+	public void startGame() {
+		playerTurn = indexDealer;
+		nextPlayer(); //don't need this for distribution phase, so set up for first player to play
+		if (position == indexDealer) {
+			if (nbDone == 0) {
+				initializeDeck();
+				initializeGame();
+			}
+			distribute(getPositionDistribution());
+		} //else need to receive card before all ie use onCardsDelt method
+		//TODO start following phase?
 	}
 	
 	//initialize
@@ -413,6 +427,12 @@ public class GameManager {
 		}
 		return false;
 	}
+	private void nextPlayer() {
+		playerTurn += 1;
+		if (playerTurn > players.length-1) {
+			playerTurn -= players.length;
+		}
+	}
 	
 	//getter setter
 	public Player[] getPlayers()
@@ -444,6 +464,7 @@ public class GameManager {
 				player.setHand(cards);
 			}
 		}
+		//TODO start following phase
 	}
 	@Override
 	public void onAnnounce(team23.tartot.core.Player player, List<Announce> announces) {
@@ -451,6 +472,7 @@ public class GameManager {
 			playersAnnounces.add(announces[i]);
 		}
 		gotAnnounces[player.getPosition()] = true;
+		//TODO start following phase?
 	}
 	@Override
 	public void onBid(team23.tartot.core.Bid newBid) {
