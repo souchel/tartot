@@ -23,7 +23,7 @@ public class GameManager {
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
-			players[i] = new Player(usernames[i]);
+			players[i] = new Player(usernames[i], i);
 		}
 		indexDealer = 0 ;
 		chien = new Deck();

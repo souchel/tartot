@@ -8,11 +8,11 @@ public class TestManager {
 	public static void main(String[] args) throws IOException {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
 		GameManager gameManager = new GameManager(usernames);
-		Player laure = new Player("Laure");
-		Player paul = new Player("Paul");
-		Player hugo = new Player("Hugo");
-		Player gui = new Player("Gui");
-		Player blu = new Player("blu");
+		Player laure = new Player("Laure",4);
+		Player paul = new Player("Paul",2);
+		Player hugo = new Player("Hugo",0);
+		Player gui = new Player("Gui",1);
+		Player blu = new Player("blu",3);
 		Card excuse = new Card(Suit.TRUMP, 22);
 		Card atout = new Card(Suit.TRUMP, 10);
 		Card normal = new Card(Suit.DIAMOND, 10);
