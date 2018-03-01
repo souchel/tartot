@@ -16,6 +16,15 @@ public class GameManager {
 	int indexDealer ;
 	Deck chien;
 	Bid bid;
+	private List<Announces> playersAnnounces;
+	private boolean[] gotAnnounces = new boolean[4];
+	private boolean[] saidBid = new boolean[4];
+	//position of the local player
+	private int position;
+	//position of the next player to act
+	private int playerTurn;
+	//nb of round already over
+	private int nbDone = 0;
 	
 	public GameManager(String[] usernames) {
 		deck = new Deck();
@@ -23,7 +32,10 @@ public class GameManager {
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
-			players[i] = new Player(usernames[i], i);
+
+			players[i] = new Player(usernames[i],i);
+			gotAnnounces[i] = false;
+			saidBid[i] = false;
 		}
 		indexDealer = 0 ;
 		chien = new Deck();
@@ -31,6 +43,36 @@ public class GameManager {
 		bid = null;
 	}
 	
+	public GameManager(String[] usernames, int position) {
+		deck = new Deck();
+		onGoingFold = new OnGoingFold();
+		players = new Player[usernames.length];
+		for (int i = 0 ; i < usernames.length; i++)
+		{
+			players[i] = new Player(usernames[i],i);
+			gotAnnounces[i] = false;
+		}
+		indexDealer = 0 ;
+		chien = new Deck();
+		stats = new Points(players);
+		bid = null;
+		this.position = position;
+	}
+	
+	//TODO cut the deck would be rather at the end of the round
+	//TODO not finished
+	public void startGame() {
+		playerTurn = indexDealer;
+		nextPlayer(); //don't need this for distribution phase, so set up for first player to play
+		if (position == indexDealer) {
+			if (nbDone == 0) {
+				initializeDeck();
+				initializeGame();
+			}
+			distribute(getPositionDistribution());
+		} //else need to receive card before all ie use onCardsDelt method
+		//TODO start following phase?
+	}
 	
 	//initialize
 	public void initializeGame()
@@ -80,6 +122,12 @@ public class GameManager {
 				chien.addCard(deck.removeCardByIndex(0));
 			}
 		}
+		//sending cards to player via network
+		for (Player player : players) {
+			//TODO 
+			//dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
+		}
+		
 	}
 	public void cutTheDeck(int position)
 	{
@@ -121,6 +169,20 @@ public class GameManager {
 	}
 	
 	
+	
+	
+	//bid phase
+	private void StartRound() {
+		boolean check = true;
+		for (boolean pos : saidBid) {
+			if (!pos) {
+				check = false;
+			}
+		}
+		if (check) {
+			//TODO , must start the round if all bid received
+		}
+	}
 	
 	
 	
@@ -301,7 +363,7 @@ public class GameManager {
 		}
 		return res;
 	}
-	//TODO
+	//TODO inutil, à gérer dans la partie comptage de points?
 	public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
 		boolean res = true;
 		for (Announces announce : announces) {
@@ -367,6 +429,12 @@ public class GameManager {
 		}
 		return false;
 	}
+	private void nextPlayer() {
+		playerTurn += 1;
+		if (playerTurn > players.length-1) {
+			playerTurn -= players.length;
+		}
+	}
 	
 	//getter setter
 	public Player[] getPlayers()
@@ -391,56 +459,29 @@ public class GameManager {
 //	public void onPlayCard(team23.tartot.core.Player player, team23.tartot.core.Card card) {
 //		// TODO Auto-generated method stub
 //	}
-//	@Override
-//	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
-//		for (Player player : players) {
-//			if (player == concernedPlayer) {
-//				player.setHand(cards);
-//			}
-//		}
-//	}
-//	@Override
-//	public void onAnnounce(team23.tartot.core.Player player, Announce announce) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void createLobby() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void leaveLobby() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void inviteFriend(iPlayer player) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void startGame() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void leaveGame() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onInGameDataReceive(Object data) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onInLobbyDataReceive() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void dealCards(team23.tartot.core.Player destination, team23.tartot.core.Card[] cards) {
-//		// TODO Auto-generated method stub	
-//	}
-//	@Override
-//	public void playCard(team23.tartot.core.Card card) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void announce(Announce announce) {
-//		// TODO Auto-generated method stub
-//	}
+	@Override
+	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
+		for (Player player : players) {
+			if (player == concernedPlayer) {
+				player.setHand(cards);
+			}
+		}
+		//TODO start following phase
+	}
+	@Override
+	public void onAnnounce(team23.tartot.core.Player player, List<Announce> announces) {
+		for (int i = 0 ; i < announces.length; i++) {
+			playersAnnounces.add(announces[i]);
+		}
+		gotAnnounces[player.getPosition()] = true;
+		//TODO start following phase?
+	}
+	@Override
+	public void onBid(team23.tartot.core.Bid newBid) {
+		if (checkBid(newBid)) {
+			bid = newBid;
+		}
+		saidBid[newBid.getPlayerPosition()] = true;
+		StartRound();
+	}
 }

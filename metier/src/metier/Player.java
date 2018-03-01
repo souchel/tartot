@@ -21,9 +21,6 @@ public class Player {
 		//hand?
 		//position?
 	}
-	public int getPosition() {
-		return position;
-	}
 	public void setTeam(Team team) {
 		this.team = team;
 	}
@@ -45,6 +42,9 @@ public class Player {
 	}
 	public void setHand(List<Card> cards) {
 		hand.setDeck(cards);
+	}
+	public int getPosition() {
+		return position;
 	}
 	
 	

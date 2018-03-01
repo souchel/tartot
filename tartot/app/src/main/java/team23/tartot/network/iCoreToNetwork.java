@@ -75,5 +75,8 @@ public interface iCoreToNetwork {
      * Inform other players of an announce. Raise an exception if we are not in game
      * @param announce: the announce to broadcast
      */
-    public void announce(Announce announce);
+    public void announce(List<Announce> announce, Player player);
+
+    //inform other players of a bid
+    public void bid(Bid bid);
 }
