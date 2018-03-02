@@ -32,7 +32,8 @@ public class GameManager {
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
-			players[i] = new Player(usernames[i]);
+
+			players[i] = new Player(usernames[i],i);
 			gotAnnounces[i] = false;
 			saidBid[i] = false;
 		}
@@ -48,7 +49,7 @@ public class GameManager {
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
-			players[i] = new Player(usernames[i]);
+			players[i] = new Player(usernames[i],i);
 			gotAnnounces[i] = false;
 		}
 		indexDealer = 0 ;
@@ -123,7 +124,8 @@ public class GameManager {
 		}
 		//sending cards to player via network
 		for (Player player : players) {
-			dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
+			//TODO 
+			//dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
 		}
 		
 	}
