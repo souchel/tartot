@@ -59,7 +59,6 @@ public class GameManager {
 		this.position = position;
 	}
 	
-	//TODO cut the deck would be rather at the end of the round
 	//TODO not finished
 	public void startGame() {
 		playerTurn = indexDealer;
@@ -128,25 +127,6 @@ public class GameManager {
 			//dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
 		}
 		
-	}
-	public void cutTheDeck(int position)
-	{
-		/*
-		Random rndGenerator = new Random();
-		int position = rndGenerator.nextInt(73)+3;
-		*/
-		
-		
-		for (int i = 1; i<=position; i++)
-		{
-			Card card = deck.removeCardByIndex(0);
-			deck.addCard(card);
-		}
-	}
-	public void setNextDealer(){
-		if (indexDealer < 3) {
-			indexDealer += 1;
-		} else indexDealer = 0;
 	}
 	public int[] getPositionDistribution() {
 		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
@@ -218,9 +198,42 @@ public class GameManager {
 	
 	
 	
-	
-	
-	
+	//prepare next round methods
+	public void cutTheDeck(int position)
+	{
+		/*
+		Random rndGenerator = new Random();
+		int position = rndGenerator.nextInt(73)+3;
+		*/
+		
+		
+		for (int i = 1; i<=position; i++)
+		{
+			Card card = deck.removeCardByIndex(0);
+			deck.addCard(card);
+		}
+	}
+	public void setNextDealer(){
+		if (indexDealer < 3) {
+			indexDealer += 1;
+		} else indexDealer = 0;
+	}
+	public void prepareNextRound() {
+		if (position == indexDealer) {
+			//TODO local player must select position
+			cutTheDeck(6);
+			setNextDealer();
+			for (Player player : players) {
+				if (player.getPosition() == position) {
+					sendDeck(player);
+				}
+			}
+		} else setNextDealer();
+		if (position == indexDealer) {
+			//TODO récup les position de coupe
+			distribute(null);
+		}
+	}
 	
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
 	//inutil?
@@ -483,5 +496,10 @@ public class GameManager {
 		}
 		saidBid[newBid.getPlayerPosition()] = true;
 		StartRound();
+	}
+	public void onDeckReceived(team23.tartot.core.Deck deck) {
+		this.deck = deck;
+		//TODO récup les positions de coupe
+		distribute(null);
 	}
 }
