@@ -32,4 +32,6 @@ public interface iNetworkToCore {
     public void onAnnounce(Player player, List<Announce> announces);
 
     public void onBid(Bid bid);
+
+    public void onDeckReceived(Deck deck);
 }

@@ -79,4 +79,7 @@ public interface iCoreToNetwork {
 
     //inform other players of a bid
     public void bid(Bid bid);
+
+    //to send the deck to another player after cutting it
+    public void sendDeck(Deck deck, Player player);
 }
