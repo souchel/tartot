@@ -129,7 +129,7 @@ public class GameManager implements iNetworkToCore{
 			//TODO 
 			//dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
 		}
-		
+		startBid();
 	}
 	public int[] getPositionDistribution() {
 		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
@@ -155,7 +155,12 @@ public class GameManager implements iNetworkToCore{
 	
 	
 	//bid phase
-	private void startRound() {
+	private void startBid() {
+		if (position == playerTurn) {
+			askBid(bid);
+		}
+	}
+	private void startAnnounce() {
 		boolean check = true;
 		for (boolean pos : saidBid) {
 			if (!pos) {
@@ -163,12 +168,12 @@ public class GameManager implements iNetworkToCore{
 			}
 		}
 		if (check) {
-			//TODO , must start the round if all bid received
+			//TODO , must start the announces phase if all bid received
 		}
 	}
 	private void askBid(Bid bid) {
 		//TODO callback pour faire un bid, l'argument bid sert potentiellement à dire à l'activité la bid actuelle, faut en dire une supérieur après tout
-		startRound();
+		startAnnounce();
 	}
 	
 	
@@ -486,7 +491,7 @@ public class GameManager implements iNetworkToCore{
 				player.setHand(cards);
 			}
 		}
-		//TODO start following phase
+		startBid();
 	}
 	@Override
 	public void onAnnounce(Player player, ArrayList<Announces> announces) {
@@ -502,7 +507,7 @@ public class GameManager implements iNetworkToCore{
 			bid = newBid;
 		}
 		saidBid[newBid.getPlayerPosition()] = true;
-		startRound();
+		startAnnounce();
 		if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
 			askBid(bid);
 		}
