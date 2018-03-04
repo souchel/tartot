@@ -251,6 +251,7 @@ public class GameManager implements iNetworkToCore{
 		{
 			gotAnnounces[i] = false;
 			saidBid[i] = false;
+			players[i].setTeam(Team.NONE);
 		}
 		nbDone += 1;
 		playerTurn = indexDealer;
