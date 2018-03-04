@@ -2,11 +2,13 @@ package metier;
 
 import java.util.List;
 import java.util.Random;
+import network.iCoreToNetwork;
+import network.iNetworkToCore;
 
 //multiplicateurs 1, 2, 4, 6
 
-//TODO implements iCoreToNetwork, iNetworkToCore
-public class GameManager {
+
+public class GameManager implements iNetworkToCore{
 	private Player[] players;
 	private Points stats ;
 	int points;
@@ -460,16 +462,16 @@ public class GameManager {
 
 	
 	//TODO implements methods
-//	@Override
-//	public void onInvitationReceived() {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onPlayCard(team23.tartot.core.Player player, team23.tartot.core.Card card) {
-//		// TODO Auto-generated method stub
-//	}
 	@Override
-	public void onCardsDelt(team23.tartot.core.List<Card> cards, team23.tartot.core.Player concernedPlayer) {
+	public void onInvitationReceived() {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void onPlayCard(Player player, Card card) {
+		// TODO Auto-generated method stub
+	}
+	@Override
+	public void onCardsDelt(List<Card> cards, Player concernedPlayer) {
 		for (Player player : players) {
 			if (player == concernedPlayer) {
 				player.setHand(cards);
@@ -478,7 +480,7 @@ public class GameManager {
 		//TODO start following phase
 	}
 	@Override
-	public void onAnnounce(team23.tartot.core.Player player, List<Announce> announces) {
+	public void onAnnounce(Player player, List<Announces> announces) {
 		for (int i = 0 ; i < announces.length; i++) {
 			playersAnnounces.add(announces[i]);
 		}
@@ -486,16 +488,17 @@ public class GameManager {
 		//TODO start following phase?
 	}
 	@Override
-	public void onBid(team23.tartot.core.Bid newBid) {
+	public void onBid(Bid newBid) {
 		if (checkBid(newBid)) {
 			bid = newBid;
 		}
 		saidBid[newBid.getPlayerPosition()] = true;
 		StartRound();
 	}
-	public void onDeckReceived(team23.tartot.core.Deck deck) {
+	public void onDeckReceived(Deck deck) {
 		this.deck = deck;
 		//TODO récup les positions de coupe
 		distribute(null);
 	}
+
 }
