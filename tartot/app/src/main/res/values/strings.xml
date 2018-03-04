@@ -31,12 +31,18 @@
     <string name="auto_match">auto match players</string>
     <string name="button_label_invitation_inbox">Invitations</string>
     <string name="displayWaitingRoom">display waiting room</string>
-<string name="player_number_tv">number of players in game for automatching</string>
+    <string name="player_number_tv">number of players in game for automatching</string>
     <string-array name="player_number">
         <item>2</item>
         <item>3</item>
         <item>4</item>
         <item>5</item>
     </string-array>
+
+    <!-- Strings related to invitations -->
+    <string name="accept_popup_invite">Accept!</string>
+    <string name="inv_popup_text">Incoming invitation!</string>
+    <string name="is_inviting_you">is inviting you</string>
+
 
 </resources>

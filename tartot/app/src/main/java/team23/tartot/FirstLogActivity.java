@@ -23,7 +23,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.PlayersClient;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.InvitationCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -37,12 +41,30 @@ public class FirstLogActivity extends AppCompatActivity {
     private GoogleSignInAccount userAccount;
     private com.google.android.gms.games.Player googlePlayer;
 
+    // Client used to interact with the Invitation system.
+    private InvitationsClient invitationsClient = null;
+
+    // Client used to sign in with Google APIs
+    private GoogleSignInClient signInClient = null;
+
+    // If non-null, this is the id of the invitation we received via the
+    // invitation listener
+    private String incomingInvitationId = null;
+
+    // This array lists all the individual screens our game has.
+    final static int[] SCREENS = {R.id.first_log};
+    //id of the currently showed screen
+    private int curScreen = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("debug","create");
+
         setContentView(R.layout.activity_first_log);
 
+        signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        Log.i("debug","signin trouvé");
         final Button firstLogButton = findViewById(R.id.button_first_log);
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -77,14 +99,53 @@ public class FirstLogActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (userAccount == null) {
-            signInSilently();
+        // Since the state of the signed in user can change when the activity is not active
+        // it is recommended to try and sign in silently from when the app resumes.
+        signInSilently();
+        Log.i("debug","resume");
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // unregister our listeners.  They will be re-registered via onResume->signInSilently->onConnected.
+        if (invitationsClient != null) {
+            invitationsClient.unregisterInvitationCallback(invitationCallback);
         }
     }
 
+
+    private InvitationCallback invitationCallback = new InvitationCallback() {
+        // Called when we get an invitation to play a game. We react by showing that to the user.
+        @Override
+        public void onInvitationReceived(@NonNull Invitation invitation) {
+            // We got an invitation to play a game! So, store it in
+            // mIncomingInvitationId
+            // and show the popup on the screen.
+            incomingInvitationId = invitation.getInvitationId();
+            ((TextView) findViewById(R.id.incoming_invitation_text)).setText(
+                    invitation.getInviter().getDisplayName() + " " +
+                            getString(R.string.is_inviting_you));
+            switchToScreen(curScreen); // We change the current screen for the same, but it updates the notifications
+        }
+
+        @Override
+        public void onInvitationRemoved(@NonNull String invitationId) {
+
+            if (incomingInvitationId.equals(invitationId) && incomingInvitationId != null) {
+                incomingInvitationId = null;
+                switchToScreen(curScreen); // This will hide the invitation popup
+            }
+        }
+    };
+
     //tries to log in silently and automatically without prompt. If it succeeds, it connects to the google game account and retrieve google Player object.
     private void signInSilently() {
-        final GoogleSignInClient signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        Log.i("debug","sigin silent");
+
+        signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         signInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
             @Override
             public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
@@ -92,6 +153,12 @@ public class FirstLogActivity extends AppCompatActivity {
                     // The signed in account is stored in the task's result.
                     userAccount = task.getResult();
                     retrieveGooglePlayer(userAccount);
+
+                    invitationsClient = Games.getInvitationsClient(getApplicationContext(), userAccount);
+
+                    // register listener so we are notified if we receive an invitation to play
+                    // while we are in the game
+                    invitationsClient.registerInvitationCallback(invitationCallback);
 
                 } else {
                     //automatic log in failed.
@@ -125,10 +192,23 @@ public class FirstLogActivity extends AppCompatActivity {
         }
     }
 
+
+    //change the visibility of the layout to change screen. used to display invites notification bar.
+    public void switchToScreen(int screenId) {
+        // make the requested screen visible; hide all others.
+        for (int id : SCREENS) {
+            findViewById(id).setVisibility(screenId == id ? View.VISIBLE : View.GONE);
+        }
+        curScreen = screenId;
+
+        // should we show the invitation popup?
+        boolean showInvPopup;
+        //la belle condition ternaire
+        findViewById(R.id.invitation_popup).setVisibility(incomingInvitationId != null ? View.VISIBLE : View.GONE);
+    }
+
     //start external log in activity to retrieve google player's account
     private void startSignInIntent() {
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
-                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         Intent intent = signInClient.getSignInIntent();
         startActivityForResult(intent, RC_SIGN_IN);
     }

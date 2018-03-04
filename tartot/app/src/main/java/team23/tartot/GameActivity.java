@@ -16,7 +16,7 @@ public class GameActivity extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_menu);
+        setContentView(R.layout.activity_game);
         ImageButton imageButtonColor = findViewById(R.id.imageButtonColor);
         imageButtonColor.setOnClickListener(new View.OnClickListener() {
             @Override

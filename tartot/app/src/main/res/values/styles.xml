@@ -8,4 +8,49 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <color name="AccentColor">#004e05</color>
+    <color name="PopupColor">@color/AccentColor</color>
+    <color name="PopupTextColor">#ffdd00</color>
+    <color name="ButtonTextColor">#002902</color>
+
+
+
+    <!-- j'ai tiré ça d'une autre appli. Faut changer les valeurs pour nous -->
+    <style name="GameScreen">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="LLScreen" parent="@style/GameScreen">
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">30dp</item>
+    </style>
+
+    <style name="InvPopup" parent="@style/LLScreen">
+        <item name="android:background">@color/PopupColor</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:layout_gravity">top|right</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="InvPopupText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">@color/PopupTextColor</item>
+        <item name="android:text">@string/inv_popup_text</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="InvPopupButton">
+        <item name="android:background">@color/ButtonTextColor</item>
+        <item name="android:textColor">@color/AccentColor</item>
+    </style>
+
 </resources>
