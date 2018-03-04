@@ -6,9 +6,10 @@ public class Points {
 	private Player[] players;
 	private double[] points;
 	private ArrayList<Player> callers ;
-	private ArrayList<Player> called ;
+	private ArrayList<Player[]> called ;
 	private ArrayList<Bid> bids ; 
 	private ArrayList<Card> cardsCalled;
+	
 	
 	
 	public Points(Player[] players)
@@ -18,6 +19,13 @@ public class Points {
 		for (int i = 0 ; i < points.length ; i++)
 		{
 			points[i]=0;
+		}
+		callers = new ArrayList<Player>();
+		called = new ArrayList<Player[]>();
+		bids = new ArrayList<Bid>();
+		if (players.length == 50)
+		{
+			cardsCalled = new ArrayList<Card>();
 		}
 	}
 	public void updatePointsAndBid(Bid bid, int attackOudlerNumber, ArrayList<Announces> annonces, double pointsAttack)
@@ -38,14 +46,19 @@ public class Points {
 			multiplier = -1;
 			additionnalPoints = 1;
 		}
+		Player[] roundCalled = new Player[3];
+		int i = 0;
 		for (int index = 0 ; index < players.length ; index++)
 		{
 			if (players[index].getTeam()== Team.ATTACK)
 			{
+				callers.add(players[index]);
 				pointsGame[index] += multiplier * 75 * bid.getMultiplicant() + (pointsAttack - pointsNeeded + additionnalPoints)*bid.getMultiplicant() * 3 ;
 			}
 			else
 			{
+				roundCalled[i]=players[index];
+				i++;
 				pointsGame[index] += -1 * multiplier * 25 * bid.getMultiplicant() - (pointsAttack - pointsNeeded + additionnalPoints)*bid.getMultiplicant() ;
 			}
 		}
@@ -67,6 +80,9 @@ public class Points {
 			}
 		}
 		updatePoints(pointsGame);
+		called.add(roundCalled);
+		bids.add(bid);
+		
 	}
 	public void updatePointsSlam(double[] pointsGame, Announces announce)
 	{
@@ -189,7 +205,7 @@ public class Points {
 	{
 		return callers ;
 	}
-	public ArrayList<Player> getCalled()
+	public ArrayList<Player[]> getCalled()
 	{
 		return called ;
 	}
