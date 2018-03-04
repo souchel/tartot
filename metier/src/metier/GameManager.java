@@ -160,7 +160,7 @@ public class GameManager implements iNetworkToCore{
 			askBid(bid);
 		}
 	}
-	private void startAnnounce() {
+	private void checkBidProgress() {
 		boolean check = true;
 		for (boolean pos : saidBid) {
 			if (!pos) {
@@ -168,13 +168,43 @@ public class GameManager implements iNetworkToCore{
 			}
 		}
 		if (check) {
-			//TODO , must start the announces phase if all bid received
+			startAnnounce();
 		}
 	}
 	private void askBid(Bid bid) {
 		//TODO callback pour faire un bid, l'argument bid sert potentiellement à dire à l'activité la bid actuelle, faut en dire une supérieur après tout
-		startAnnounce();
+		//TODO bid(bid to send to others);
+		checkBidProgress();
 	}
+	
+	
+	
+	//announce phase
+	private void startAnnounce() {
+		askAnnounce();
+		//TODO utilité de séparer askAnnounce et startAnnounce?
+	}
+	private void askAnnounce() {
+		//TODO callback pour faire une annonce
+		//TODO announce(List<Announces> announce, Player player);
+		checkAnnounceProgress();
+	}
+	private void checkAnnounceProgress() {
+		boolean check = true;
+		for (boolean pos : gotAnnounces) {
+			if (!pos) {
+				check = false;
+			}
+		}
+		if (check) {
+			//TODO startRound();
+		}
+	}
+	
+	
+	
+	//round phase
+	
 	
 	
 	
@@ -496,10 +526,12 @@ public class GameManager implements iNetworkToCore{
 	@Override
 	public void onAnnounce(Player player, ArrayList<Announces> announces) {
 		for (int i = 0 ; i < announces.size(); i++) {
-			playersAnnounces.add(announces.get(i));
+			if (checkAnnouncesBegining(announces, player)) { //TODO vérifier que tous ces check sont utils ils devraient être fait dans l'activité normalement
+				playersAnnounces.add(announces.get(i));
+			}
 		}
 		gotAnnounces[player.getPosition()] = true;
-		//TODO start following phase?
+		checkAnnounceProgress();
 	}
 	@Override
 	public void onBid(Bid newBid) {
@@ -507,7 +539,7 @@ public class GameManager implements iNetworkToCore{
 			bid = newBid;
 		}
 		saidBid[newBid.getPlayerPosition()] = true;
-		startAnnounce();
+		checkBidProgress();
 		if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
 			askBid(bid);
 		}
