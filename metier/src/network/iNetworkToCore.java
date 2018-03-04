@@ -1,5 +1,6 @@
 package network;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import metier.*;
@@ -29,7 +30,7 @@ public interface iNetworkToCore {
 
     public void onCardsDelt(List<Card> cards, Player player);
 
-    public void onAnnounce(Player player, List<Announces> announces);
+    public void onAnnounce(Player player, ArrayList<Announces> announces);
 
     public void onBid(Bid bid);
 

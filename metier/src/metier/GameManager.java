@@ -1,5 +1,6 @@
 package metier;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import network.iCoreToNetwork;
@@ -480,9 +481,9 @@ public class GameManager implements iNetworkToCore{
 		//TODO start following phase
 	}
 	@Override
-	public void onAnnounce(Player player, List<Announces> announces) {
-		for (int i = 0 ; i < announces.length; i++) {
-			playersAnnounces.add(announces[i]);
+	public void onAnnounce(Player player, ArrayList<Announces> announces) {
+		for (int i = 0 ; i < announces.size(); i++) {
+			playersAnnounces.add(announces.get(i));
 		}
 		gotAnnounces[player.getPosition()] = true;
 		//TODO start following phase?
