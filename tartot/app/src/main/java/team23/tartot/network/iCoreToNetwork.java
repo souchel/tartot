@@ -81,5 +81,5 @@ public interface iCoreToNetwork {
     public void bid(Bid bid);
 
     //to send the deck to another player after cutting it
-    public void sendDeck(Deck deck, Player player);
+    public void sendDeck(Player player);
 }

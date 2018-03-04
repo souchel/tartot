@@ -1,5 +1,7 @@
 package team23.tartot.network;
 
+import java.util.List;
+import java.util.ArrayList;
 import team23.tartot.core.Announce;
 import team23.tartot.core.Card;
 import team23.tartot.core.Player;
@@ -27,9 +29,9 @@ public interface iNetworkToCore {
      */
     public void onPlayCard(Player player, Card card);
 
-    public void onCardsDelt(Card[] cards);
+    public void onCardsDelt(List<Card> cards, Player player);
 
-    public void onAnnounce(Player player, List<Announce> announces);
+    public void onAnnounce(Player player, ArrayList<Announce> announces);
 
     public void onBid(Bid bid);
 
