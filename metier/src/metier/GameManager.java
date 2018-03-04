@@ -54,6 +54,7 @@ public class GameManager implements iNetworkToCore{
 		{
 			players[i] = new Player(usernames[i],i);
 			gotAnnounces[i] = false;
+			saidBid[i] = false;
 		}
 		indexDealer = 0 ;
 		chien = new Deck();
@@ -73,7 +74,6 @@ public class GameManager implements iNetworkToCore{
 			}
 			distribute(getPositionDistribution());
 		} //else need to receive card before all ie use onCardsDelt method
-		//TODO start following phase?
 	}
 	
 	//initialize
@@ -240,6 +240,22 @@ public class GameManager implements iNetworkToCore{
 	
 	
 	//prepare next round methods
+	public void reinitializeForNextRound() {
+		//le deck se réinitialise pas mais ce partage par des méthodes network
+		chien = new Deck();
+		bid = null;
+		playersAnnounces = null;
+		gotAnnounces = new boolean[4];
+		saidBid = new boolean[4];
+		for (int i = 0 ; i < players.length; i++)
+		{
+			gotAnnounces[i] = false;
+			saidBid[i] = false;
+		}
+		nbDone += 1;
+		playerTurn = indexDealer;
+		nextPlayer();
+	}
 	public void cutTheDeck(int position)
 	{
 		/*
@@ -260,6 +276,7 @@ public class GameManager implements iNetworkToCore{
 		} else indexDealer = 0;
 	}
 	public void prepareNextRound() {
+		reinitializeForNextRound();
 		if (position == indexDealer) {
 			//TODO callback local player must select position
 			cutTheDeck(6);
