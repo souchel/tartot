@@ -9,7 +9,7 @@ import network.iNetworkToCore;
 //multiplicateurs 1, 2, 4, 6
 
 
-public class GameManager implements iNetworkToCore{
+public class GameManager implements iNetworkToCore, callbackGameManager{
 	private Player[] players;
 	private Points stats ;
 	int points;
@@ -19,7 +19,7 @@ public class GameManager implements iNetworkToCore{
 	int indexDealer ;
 	Deck chien;
 	Bid bid;
-	private List<Announces> playersAnnounces;
+	private ArrayList<Announces> playersAnnounces;
 	private boolean[] gotAnnounces = new boolean[4];
 	private boolean[] saidBid = new boolean[4];
 	//position of the local player
@@ -176,20 +176,34 @@ public class GameManager implements iNetworkToCore{
 			startAnnounce();
 		}
 	}
-	private void askBid(Bid bid) {
+	
+	@Override
+	public void askBid(Bid bid) {
+		if (bid == null)
+		{
+			//on appelle la methode dans activite qui fait choisir le bide au joueur local
+		}
+		else
+		{
+			this.bid = bid ;
+		}
 		//TODO callback pour faire un bid, l'argument bid sert potentiellement à dire à l'activité la bid actuelle, faut en dire une supérieur après tout
 		//TODO bid(bid to send to others);
 		checkBidProgress();
 	}
 	
-	
-	
 	//announce phase
 	private void startAnnounce() {
-		askAnnounce();
-		//TODO utilité de séparer askAnnounce et startAnnounce?
+		//on appelle l'activité qui gère ça
 	}
-	private void askAnnounce() {
+	
+	@Override
+	//méthode appelée quand le choix d'annonce est fait
+	public void askAnnounce(Announces announce) {
+		if (announce != null)
+		{
+			playersAnnounces.add(announce);
+		}
 		//TODO callback pour faire une annonce
 		//TODO announce(List<Announces> announce, Player player);
 		checkAnnounceProgress();
@@ -284,15 +298,24 @@ public class GameManager implements iNetworkToCore{
 	public void prepareNextRound() {
 		reinitializeForNextRound();
 		if (position == indexDealer) {
-			//TODO callback local player must select position
-			cutTheDeck(6);
-			setNextDealer();
-			for (Player player : players) {
-				if (player.getPosition() == position) {
-					//sendDeck(player);
-				}
+			//TODO call the right methode in the activities so that the player chooses where to 
+			//cut the deck
+			
+				
+		} 
+		else setNextDealer();
+	}
+	
+	@Override
+	public void onReceivedPosition(int position)
+	{
+		cutTheDeck(position);
+		setNextDealer();
+		for (Player player : players) {
+			if (player.getPosition() == position) {
+				//sendDeck(player);
 			}
-		} else setNextDealer();
+		}
 	}
 	
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
