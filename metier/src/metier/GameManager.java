@@ -229,10 +229,6 @@ public class GameManager {
 				}
 			}
 		} else setNextDealer();
-		if (position == indexDealer) {
-			//TODO récup les position de coupe
-			distribute(null);
-		}
 	}
 	
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
