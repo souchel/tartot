@@ -28,6 +28,8 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	private int playerTurn;
 	//nb of round already over
 	private int nbDone = 0;
+	private Deck attackDeck ;
+	private Deck defenseDeck ;
 	
 	public GameManager(String[] usernames) {
 		deck = new Deck();
@@ -44,6 +46,8 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		chien = new Deck();
 		stats = new Points(players);
 		bid = null;
+		attackDeck = new Deck();
+		defenseDeck = new Deck();
 	}
 	
 	public GameManager(String[] usernames, int position) {
@@ -181,13 +185,12 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	public void askBid(Bid bid) {
 		if (bid == null)
 		{
-			//on appelle la methode dans activite qui fait choisir le bide au joueur local
+			//TODO on appelle la methode dans activite qui fait choisir le bide au joueur local
 		}
 		else
 		{
 			this.bid = bid ;
 		}
-		//TODO callback pour faire un bid, l'argument bid sert potentiellement à dire à l'activité la bid actuelle, faut en dire une supérieur après tout
 		//TODO bid(bid to send to others);
 		checkBidProgress();
 	}
@@ -204,7 +207,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		{
 			playersAnnounces.add(announce);
 		}
-		//TODO callback pour faire une annonce
 		//TODO announce(List<Announces> announce, Player player);
 		checkAnnounceProgress();
 	}
@@ -228,10 +230,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	
 	//count points section
-	public int bidIntoMultiplier(Bid bid)
-	{
-		return bid.getMultiplicant();
-	}
 	public static double oudlerNumberIntoPointsNeeded(int oudlerNumber)
 	{
 		switch (oudlerNumber) 
@@ -247,13 +245,17 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	{
 		return pointsNeeded <= pointsWon ;
 	}
-	public double pointsCounter(Deck deckAttack)
-	{
-		return deckAttack.countPoints() ;
-	}
 	public Points getStats()
 	{
 		return stats ;
+	}
+	public void pointsPhase()
+	{
+		double pointsAttack = attackDeck.countPoints();
+		int attackOudlerNumber = attackDeck.countOudlers();
+		//on suppose que bid contient le bid gagnant et pas juste le bid local
+		stats.updatePointsAndBid(bid, attackOudlerNumber, playersAnnounces, pointsAttack);
+		prepareNextRound();
 	}
 	
 	
@@ -306,6 +308,22 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		else setNextDealer();
 	}
 	
+	public void endOfRound()
+	{
+		ArrayList<Card> cardList = onGoingFold.getCardList();
+		for (int index = 0 ; index<players.length; index++)
+		{
+			if (players[index].getTeam()==Team.ATTACK)
+			{
+				attackDeck.addCard(cardList.get(index));
+			}
+			else
+			{
+				defenseDeck.addCard(cardList.get(index));
+			}
+		}
+	}
+	
 	@Override
 	public void onReceivedPosition(int position)
 	{
@@ -318,6 +336,9 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		}
 	}
 	
+	
+	
+
 	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
 	//inutil?
 //	private Player[] getPlayerAtPosition(int i) {
@@ -561,7 +582,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		// TODO Auto-generated method stub
 	}
 	@Override
-	public void onCardsDelt(List<Card> cards, Player concernedPlayer) {
+	public void onCardsDelt(ArrayList<Card> cards, Player concernedPlayer) {
 		for (Player player : players) {
 			if (player == concernedPlayer) {
 				player.setHand(cards);

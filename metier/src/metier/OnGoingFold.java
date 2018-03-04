@@ -1,6 +1,6 @@
 package metier;
 
-
+import java.util.ArrayList;
 
 // this class doesn't check which player is adding a card!!!
 public class OnGoingFold extends Deck{
@@ -9,20 +9,24 @@ public class OnGoingFold extends Deck{
 	private String winingPlayer;
 	
 	public OnGoingFold() {
+		cardList = new ArrayList<Card>(4) ;
 	}
 	
 	//should get suit on the first card but if it doesn't it'll take suit from the following card
-	public void addCard(Card addedCard, String playerName) {
+	public void addCard(Card addedCard, Player player) {
 		if (askedSuit == null && addedCard.isEqual(new Card(Suit.TRUMP, 22)) == false) {
 			askedSuit = addedCard.getSuit();
 		}
 		super.addCard(addedCard);
 		if (this.isBetterCard(addedCard) == true){
 			winingCard = addedCard;
-			winingPlayer = playerName;
+			winingPlayer = player.getUsername();
 		}
+		cardList.set(player.getPosition(), addedCard);
+		
 	}
 	
+
 	//return false in an not planned case
 	//return true if winingPlayer isn't set
 	private boolean isBetterCard(Card addedCard) {
@@ -71,4 +75,5 @@ public class OnGoingFold extends Deck{
 	public Card getWiningCard() {
 		return winingCard;
 	}
+	
 }

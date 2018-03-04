@@ -20,7 +20,7 @@ public class Points {
 			points[i]=0;
 		}
 	}
-	public void updatePointsAndBid(Player attack, Bid bid, int attackOudlerNumber, ArrayList<Announces> annonces, int pointsAttack)
+	public void updatePointsAndBid(Bid bid, int attackOudlerNumber, ArrayList<Announces> annonces, double pointsAttack)
 	{
 		double[] pointsGame = new double[players.length];
 		double pointsNeeded = GameManager.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
@@ -40,7 +40,7 @@ public class Points {
 		}
 		for (int index = 0 ; index < players.length ; index++)
 		{
-			if (players[index].getUsername()== attack.getUsername())
+			if (players[index].getTeam()== Team.ATTACK)
 			{
 				pointsGame[index] += multiplier * 75 * bid.getMultiplicant() + (pointsAttack - pointsNeeded + additionnalPoints)*bid.getMultiplicant() * 3 ;
 			}
@@ -57,10 +57,10 @@ public class Points {
 				switch (a2) 
 				{
 			      case SLAM : updatePointsSlam(pointsGame, a2); break;
-			      case SIMPLE_HANDFUL : updatePointsHandful(pointsGame, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack) ; break;
-			      case DOUBLE_HANDFUL : updatePointsHandful(pointsGame, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-			      case TRIPLE_HANDFUL : updatePointsHandful(pointsGame, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), attack); break;
-			      case PETIT_AU_BOUT : updatePointsPetitAuBout(pointsGame , a2, bid, attack);
+			      case SIMPLE_HANDFUL : updatePointsHandful(pointsGame, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), players) ; break;
+			      case DOUBLE_HANDFUL : updatePointsHandful(pointsGame, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), players); break;
+			      case TRIPLE_HANDFUL : updatePointsHandful(pointsGame, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), players); break;
+			      case PETIT_AU_BOUT : updatePointsPetitAuBout(pointsGame , a2, bid);
 				  case MISERY: break;
 				  default: break;
 			    }
@@ -87,28 +87,31 @@ public class Points {
 				if (players[i].getTeam() == Team.ATTACK)
 				{
 					pointsGame[i]+= 1200 ;
-					System.out.println("l attaque reçoit 1200 "+pointsGame[i]);
 
 				}
 				else
 				{
 					pointsGame[i]+= -200 ;
-					System.out.println("la défense perd 200 "+pointsGame[i]);
 
 				}
 			}
 		}
 			
 	}
-	public void updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid, Player attack)
+	public void updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid)
 	{
+		
 		if (annonce.getOwner().getTeam() == Team.ATTACK) {
 			for(int i = 0 ; i < players.length ; i++)
 			{
 				if (players[i].getTeam() == Team.ATTACK)
+				{
 					pointsGame[i]+= bid.getMultiplicant()*10*3 ;
+				}
 				else
+				{
 					pointsGame[i]+= -bid.getMultiplicant()*10 ;
+				}
 			}
 		}
 		else
@@ -122,8 +125,9 @@ public class Points {
 			}
 		}
 	}
-	public void updatePointsHandful(double[] pointsGame, double gain, boolean attackWon, Player attack)
+	public void updatePointsHandful(double[] pointsGame, double gain, boolean attackWon, Player[] players)
 	{
+		//TODO il faut vérifier que si la defense annonce une annonce et perd ca soit l attaque qui gagne les points
 		int multiplier ;
 		if (attackWon )
 		{
@@ -135,7 +139,7 @@ public class Points {
 		}
 		for (int index = 0 ; index < pointsGame.length ; index ++)
 		{
-			if (attack.getPosition() == index)
+			if (players[index].getTeam() == Team.ATTACK)
 			{
 				pointsGame[index] += gain * 3 * multiplier ;
 			}
@@ -179,7 +183,7 @@ public class Points {
 	}
 	public void addPass()
 	{
-		
+		//TODO ajouter une passe dans les stats
 	}
 	public ArrayList<Player> getCallers()
 	{

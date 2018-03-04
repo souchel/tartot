@@ -1,6 +1,7 @@
 package metier;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Player {
 	private String username;
@@ -40,7 +41,7 @@ public class Player {
 	{
 		return deck;
 	}
-	public void setHand(List<Card> cards) {
+	public void setHand(ArrayList<Card> cards) {
 		hand.setDeck(cards);
 	}
 	public int getPosition() {

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Deck {
 	private Team team;
-	private List<Card> cardList = new ArrayList<>();
+	protected ArrayList<Card> cardList = new ArrayList<>();
 	
 	public Deck() {
 		
@@ -55,7 +55,7 @@ public class Deck {
 		}
 	}
 	
-	public List<Card> getCardList() {
+	public ArrayList<Card> getCardList() {
 		return cardList;
 	}
 	
@@ -66,7 +66,7 @@ public class Deck {
 	public Team getTeam() {
 		return team;
 	}
-	public void setDeck(List<Card> cards) {
+	public void setDeck(ArrayList<Card> cards) {
 		cardList = cards;
 	}
 	

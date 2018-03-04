@@ -46,7 +46,7 @@ public class Test {
 		}
 		System.out.println("Hugo fait une petite avec 3 bouts qu'il gagne de 0 points, aucune annonce");
 		ArrayList<Announces> annonces = new ArrayList<Announces>();
-		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 3, annonces, 36);
+		gameManager.getStats().updatePointsAndBid(Bid.SMALL, 3, annonces, 36);
 		System.out.println("Hugo devrait avoir 75 pts et les autres -25 : "+gameManager.getStats());
 		
 		
@@ -57,7 +57,7 @@ public class Test {
 		}
 		System.out.println("Hugo fait une garde avec 3 bouts qu'il gagne de 0 points, aucune annonce");
 		ArrayList<Announces> annonces1 = new ArrayList<Announces>();
-		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.GUARD, 3, annonces1, 36);
+		gameManager.getStats().updatePointsAndBid(Bid.GUARD, 3, annonces1, 36);
 		System.out.println("Hugo devrait avoir gagné 150 pts et les autres -50 : "+gameManager.getStats());
 		
 		gameManager.getPlayers()[0].setTeam(Team.ATTACK);
@@ -70,7 +70,7 @@ public class Test {
 		Announces a = Announces.MISERY ;
 		a.setOwner(gameManager.getPlayers()[2]);
 		annonces11.add(a);
-		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 3, annonces11, 36);
+		gameManager.getStats().updatePointsAndBid(Bid.SMALL, 3, annonces11, 36);
 		System.out.println("Hugo devrait avoir gagné 65 pts, Paul 5 et les autres -35 : "+gameManager.getStats());
 	
 		gameManager.getPlayers()[0].setTeam(Team.ATTACK);
@@ -80,7 +80,7 @@ public class Test {
 		}
 		System.out.println("Hugo fait une petite avec 3 bouts qu'il perd d'un points, pas d'annonce");
 		ArrayList<Announces> annonces111 = new ArrayList<Announces>();
-		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 3, annonces111, 35);
+		gameManager.getStats().updatePointsAndBid( Bid.SMALL, 3, annonces111, 35);
 		System.out.println("Hugo devrait avoir gagné -75 pts et les autres 25 : "+gameManager.getStats());
 		
 		gameManager.getPlayers()[0].setTeam(Team.ATTACK);
@@ -96,7 +96,7 @@ public class Test {
 		a2.setOwner(gameManager.getPlayers()[0]);
 		annonces1111.add(a1);
 		annonces1111.add(a2);
-		gameManager.getStats().updatePointsAndBid(gameManager.getPlayers()[0], Bid.SMALL, 2, annonces1111, 49);
+		gameManager.getStats().updatePointsAndBid( Bid.GUARD, 2, annonces1111, 49);
 		System.out.println("Hugo devrait avoir gagné 318 pts et les autres -106 : "+gameManager.getStats());
 		
 	}

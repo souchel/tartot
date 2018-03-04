@@ -28,7 +28,7 @@ public interface iNetworkToCore {
      */
     public void onPlayCard(Player player, Card card);
 
-    public void onCardsDelt(List<Card> cards, Player player);
+    public void onCardsDelt(ArrayList<Card> cards, Player player);
 
     public void onAnnounce(Player player, ArrayList<Announces> announces);
 
