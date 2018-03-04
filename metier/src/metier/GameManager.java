@@ -227,7 +227,7 @@ public class GameManager implements iNetworkToCore{
 			setNextDealer();
 			for (Player player : players) {
 				if (player.getPosition() == position) {
-					sendDeck(player);
+					//sendDeck(player);
 				}
 			}
 		} else setNextDealer();
