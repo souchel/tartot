@@ -168,6 +168,11 @@ public class GameManager implements iNetworkToCore{
 			}
 		}
 		if (check) {
+			for (Player player : players) {
+				if (player.getPosition() == bid.getPlayerPosition()) {
+					player.setTeam(Team.ATTACK);
+				} else player.setTeam(Team.DEFENSE);
+			}
 			startAnnounce();
 		}
 	}
