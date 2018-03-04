@@ -155,7 +155,7 @@ public class GameManager implements iNetworkToCore{
 	
 	
 	//bid phase
-	private void StartRound() {
+	private void startRound() {
 		boolean check = true;
 		for (boolean pos : saidBid) {
 			if (!pos) {
@@ -166,7 +166,10 @@ public class GameManager implements iNetworkToCore{
 			//TODO , must start the round if all bid received
 		}
 	}
-	
+	private void askBid(Bid bid) {
+		//TODO callback pour faire un bid, l'argument bid sert potentiellement à dire à l'activité la bid actuelle, faut en dire une supérieur après tout
+		startRound();
+	}
 	
 	
 	
@@ -223,7 +226,7 @@ public class GameManager implements iNetworkToCore{
 	}
 	public void prepareNextRound() {
 		if (position == indexDealer) {
-			//TODO local player must select position
+			//TODO callback local player must select position
 			cutTheDeck(6);
 			setNextDealer();
 			for (Player player : players) {
@@ -424,7 +427,12 @@ public class GameManager implements iNetworkToCore{
 		}
 		return true;
 	}
-
+	//check if the next to play is supposed to be you
+	public boolean checkMyTurn(int i) {
+		if (position == i+1 || (position == 0 && i == 3)) {
+			return true;
+		} else return false;
+	}
 	
 	
 	
@@ -494,7 +502,10 @@ public class GameManager implements iNetworkToCore{
 			bid = newBid;
 		}
 		saidBid[newBid.getPlayerPosition()] = true;
-		StartRound();
+		startRound();
+		if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
+			askBid(bid);
+		}
 	}
 	public void onDeckReceived(Deck deck) {
 		this.deck = deck;
