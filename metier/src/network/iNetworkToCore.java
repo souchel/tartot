@@ -36,5 +36,4 @@ public interface iNetworkToCore {
 
     public void onDeckReceived(Deck deck);
     
-    public void onAnnounce(List<Announces> announce, Player player);
 }

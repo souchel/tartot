@@ -502,12 +502,4 @@ public class GameManager implements iNetworkToCore{
 		distribute(null);
 	}
 
-	@Override
-	public void onAnnounce(List<Announces> announce, Player player)
-	{
-		
-		// TODO Auto-generated method stub
-		
-	}
-
 }
