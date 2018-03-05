@@ -39,14 +39,23 @@ public class MainMenuActivity extends AppCompatActivity {
 
         // Management of the welcome TextView displaying
         final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
-        final Button goToLobbyButton = findViewById(R.id.text_view_go_to_lobby);
+        final Button goToLobbyButton = findViewById(R.id.button_go_to_lobby);
         String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
         welcomeTextView.setText(welcome);
 
-        // setOnClickListener of what ???
+        // setOnClickListener of the button to access the lobby
         goToLobbyButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToLobbyIntent = new Intent(MainMenuActivity.this, LobbyActivity.class);
+                startActivity(goToLobbyIntent);
+            }
+        });
+
+        // setOnClickListener of the test button to access GameActivity
+        final Button goToGameButton = findViewById(R.id.button_go_to_game);
+        goToLobbyButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent goToLobbyIntent = new Intent(MainMenuActivity.this, GameActivity.class);
                 startActivity(goToLobbyIntent);
             }
         });
