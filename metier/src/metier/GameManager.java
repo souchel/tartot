@@ -33,7 +33,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	public GameManager(String[] usernames) {
 		deck = new Deck();
-		onGoingFold = new OnGoingFold();
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
@@ -52,7 +51,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	public GameManager(String[] usernames, int position) {
 		deck = new Deck();
-		onGoingFold = new OnGoingFold();
 		players = new Player[usernames.length];
 		for (int i = 0 ; i < usernames.length; i++)
 		{
@@ -159,6 +157,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	
 	//bid phase
+	//TODO faire l'écart
 	private void startBid() {
 		if (position == playerTurn) {
 			askBid(bid);
@@ -180,7 +179,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			startAnnounce();
 		}
 	}
-	
 	@Override
 	public void askBid(Bid bid) {
 		if (bid == null)
@@ -198,8 +196,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	//announce phase
 	private void startAnnounce() {
 		//on appelle l'activité qui gère ça
-	}
-	
+	}	
 	@Override
 	//méthode appelée quand le choix d'annonce est fait
 	public void askAnnounce(Announces announce) {
@@ -218,16 +215,65 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			}
 		}
 		if (check) {
-			//TODO startRound();
+			startNextFold();
 		}
 	}
 	
 	
 	
 	//round phase
-	
-	
-	
+	public void startNextFold() {
+		onGoingFold = new OnGoingFold();
+		if (position == playerTurn) {
+			//TODO callback pour mettre une carte, addCard
+			nextPlayer();
+			checkFoldComplet();
+		} //else wait onPlayCard
+	}
+	public void checkFoldComplet() {
+		if (onGoingFold.getCardList().size() == 4) {
+			if (players[0].getHand().getCardList().size() == 0) {
+				//TODO start point phase (and prepareNextFold???)
+			} else {
+				prepareNextFold();
+				startNextFold();
+			}
+		} else continuFold();
+	}
+	public void prepareNextFold() {
+		//TODO on retire pas encore une carte du paquet de celui qui a mit l'excuse mais bon ça on verra plus tard
+		if (onGoingFold.getExcused() != null) {
+			Team excusedTeam = onGoingFold.getExcused().getTeam();
+			if (excusedTeam != onGoingFold.getWiningPlayer().getTeam()) {
+				if (onGoingFold.getExcused().getTeam() == Team.ATTACK) {
+					attackDeck.addCard(new Card(Suit.TRUMP, 22));
+				} else defenseDeck.addCard(new Card(Suit.TRUMP, 22));
+				for (Card card : onGoingFold.getCardList()) {
+					if (card.getSuit() == Suit.TRUMP && card.getValue() == 22) {
+						onGoingFold.getCardList().remove(card);
+					}
+				}
+			}
+		}
+		Player winingPlayer = onGoingFold.getWiningPlayer();
+		if (winingPlayer.getPosition() == bid.getPlayerPosition()) {
+			for (Card card : onGoingFold.getCardList()) {
+				attackDeck.addCard(card);
+			}
+		}  else {
+			for (Card card : onGoingFold.getCardList()) {
+				defenseDeck.addCard(card);
+			}
+		}
+		playerTurn = winingPlayer.getPosition();
+	}
+	public void continuFold() {
+		if (position == playerTurn) {
+			//TODO callback pour mettre une carte, addCard
+			nextPlayer();
+			checkFoldComplet();
+		} //else wait onPlayCard
+	}
 	
 	//count points section
 	public static double oudlerNumberIntoPointsNeeded(int oudlerNumber)
@@ -306,22 +352,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 				
 		} 
 		else setNextDealer();
-	}
-	
-	public void endOfRound()
-	{
-		ArrayList<Card> cardList = onGoingFold.getCardList();
-		for (int index = 0 ; index<players.length; index++)
-		{
-			if (players[index].getTeam()==Team.ATTACK)
-			{
-				attackDeck.addCard(cardList.get(index));
-			}
-			else
-			{
-				defenseDeck.addCard(cardList.get(index));
-			}
-		}
 	}
 	
 	@Override
@@ -579,7 +609,8 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	}
 	@Override
 	public void onPlayCard(Player player, Card card) {
-		// TODO Auto-generated method stub
+		onGoingFold.addCard(card, player);
+		checkFoldComplet();
 	}
 	@Override
 	public void onCardsDelt(ArrayList<Card> cards, Player concernedPlayer) {

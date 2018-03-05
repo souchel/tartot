@@ -6,21 +6,27 @@ import java.util.ArrayList;
 public class OnGoingFold extends Deck{
 	private Suit askedSuit;
 	private Card winingCard;
-	private String winingPlayer;
+	//TODO change Player to his username
+	private Player winingPlayer;
+	private Player excused;
 	
 	public OnGoingFold() {
 		cardList = new ArrayList<Card>(4) ;
+		excused = null;
 	}
 	
 	//should get suit on the first card but if it doesn't it'll take suit from the following card
 	public void addCard(Card addedCard, Player player) {
+		if (addedCard.isEqual(new Card(Suit.TRUMP, 22))){
+			excused = player;
+		}
 		if (askedSuit == null && addedCard.isEqual(new Card(Suit.TRUMP, 22)) == false) {
 			askedSuit = addedCard.getSuit();
 		}
 		super.addCard(addedCard);
 		if (this.isBetterCard(addedCard) == true){
 			winingCard = addedCard;
-			winingPlayer = player.getUsername();
+			winingPlayer = player;
 		}
 		cardList.set(player.getPosition(), addedCard);
 		
@@ -68,7 +74,7 @@ public class OnGoingFold extends Deck{
 		return askedSuit;
 	}
 	
-	public String getWiningPlayer() {
+	public Player getWiningPlayer() {
 		return winingPlayer;
 	}
 	
@@ -76,4 +82,15 @@ public class OnGoingFold extends Deck{
 		return winingCard;
 	}
 	
+	public ArrayList<Card> getCardList() {
+		return cardList;
+	}
+
+	public Player getExcused() {
+		return excused;
+	}
+	
+	public void setExcused(Player player) {
+		excused = player;
+	}
 }
