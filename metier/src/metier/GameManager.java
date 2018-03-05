@@ -174,8 +174,12 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			for (Player player : players) {
 				if (player.getPosition() == bid.getPlayerPosition()) {
 					player.setTeam(Team.ATTACK);
+					for (Card card : chien.getCardList()) {
+						player.getHand().addCard(card);
+					}
 				} else player.setTeam(Team.DEFENSE);
 			}
+			//TODO faire le callback pour mettre des cartes dans l'écart
 			startAnnounce();
 		}
 	}
