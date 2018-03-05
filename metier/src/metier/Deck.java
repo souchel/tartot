@@ -97,4 +97,9 @@ public class Deck {
 			stringDeck = stringDeck + card.getSuit() + card.getValue()+" " ;
 		return stringDeck;
 	}
+	
+	public void empty()
+	{
+		cardList = new ArrayList<Card>();
+	}
 }

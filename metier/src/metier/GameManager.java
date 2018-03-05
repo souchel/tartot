@@ -179,10 +179,57 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 					}
 				} else player.setTeam(Team.DEFENSE);
 			}
-			//TODO faire le callback pour mettre des cartes dans l'écart
-			startAnnounce();
+			//TODO demander au joueur de faire son ecart via l activite correspondante
+			
 		}
 	}
+	@Override
+	public void ecarter(Card[] cards)
+	{
+		chien.empty();
+		//TODO on verifie que les cartes dans l ecart sont valides
+		if (checkEcart(cards))
+		{
+			for (Card card : cards)
+			{
+				chien.addCard(card);
+			}
+			startAnnounce();
+		}
+		else
+		{
+			//TODO reappeler l activite pour que le joueur choisisse qqch de correct
+		}
+	}
+	
+	public boolean checkEcart(Card[] cards)
+	{
+		if ((players.length == 4 || players.length == 3) && cards.length != 6)
+		{
+			return false ;
+		}
+		else if (players.length == 5 && cards.length != 3)
+		{
+			return false ;
+		}
+		else
+		{
+			for (Card card : cards)
+			{
+				if (card.getValue()==14)
+				{
+					return false;
+				}
+				else if (card.getSuit() == Suit.TRUMP)
+				{
+					return false;
+				}
+			}
+		}
+		return true ;
+	}
+	
+	
 	@Override
 	public void askBid(Bid bid) {
 		if (bid == null)
@@ -229,11 +276,27 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	public void startNextFold() {
 		onGoingFold = new OnGoingFold();
 		if (position == playerTurn) {
-			//TODO callback pour mettre une carte, addCard
-			nextPlayer();
-			checkFoldComplet();
+			//TODO appeler l activite qui fait choisir la carte a mettre au joueur
+			
 		} //else wait onPlayCard
 	}
+	
+	@Override
+	public void startNectFoldCalledBack(Card card)
+	{
+		if (checkCard(card, players[position]))
+		{
+			onGoingFold.addCard(card);
+			nextPlayer();
+			checkFoldComplet();
+		}
+		else
+		{
+			//TODO reappeler l activite
+		}
+	}
+	
+	
 	public void checkFoldComplet() {
 		if (onGoingFold.getCardList().size() == 4) {
 			if (players[0].getHand().getCardList().size() == 0) {
@@ -273,10 +336,24 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	}
 	public void continuFold() {
 		if (position == playerTurn) {
-			//TODO callback pour mettre une carte, addCard
+			//TODO appeler l activite qui fait choisir
+			
+		} //else wait onPlayCard
+	}
+	
+	@Override
+	public void continuFoldCalledBack(Card card)
+	{
+		if (checkCard(card, players[position]))
+		{
+			onGoingFold.addCard(card);
 			nextPlayer();
 			checkFoldComplet();
-		} //else wait onPlayCard
+		}
+		else
+		{
+			//TODO appeler l activite de nouveau
+		}
 	}
 	
 	//count points section
