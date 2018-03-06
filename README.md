@@ -15,6 +15,7 @@ https://drive.google.com/drive/folders/1f12cWKSoiTFS2EEkgUXaoGn0IgW2Ums3
 https://tree.taiga.io/project/neuracr-tartot/kanban
 
 V0.1 content :
+<<<<<<< HEAD
 
 test
 >>>>>>> dev
@@ -37,3 +38,5 @@ V0.1 content :
  - Connexion Class :
 
 >>>>>>> origin
+=======
+>>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6

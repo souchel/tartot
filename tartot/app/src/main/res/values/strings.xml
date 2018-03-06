@@ -1,3 +1,54 @@
+<<<<<<< HEAD
 <resources>
     <string name="app_name">Tartot</string>
 </resources>
+=======
+<resources>
+    <string name="app_name">tartot</string>
+    <string name="title_activity_first_log">Tartot</string>
+
+
+    <!-- Strings related to FirstLogActivity -->
+    <string name="text_view_first_log">Bienvenue dans Tartot, quel est ton pseudo ?</string>
+    <string name="edit_text_first_log">Entrer un pseudo (votre pseudo Google par défaut)</string>
+    <string name="button_first_log">Accéder au menu</string>
+    <string name="text_view_google_log_in">Pour jouer, vous devez vous connecter avec votre compte Google</string>
+    <string name="button_google_log_in">se connecter avec Google !</string>
+
+    <!-- Strings related to MainMenuActivity -->
+    <string name="text_view_title_main_menu">Avec Tartot, au tarot t\'y joueras tard ou tôt !</string>
+    <string name="text_view_welcome_main_menu">Bienvenue </string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
+    <string name="signin_other_error">unknown error during sign in.</string>
+    <string name="app_id">491051549235</string>
+    <string name="action_go_to_lobby">Go to lobby</string>
+    <string name="invite_players">invite players</string>
+    <string name="auto_match">auto match players</string>
+    <string name="button_label_invitation_inbox">Invitations</string>
+    <string name="displayWaitingRoom">display waiting room</string>
+    <string name="player_number_tv">number of players in game for automatching</string>
+    <string-array name="player_number">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <!-- Strings related to invitations -->
+    <string name="accept_popup_invite">Accept!</string>
+    <string name="inv_popup_text">Incoming invitation!</string>
+    <string name="is_inviting_you">is inviting you</string>
+
+
+</resources>
+>>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6

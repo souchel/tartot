@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="team23.tartot">
 
@@ -9,3 +10,47 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" />
 </manifest>
+=======
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="team23.tartot">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <!-- for dark mode : android:theme="@style/Theme.AppCompat.NoActionBar" -->
+        <activity
+            android:name=".FirstLogActivity"
+            android:label="@string/title_activity_first_log"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GameActivity"
+            android:screenOrientation="landscape"></activity>
+        <activity
+            android:name=".MainMenuActivity"
+            android:screenOrientation="landscape"></activity>
+
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/app_id" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".LobbyActivity"
+            android:screenOrientation="landscape"></activity>
+    </application>
+
+</manifest>
+>>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6
