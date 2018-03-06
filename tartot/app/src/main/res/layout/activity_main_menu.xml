@@ -35,11 +35,23 @@
         app:layout_constraintVertical_bias="0.298" />
 
     <Button
-        android:id="@+id/text_view_go_to_lobby"
+        android:id="@+id/button_go_to_lobby"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="@string/action_go_to_lobby"
-        tools:layout_editor_absoluteX="136dp"
-        tools:layout_editor_absoluteY="332dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_go_to_game"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="GO TO GAME"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_go_to_lobby" />
 
 </android.support.constraint.ConstraintLayout>
