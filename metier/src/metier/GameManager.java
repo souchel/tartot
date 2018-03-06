@@ -65,7 +65,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		this.position = position;
 	}
 	
-	//TODO not finished
 	public void startGame() {
 		playerTurn = indexDealer;
 		nextPlayer(); //don't need this for distribution phase, so set up for first player to play
@@ -187,7 +186,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	public void ecarter(Card[] cards)
 	{
 		chien.empty();
-		//TODO on verifie que les cartes dans l ecart sont valides
+		//on verifie que les cartes dans l ecart sont valides
 		if (checkEcart(cards))
 		{
 			for (Card card : cards)
@@ -446,20 +445,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			}
 		}
 	}
-	
-	
-	
-
-	//TODO reste a faire j ai juste renvoye un truc au pif pour que ca puisse compiler
-	//inutil?
-//	private Player[] getPlayerAtPosition(int i) {
-//		
-//		return players;
-//	}
-	
-	
-	
-	
 	
 	
 	//check rules section
