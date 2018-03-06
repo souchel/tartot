@@ -64,7 +64,7 @@ public class FirstLogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_first_log);
 
         signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        Log.i("debug","signin trouvé");
+
         final Button firstLogButton = findViewById(R.id.button_first_log);
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -145,11 +145,11 @@ public class FirstLogActivity extends AppCompatActivity {
     private void signInSilently() {
         Log.i("debug","sigin silent");
 
-        signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         signInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
             @Override
             public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                 if (task.isSuccessful()) {
+                    Log.i("debug", "signInSilently(): success");
                     // The signed in account is stored in the task's result.
                     userAccount = task.getResult();
                     retrieveGooglePlayer(userAccount);
@@ -161,6 +161,9 @@ public class FirstLogActivity extends AppCompatActivity {
                     invitationsClient.registerInvitationCallback(invitationCallback);
 
                 } else {
+                    Log.i("debug", "signInSilently(): failed");
+
+
                     //automatic log in failed.
                     //todo : notify user that he has to log in manually
                 }
