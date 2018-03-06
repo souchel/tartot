@@ -53,7 +53,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
         // setOnClickListener of the test button to access GameActivity
         final Button goToGameButton = findViewById(R.id.button_go_to_game);
-        goToLobbyButton.setOnClickListener(new View.OnClickListener() {
+        goToGameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToLobbyIntent = new Intent(MainMenuActivity.this, GameActivity.class);
                 startActivity(goToLobbyIntent);

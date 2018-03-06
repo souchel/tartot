@@ -9,6 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- for dark mode : android:theme="@style/Theme.AppCompat.NoActionBar" -->
         <activity
             android:name=".FirstLogActivity"
             android:label="@string/title_activity_first_log"
