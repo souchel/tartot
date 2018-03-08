@@ -1,10 +1,9 @@
-package team23.tartot.network;
+package network;
 
-import java.util.List;
 import java.util.ArrayList;
-import team23.tartot.core.Announce;
-import team23.tartot.core.Card;
-import team23.tartot.core.Player;
+import java.util.List;
+
+import metier.*;
 
 /**
  * Created by neuracr on 20/02/18.
@@ -29,11 +28,12 @@ public interface iNetworkToCore {
      */
     public void onPlayCard(Player player, Card card);
 
-    public void onCardsDelt(List<Card> cards, Player player);
+    public void onCardsDelt(ArrayList<Card> cards, Player player);
 
-    public void onAnnounce(Player player, ArrayList<Announce> announces);
+    public void onAnnounce(Player player, ArrayList<Announces> announces);
 
     public void onBid(Bid bid);
 
     public void onDeckReceived(Deck deck);
+    
 }
