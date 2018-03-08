@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-package team23.tartot;
-
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
-public class GameActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
-}
-=======
 package team23.tartot;
 
 import android.content.Intent;
@@ -107,4 +92,3 @@ public class GameActivity extends AppCompatActivity {
         });
     }
 }
->>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6

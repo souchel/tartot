@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Tartot.iml" filepath="$PROJECT_DIR$/Tartot.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-<<<<<<< HEAD
-=======
       <module fileurl="file://$PROJECT_DIR$/tartot.iml" filepath="$PROJECT_DIR$/tartot.iml" />
->>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6
     </modules>
   </component>
 </project>

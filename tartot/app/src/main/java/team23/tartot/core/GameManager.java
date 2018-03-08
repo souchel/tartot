@@ -1,10 +1,10 @@
-package metier;
+package team23.tartot.core;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import network.iCoreToNetwork;
-import network.iNetworkToCore;
+import team23.tartot.network.iCoreToNetwork;
+import team23.tartot.network.iNetworkToCore;
 
 //multiplicateurs 1, 2, 4, 6
 
@@ -128,7 +128,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		//sending cards to player via network
 		for (Player player : players) {
 			//TODO 
-			//dealCards(player.getHand().getCardList(), player); //à importer quand on sera sur android studio
+			//dealCards(player.getHand().getCardList(), player); //ï¿½ importer quand on sera sur android studio
 		}
 		startBid();
 	}
@@ -136,7 +136,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		//on cherche a savoir a quel moment on va mettre des cartes dans le chien
 		//On cree une liste de moments qui ne peuvent pas exister
 				
-		//Partie qui sert à rien
+		//Partie qui sert ï¿½ rien
 		int[] indexes = {25,25,25,25,25,25};
 		Random rndGenerator = new Random();
 		//on pioche 6 entiers entre 0 et 22 sachant qu'on distribue 3 fois 24 cartes mais qu on ne 
@@ -156,7 +156,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	
 	//bid phase
-	//TODO faire l'écart
+	//TODO faire l'ï¿½cart
 	private void startBid() {
 		if (position == playerTurn) {
 			askBid(bid);
@@ -245,10 +245,10 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	//announce phase
 	private void startAnnounce() {
-		//on appelle l'activité qui gère ça
+		//on appelle l'activitï¿½ qui gï¿½re ï¿½a
 	}	
 	@Override
-	//méthode appelée quand le choix d'annonce est fait
+	//mï¿½thode appelï¿½e quand le choix d'annonce est fait
 	public void askAnnounce(Announces announce) {
 		if (announce != null)
 		{
@@ -307,7 +307,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		} else continuFold();
 	}
 	public void prepareNextFold() {
-		//TODO on retire pas encore une carte du paquet de celui qui a mit l'excuse mais bon ça on verra plus tard
+		//TODO on retire pas encore une carte du paquet de celui qui a mit l'excuse mais bon ï¿½a on verra plus tard
 		if (onGoingFold.getExcused() != null) {
 			Team excusedTeam = onGoingFold.getExcused().getTeam();
 			if (excusedTeam != onGoingFold.getWiningPlayer().getTeam()) {
@@ -388,7 +388,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	
 	//prepare next round methods
 	public void reinitializeForNextRound() {
-		//le deck se réinitialise pas mais ce partage par des méthodes network
+		//le deck se rï¿½initialise pas mais ce partage par des mï¿½thodes network
 		chien = new Deck();
 		bid = null;
 		playersAnnounces = null;
@@ -450,7 +450,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	//check rules section
 	
 	//return if the card can be played, unless false
-	//TODO pas testé
+	//TODO pas testï¿½
 	public boolean checkCard(Card card, Player player) {
 		Card winingCard = onGoingFold.getWiningCard();
 		Suit askedSuit = onGoingFold.getSuit();
@@ -576,7 +576,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		}
 		return res;
 	}
-	//TODO inutil, à gérer dans la partie comptage de points?
+	//TODO inutil, ï¿½ gï¿½rer dans la partie comptage de points?
 	public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
 		boolean res = true;
 		for (Announces announce : announces) {
@@ -592,9 +592,9 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 				case SLAM:
 					break;
 				case PETIT_AU_BOUT:
-					//vérifie juste que le petit a bien été mis au bout, pas que le pli est gagné
+					//vï¿½rifie juste que le petit a bien ï¿½tï¿½ mis au bout, pas que le pli est gagnï¿½
 					boolean petit = false;
-					//TODO if (Card player.getDeck().getCardList().get(//TODO récupérer lindice)) {
+					//TODO if (Card player.getDeck().getCardList().get(//TODO rï¿½cupï¿½rer lindice)) {
 						;
 					//}
 					break;
@@ -690,7 +690,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	@Override
 	public void onAnnounce(Player player, ArrayList<Announces> announces) {
 		for (int i = 0 ; i < announces.size(); i++) {
-			if (checkAnnouncesBegining(announces, player)) { //TODO vérifier que tous ces check sont utils ils devraient être fait dans l'activité normalement
+			if (checkAnnouncesBegining(announces, player)) { //TODO vï¿½rifier que tous ces check sont utils ils devraient ï¿½tre fait dans l'activitï¿½ normalement
 				playersAnnounces.add(announces.get(i));
 			}
 		}
@@ -710,7 +710,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	}
 	public void onDeckReceived(Deck deck) {
 		this.deck = deck;
-		//TODO récup les positions de coupe
+		//TODO rï¿½cup les positions de coupe
 		distribute(null);
 	}
 

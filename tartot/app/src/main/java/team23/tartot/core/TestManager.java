@@ -1,4 +1,4 @@
-package metier;
+package team23.tartot.core;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class TestManager {
 		System.out.println("test haveHigherTrump");
 		System.out.println("a plus haut : "+blu.haveHigherTrump(2));
 		System.out.println("a moins haut : "+blu.haveHigherTrump(12));
-		System.out.println("a pas du tout de toute façon : "+paul.haveHigherTrump(3));
+		System.out.println("a pas du tout de toute faï¿½on : "+paul.haveHigherTrump(3));
 		System.out.println("a que l'excuse : "+laure.haveHigherTrump(2)+"\n");
 		//test counttrump
 		System.out.println("test countTrump");
@@ -56,22 +56,22 @@ public class TestManager {
 		System.out.println("2 atouts :"+hugo.countTrump()+"\n");
 		//testCheckAnnouncesBegining
 		System.out.println("test checkAnnouncesBegining");
-		System.out.println("pas de misère mais misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), blu));
-		System.out.println("double misère et misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), paul));
-		System.out.println("simple misère et misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), gui));
-		System.out.println("excuse mais misère annoncée :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), laure));
+		System.out.println("pas de misï¿½re mais misï¿½re annoncï¿½e :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), blu));
+		System.out.println("double misï¿½re et misï¿½re annoncï¿½e :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), paul));
+		System.out.println("simple misï¿½re et misï¿½re annoncï¿½e :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), gui));
+		System.out.println("excuse mais misï¿½re annoncï¿½e :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.MISERY), laure));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 11));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 12));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 13));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 14));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 15));
-		System.out.println("simple annoncée mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
+		System.out.println("simple annoncï¿½e mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 16));
-		System.out.println("simple annoncée et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
-		System.out.println("double annoncée mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
+		System.out.println("simple annoncï¿½e et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.SIMPLE_HANDFUL), blu));
+		System.out.println("double annoncï¿½e mais non aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 17));
 		blu.getHand().addCard(new Card(Suit.TRUMP, 18));
-		System.out.println("double annoncée et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
+		System.out.println("double annoncï¿½e et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
 
 	}
 }

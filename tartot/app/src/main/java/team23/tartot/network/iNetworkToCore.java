@@ -1,9 +1,9 @@
-package network;
+package team23.tartot.network;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import metier.*;
+import team23.tartot.core.*;
 
 /**
  * Created by neuracr on 20/02/18.

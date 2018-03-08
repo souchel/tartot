@@ -1,7 +1,7 @@
-package network;
+package team23.tartot.network;
 import java.util.List;
 
-import metier.*;
+import team23.tartot.core.*;
 
 
 /**

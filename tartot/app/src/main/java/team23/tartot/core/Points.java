@@ -1,4 +1,4 @@
-package metier;
+package team23.tartot.core;
 
 import java.util.ArrayList;
 
@@ -143,7 +143,7 @@ public class Points {
 	}
 	public void updatePointsHandful(double[] pointsGame, double gain, boolean attackWon, Player[] players)
 	{
-		//TODO il faut vérifier que si la defense annonce une annonce et perd ca soit l attaque qui gagne les points
+		//TODO il faut vï¿½rifier que si la defense annonce une annonce et perd ca soit l attaque qui gagne les points
 		int multiplier ;
 		if (attackWon )
 		{

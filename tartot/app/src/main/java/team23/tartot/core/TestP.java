@@ -1,9 +1,9 @@
-package metier;
+package team23.tartot.core;
 import java.io.*;
 
 public class TestP {
 	public static void main(String[] args) throws IOException {
-		System.out.println("création d'un deck");
+		System.out.println("crï¿½ation d'un deck");
 		Deck deck = new Deck();
 		System.out.println("deck vide et team inconnu");
 		System.out.println("team: "+deck.getTeam());
@@ -24,7 +24,7 @@ public class TestP {
 		System.out.println("points dans deck: "+deck.countPoints());
 		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
 		
-		System.out.println("ajout d'une carte déjà existante");
+		System.out.println("ajout d'une carte dï¿½jï¿½ existante");
 		deck.addCard(new Card(Suit.TRUMP, 22));
 		System.out.println("points dans deck: "+deck.countPoints());
 		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
@@ -40,8 +40,8 @@ public class TestP {
 //		System.out.println("points dans deck: "+deck.countPoints());
 //		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
 		
-		Deck deck2 = new Deck();
-		System.out.println("ajout d'une carte banale à deck2");
+/*		Deck deck2 = new Deck();
+		System.out.println("ajout d'une carte banale ï¿½ deck2");
 		deck2.addCard(new Card(Suit.DIAMOND, 13));
 		System.out.println("points dans deck: "+deck2.countPoints());
 		System.out.println("bouts dans deck: "+deck2.countOudlers());
@@ -51,12 +51,12 @@ public class TestP {
 		System.out.println("bouts dans deck: "+deck.countOudlers()+"\n");
 		
 		OnGoingFold fold = new OnGoingFold();
-		System.out.println("suit pas instancié : "+fold.getSuit());
+		System.out.println("suit pas instanciï¿½ : "+fold.getSuit());
 		
 		System.out.println("ajout d'une carte :");
 		fold.addCard(new Card(Suit.TRUMP, 22), "Paul");
-		System.out.println("joueur gagnant non instancié :"+fold.getWiningPlayer());
-		System.out.println("suit pas instancié : "+fold.getSuit());
+		System.out.println("joueur gagnant non instanciï¿½ :"+fold.getWiningPlayer());
+		System.out.println("suit pas instanciï¿½ : "+fold.getSuit());
 		
 		System.out.println("ajout d'une carte :");
 		fold.addCard(new Card(Suit.DIAMOND, 7), "Laure");
@@ -78,7 +78,7 @@ public class TestP {
 		System.out.println("joueur gagnant Thomas :"+fold.getWiningPlayer());
 		System.out.println("suit diamond: "+fold.getSuit());
 		
-		System.out.println("coupé :");
+		System.out.println("coupï¿½ :");
 		fold.addCard(new Card(Suit.TRUMP, 7), "Paul");
 		System.out.println("joueur gagnant Paul :"+fold.getWiningPlayer());
 		System.out.println("suit diamond: "+fold.getSuit());
@@ -86,6 +86,6 @@ public class TestP {
 		System.out.println("excuse :");
 		fold.addCard(new Card(Suit.TRUMP, 22), "Laure");
 		System.out.println("joueur gagnant Paul :"+fold.getWiningPlayer());
-		System.out.println("suit diamond: "+fold.getSuit());
+		System.out.println("suit diamond: "+fold.getSuit());*/
 	}
 }

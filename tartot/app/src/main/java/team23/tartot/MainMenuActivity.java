@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-package team23.tartot;
-
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
-public class MainMenuActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_menu);
-    }
-}
-=======
 package team23.tartot;
 
 import android.app.Activity;
@@ -78,4 +63,3 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
 }
->>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6

@@ -1,4 +1,4 @@
-package metier;
+package team23.tartot.core;
 
 public class Card {
 	private Suit suit;

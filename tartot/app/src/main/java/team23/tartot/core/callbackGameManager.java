@@ -1,4 +1,4 @@
-package metier;
+package team23.tartot.core;
 
 public interface callbackGameManager {
 	public void askBid(Bid bid);

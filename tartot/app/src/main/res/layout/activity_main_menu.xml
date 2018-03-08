@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="team23.tartot.MainMenuActivity">
-
-</android.support.constraint.ConstraintLayout>
-=======
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -66,4 +55,3 @@
         app:layout_constraintTop_toBottomOf="@+id/button_go_to_lobby" />
 
 </android.support.constraint.ConstraintLayout>
->>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6
