@@ -8,4 +8,7 @@
     <!-- Colors for Cards -->
     <color name="transparent">#00000000</color>
     <color name="red">#EE0000</color>
+    <color name="black">#111111</color>
+    <color name="backgroundColor">#EEEEEE</color>
+
 </resources>
