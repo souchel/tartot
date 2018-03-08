@@ -1,10 +1,8 @@
 package team23.tartot.network;
 import java.util.List;
 
-import team23.tartot.core.Announce;
-import team23.tartot.core.Card;
-import team23.tartot.core.Player;
-import team23.tartot.core.iPlayer;
+import team23.tartot.core.*;
+
 
 /**
  * Created by neuracr on 01/02/2018.
@@ -32,7 +30,7 @@ public interface iCoreToNetwork {
      * Invite the player in parameter in the lobby occupied by us.
      * @param player the player to invite
      */
-    public void inviteFriend(iPlayer player);
+    //public void inviteFriend(iPlayer player);
 
     /**
      * Start a new game with the players in the lobby.
@@ -75,5 +73,11 @@ public interface iCoreToNetwork {
      * Inform other players of an announce. Raise an exception if we are not in game
      * @param announce: the announce to broadcast
      */
-    public void announce(Announce announce);
+    public void announce(List<Announces> announce, Player player);
+
+    //inform other players of a bid
+    public void bid(Bid bid);
+
+    //to send the deck to another player after cutting it
+    public void sendDeck(Player player);
 }
