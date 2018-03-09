@@ -25,6 +25,11 @@ import java.util.Random;
 import team23.tartot.core.Player;
 
 public class GameActivity extends AppCompatActivity {
+    final private static int CARD_WIDTH = 80;
+    final private static int CARD_HEIGHT = 160;
+    final private static int NUMBER_OF_CARDS = 30;
+
+    private int cardNumber = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,54 +37,74 @@ public class GameActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
+
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //We get the layout created in xml, a LinearLayout for the player's deck
-                LinearLayout playerCardLayout = findViewById(R.id.player_card_layout);
-                //TODO add a LinearLayout vertical in the xml and then manage the card positionning
+                LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
+                LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
+                cardsDownLayout.setPadding(0,0,0,-60);
 
                 //We create a (in the future several) FrameLayout for one Card
                 FrameLayout cardFL = new FrameLayout(getApplicationContext());
 
                 //WE DEAL WITH THE BACKGROUND
                 Bitmap cardBGBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
-                Bitmap cardBGResizedBP = getResizedBitmap(cardBGBP, 80, 160);
+                Bitmap cardBGResizedBP = getResizedBitmap(cardBGBP, CARD_WIDTH, CARD_HEIGHT);
                 ImageView cardBackgroundIV = new ImageView(getApplicationContext());
                 cardBackgroundIV.setImageBitmap(cardBGResizedBP);
-
-
-                //WE DEAL WITH THE COLOR
-                Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds);
-                Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, 80, 160);
-                ImageView cardColorIV = new ImageView(getApplicationContext());
-                cardColorIV.setImageBitmap(cardColorResizedBP);
 
 
                 ///WE DEAL WITH THE VALUE
                 //We create an int for the card value (FOR THE TEST)
                 Random rand = new Random();
-                int n = rand.nextInt(9)+1;
+                final int value = rand.nextInt(9)+1;
+                final String color = "coeur";
+
+                //WE DEAL WITH THE COLOR
+                Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts);
+                Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
+                ImageView cardColorIV = new ImageView(getApplicationContext());
+                cardColorIV.setImageBitmap(cardColorResizedBP);
+
 
                 //We create the 2 textViews, one for the value up and one for the one down
-                TextView cardValueUpTV = createTVforValue(n, true, true);
-                TextView cardValueDownTV = createTVforValue(n, true, false);
+                TextView cardValueUpTV = createTVforValue(value, true, true);
+                TextView cardValueDownTV = createTVforValue(value, true, false);
+
+                //We create a button for the action
+                Button cardButton = new Button(getApplicationContext());
+                cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
+                cardButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TextView testTV = findViewById(R.id.textViewTest);
+                        testTV.setText(Integer.toString(value)+" de "+ color);
+                    }
+                });
 
                 // we add the image view
                 cardFL.addView(cardBackgroundIV);
                 cardFL.addView(cardColorIV);
                 cardFL.addView(cardValueUpTV);
                 cardFL.addView(cardValueDownTV);
-                //TODO add a transparent button in the framelayout to make the card clickable
-
+                cardFL.addView(cardButton);
 
                 //we set Layout Parameters
-                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(80,160);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
                 cardFL.setLayoutParams(lp);
 
-                //we add the frameLayout to the LinearLayout
-                playerCardLayout.addView(cardFL);
+                //we add the frameLayout to the horizontal LinearLayout depending on the number of card already displayed
+                if (cardNumber < NUMBER_OF_CARDS/2) {
+                    cardsDownLayout.addView(cardFL);
+                } else if (cardNumber < NUMBER_OF_CARDS){
+                    cardsUpLayout.addView(cardFL);
+                } else {
+
+                }
+
+                cardNumber++;
             }
         });
     }
