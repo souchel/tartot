@@ -22,6 +22,19 @@ public class Player {
 		//hand?
 		//position?
 	}
+
+	public Player(String username)
+	{
+		this.username = username;
+		//quand les players sont crees ils n ont pas encore d equipe d ou ils sont dans l equipe none
+		team = Team.NONE;
+		deck = new Deck();
+		hand = new Deck();
+		//TODO
+		//hand?
+		//position?
+	}
+
 	public void setTeam(Team team) {
 		this.team = team;
 	}
