@@ -10,5 +10,6 @@
     <color name="red">#EE0000</color>
     <color name="black">#111111</color>
     <color name="backgroundColor">#EEEEEE</color>
+    <color name="highlight">#AAAAAA</color>
 
 </resources>

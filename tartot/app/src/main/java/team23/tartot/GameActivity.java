@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Typeface;
 import android.media.Image;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.ActionBar;
@@ -108,10 +109,11 @@ public class GameActivity extends AppCompatActivity {
             TextView cardValueDownTV = new TextView(getApplicationContext());
             //We create the 2 textViews, one for the value up and one for the one down
             if (suit != "t") {
-                cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true);
-                cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false);
+                cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, 18 );
+                cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, 18);
             } else if (suit == "t") {
-                //TODO MANAGE THE TRUMPS' DISPLAYING & THE 10 DISPLAYING
+                cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, 10 );
+                cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, 10);
             }
 
             //We create a button for the action
@@ -153,9 +155,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public boolean suitIntoColor (String suit) {
-        boolean color = true; //if true corresponds to red, false is black
-        if (suit == "s" || suit == "c") {
-            color = false;
+        boolean color = false; //true corresponds to red, false is black
+        if (suit == "d" || suit == "h") {
+            color = true;
         }
         return color;
     }
@@ -177,7 +179,7 @@ public class GameActivity extends AppCompatActivity {
         return resizedBitmap;
     }
 
-    public TextView createTVforValue(String value, boolean color, boolean position) {
+    public TextView createTVforValue(String value, boolean color, boolean position, int textSize) {
         TextView cardValueTV = new TextView(getApplicationContext());
 
         //we set the card value
@@ -197,7 +199,12 @@ public class GameActivity extends AppCompatActivity {
 
         //we set padding
         cardValueTV.setPadding(6,-3,0,0);
-        cardValueTV.setTextSize(Math.round(CARD_HEIGHT/18));
+        cardValueTV.setTextSize(Math.round(CARD_HEIGHT/textSize));
+        if (textSize == 10) {
+            cardValueTV.setTypeface(Typeface.DEFAULT_BOLD);
+            //cardValueTV.setHintTextColor(getResources().getColor(R.color.highlight));
+
+        }
         return cardValueTV;
     }
 
