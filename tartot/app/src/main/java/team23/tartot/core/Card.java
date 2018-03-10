@@ -38,9 +38,9 @@ public class Card {
 	}
 	public String valueToString()
 	{
-		if ((suit == Suit.TRUMP && value != 22) ||(value < 10))
+		if ((suit == Suit.TRUMP && value != 22) ||(value <= 10))
 		{
-			return ""+value ;
+			return Integer.toString(value);
 		}
 		else
 		{

@@ -45,7 +45,9 @@ public class GameActivity extends AppCompatActivity {
         actionBar.hide();
 
         initializeDeck();
+        Log.i("deck",deck.toString());
         deck.shuffle();
+        Log.i("deck",deck.toString());
 
         for(int i = 0; i < NUMBER_OF_CARDS; i++) {
             hand.add(deck.getCardList().get(i));
@@ -71,6 +73,8 @@ public class GameActivity extends AppCompatActivity {
             final String value = currentCard.valueToString();
             final String suit = currentCard.getSuit().toString();
 
+            Log.i("deck", value + " " + suit);
+
             //We create a (in the future several) FrameLayout for one Card
             FrameLayout cardFL = new FrameLayout(getApplicationContext());
 
@@ -81,13 +85,16 @@ public class GameActivity extends AppCompatActivity {
             cardBackgroundIV.setImageBitmap(cardBGResizedBP);
 
             //WE DEAL WITH THE COLOR
-            Bitmap cardColorBP = cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);;
+            Bitmap cardColorBP = cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
+            ;
             if (suit == "s") {
                 cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
             } else if (suit == "h") {
                 cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts);
             } else if (suit == "d") {
                 cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds);
+            } else if (suit == "c") {
+                cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs);
             } else if (suit == "t") {
                 cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
             }
@@ -190,25 +197,21 @@ public class GameActivity extends AppCompatActivity {
 
         //we set padding
         cardValueTV.setPadding(6,-3,0,0);
-        cardValueTV.setTextSize(10);
+        cardValueTV.setTextSize(Math.round(CARD_HEIGHT/18));
         return cardValueTV;
     }
 
     //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER
-    public void initializeDeck()
-    {
-        for (Suit suit : Suit.values())
-        {
+    public void initializeDeck() {
+        for (Suit suit : Suit.values()) {
             int bound ;
-            if (suit ==  Suit.TRUMP)
-            {
+            if (suit ==  Suit.TRUMP) {
                 bound = 22;
-            }
-            else
-            {
+            } else {
                 bound = 14;
             }
-            for (int i = 1; i<=bound; i++)
+
+            for (int i = 1; i <= bound; i++)
             {
                 deck.addCard(new Card(suit, i));
             }
