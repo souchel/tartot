@@ -123,24 +123,23 @@ public class GameActivity extends AppCompatActivity {
             //We create a (in the future several) FrameLayout for one Card
             FrameLayout cardFL = new FrameLayout(getApplicationContext());
 
-            //WE DEAL WITH THE BACKGROUND
-            ImageView cardBackgroundIV = createCardBackground();
+            //WE DEAL WITH THE BACKGROUND, deprecated: to make the card displaying faster, we merged the card background and color
+            //ImageView cardBackgroundIV = createCardBackground();
 
             //WE DEAL WITH THE COLOR
             ImageView cardColorIV = createCardColor(suit);
 
             //WE DEAL WITH THE VALUE
             TextView cardValueUpTV = new TextView(getApplicationContext());
-            TextView cardValueDownTV = new TextView(getApplicationContext());
+            //TextView cardValueDownTV = new TextView(getApplicationContext());
             //We create the 2 textViews, one for the value up and one for the one down
             if (suit != "t") {
                 cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
-                cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
+                //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
             } else if (suit == "t") {
                 cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
-                cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
+                //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
             }
-
             //We create a button for the action
             Button cardButton = new Button(getApplicationContext());
             cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
@@ -155,10 +154,10 @@ public class GameActivity extends AppCompatActivity {
             });
 
             // we add the image view
-            cardFL.addView(cardBackgroundIV);
+            //cardFL.addView(cardBackgroundIV); optimization of the cards loading !
             cardFL.addView(cardColorIV);
             cardFL.addView(cardValueUpTV);
-            cardFL.addView(cardValueDownTV);
+            //cardFL.addView(cardValueDownTV);
             cardFL.addView(cardButton);
 
             //we set Layout Parameters
@@ -184,7 +183,7 @@ public class GameActivity extends AppCompatActivity {
         View playedCardView = middleGameZone.getChildAt(1);
         FrameLayout playedCardLayout = (FrameLayout) playedCardView;
 
-        ImageView cardBackgroundIV = createCardBackground();
+        //ImageView cardBackgroundIV = createCardBackground();
         ImageView cardColorIV = createCardColor(suit);
         TextView cardValueUpTV = new TextView(getApplicationContext());
         TextView cardValueDownTV = new TextView(getApplicationContext());
@@ -197,7 +196,7 @@ public class GameActivity extends AppCompatActivity {
             cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
         }
 
-        playedCardLayout.addView(cardBackgroundIV);
+        //playedCardLayout.addView(cardBackgroundIV);
         playedCardLayout.addView(cardColorIV);
         playedCardLayout.addView(cardValueUpTV);
         playedCardLayout.addView(cardValueDownTV);
