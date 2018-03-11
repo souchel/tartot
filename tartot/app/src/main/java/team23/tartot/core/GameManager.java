@@ -713,5 +713,4 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		//TODO r�cup les positions de coupe
 		distribute(null);
 	}
-
 }
