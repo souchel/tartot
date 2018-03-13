@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
 import team23.tartot.core.GameManager;
@@ -71,7 +72,7 @@ public class GameActivity extends AppCompatActivity {
                     hand.add(deck.getCardList().get(i));
                 }
 
-                onCardsAddedToPlayersDeck(hand);
+                addCardsToDeck(hand);
             }
         });
     }
@@ -97,7 +98,11 @@ public class GameActivity extends AppCompatActivity {
         //TODO PLACE CORRECTLY PEOPLE.
     }
 
-    //At the creation of the layout to manage the placement of every graphical component
+
+    /**
+     * method called at the creation of the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
+     * @param playersAmount an int that corresponds to GameManager.players.size()
+     */
     public void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
 
@@ -146,7 +151,13 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    public void onCardsAddedToPlayersDeck (ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
+    /**
+     * public method to trigger when the cards are distributed.All the Cards in the player's hand are graphically created:
+     * in a FrameLayout, that will be add in one of the horizontal LinearLayout, we add one ImageView (for color and background),
+     * one TextView (for the value) and one Button (to make the card clickable)
+     * @param hand an ArrayList of Cards.
+     */
+    public void addCardsToDeck (ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
         LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
         LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
         cardsDownLayout.setPadding(0,0,0,-CARD_HEIGHT/2);
@@ -212,15 +223,13 @@ public class GameActivity extends AppCompatActivity {
             } else {
 
             }
-
             cardNumber++;
         }
-
     }
 
     public void onCardClicked(String value, String suit) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
-        LinearLayout subLinearLayout = (LinearLayout)  middleGameZone.getChildAt(1);
+        LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
         FrameLayout playedCardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
 
         //ImageView cardBackgroundIV = createCardBackground();
@@ -242,7 +251,12 @@ public class GameActivity extends AppCompatActivity {
         playedCardLayout.addView(cardValueDownTV);
     }
 
-    public boolean suitIntoColor (String suit) {
+    /**
+     * this protected method is to transform the suit into a color
+     * @param suit a String which can be (s, h, d, c, t) and comes from the method toString() of the Card enum
+     * @return the boolean color : true = red & false = black
+     */
+    protected boolean suitIntoColor (String suit) {
         boolean color = false; //true corresponds to red, false is black
         if (suit == "d" || suit == "h") {
             color = true;
@@ -250,7 +264,14 @@ public class GameActivity extends AppCompatActivity {
         return color;
     }
 
-    public Bitmap getResizedBitmap (Bitmap bm, int newWidth, int newHeight) {
+    /**
+     * this private method is to resize the Bitmap and has been found here https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
+     * @param bm the Bitmap to resize
+     * @param newWidth the new width of the Bitmap
+     * @param newHeight the new height of the Bitmap
+     * @return the resized Bitmap
+     */
+    private Bitmap getResizedBitmap (Bitmap bm, int newWidth, int newHeight) {
         int width = bm.getWidth();
         int height = bm.getHeight();
         float scaleWidth = ((float) newWidth) / width;
@@ -267,7 +288,15 @@ public class GameActivity extends AppCompatActivity {
         return resizedBitmap;
     }
 
-    public TextView createTVforValue(String value, boolean color, boolean position, int textSize) {
+    /**
+     * specific method for this Activity to create TextView dynamically to display card value
+     * @param value String resulting of valueToString() from the class Card
+     * @param color boolean which corresponds to the textColor: red if true and black if false
+     * @param position boolean which corresponds to the textRotation: up if true and down if false
+     * @param textSize int which corresponds to the textSize (a small one for normal cards and a big one for Trumps)
+     * @return the TextView that corresponds to the value and that will be add to the FrameLayout
+     */
+    protected TextView createTVforValue(String value, boolean color, boolean position, int textSize) {
         TextView cardValueTV = new TextView(getApplicationContext());
 
         //we set the card value
@@ -296,17 +325,17 @@ public class GameActivity extends AppCompatActivity {
         return cardValueTV;
     }
 
-    public ImageView createCardBackground () {
-        Bitmap cardBGBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
-        Bitmap cardBGResizedBP = getResizedBitmap(cardBGBP, CARD_WIDTH, CARD_HEIGHT);
-        ImageView cardBackgroundIV = new ImageView(getApplicationContext());
-        cardBackgroundIV.setImageBitmap(cardBGResizedBP);
-        return cardBackgroundIV;
-    }
 
-    public ImageView createCardColor (String suit) {
+    /**
+     * specific method for this Activity to create ImageView to display card color with background
+     * @param suit is a String that results for the toString() of the Suit enum and is the initial letter of the suit : s, h, d, c, t
+     * @return the ImageView that corresponds to the color and that will be add to the FrameLayout
+     */
+    protected ImageView createCardColor (String suit) {
+        //we initialize the Bitmap with the image of spades
         Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
-        ;
+
+        //we set the good image that corresponds to our suit
         if (suit == "s") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
         } else if (suit == "h") {
@@ -319,6 +348,7 @@ public class GameActivity extends AppCompatActivity {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
         }
 
+        //we resize the Bitmap with the private class and we add it to the ImageView
         Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
         ImageView cardColorIV = new ImageView(getApplicationContext());
         cardColorIV.setImageBitmap(cardColorResizedBP);
@@ -336,6 +366,26 @@ public class GameActivity extends AppCompatActivity {
                 cardFrame.removeAllViews();
             }
         }
+    }
+
+    protected int findVerticalPositionByPlayer(Player player) {
+        return 1;
+    }
+
+    protected int findHorizontalPositionByPlayer (Player player) {
+        return 0;
+    }
+
+    /**
+     * public method triggered when the player is asked to chose a bid
+     * @param possibleBids ArrayList of Bids that the player may choose
+     * @return the Bid chosen
+     */
+    public Bid onBidAsked(ArrayList<Bid> possibleBids) {
+        return Bid.GUARD;
+    }
+
+    public void onShowCard(Card card, Player player) {
 
     }
 }
