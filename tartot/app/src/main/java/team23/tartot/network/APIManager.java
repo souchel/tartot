@@ -1,23 +1,51 @@
 package team23.tartot.network;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.InvitationsClient;
+import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.InvitationCallback;
+import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
+import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import team23.tartot.FirstLogActivity;
+import team23.tartot.R;
 import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
@@ -25,35 +53,326 @@ import team23.tartot.core.Player;
 import team23.tartot.core.iPlayer;
 
 import static android.content.ContentValues.TAG;
+import static java.lang.Integer.valueOf;
 
 /**
  * Created by thomas on 2/20/18.
  */
-
+//TODO : implement Parcelable
+//TODO : implement interface networkToUi
 public class APIManager implements iCoreToNetwork {
+    //some constants
+    private static final String CONTAG = "connectionDebug";
+    //request codes
+    int RC_SIGN_IN = 23;
+    private static final int RC_WAITING_ROOM = 9007;
+    private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
+    private static final int RC_INVITATION_INBOX = 9008;
 
-    RealTimeMultiplayerClient client;
+
+    private GoogleSignInAccount userAccount;
+    private com.google.android.gms.games.Player googlePlayer;
+    private RealTimeMultiplayerClient rtmc = null;
+    private String playerId;
+    private RoomConfig currentRoomConfig = null;
+    private Room currentRoom = null; //the room we belong to. Null otherwise
+    // Room ID where the currently active game is taking place; null if we're
+    // not playing.
+    private String roomID = null;
+    // Client used to interact with the Invitation system.
+    private InvitationsClient invitationsClient = null;
+    // Client used to sign in with Google APIs
+    private GoogleSignInClient signInClient = null;
+    // If non-null, this is the id of the invitation we received via the
+    // invitation listener
+    private String mIncomingInvitationId = null;
+    private FirstLogActivity activity;
+    private String myParticipantId=null;
+    private HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
+
 
     /**
      * constructor
      * Initialize the google play RealTimeMultiplayerClient instance in order to be able to use its functions.
      */
-    public APIManager(Activity mainMenuActivity){
-        //we determine if the player is already signed in to the google play services
-
-        //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-
-
-        GoogleSignIn .getLastSignedInAccount(mainMenuActivity);
-
-        //this.client = Games.getRealTimeMultiplayerClient(mainMenuActivity, )
+    public APIManager(FirstLogActivity activity){
+        this.activity = activity;
+        GoogleSignIn.getLastSignedInAccount(activity);
+        this.rtmc = Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity));
+        //this.myParticipantId = currentRoom.getParticipantId(playerId);
 
     }
-    /**
-     * creates a new empty lobby - an empty room.
-     */
+    /*
+        //constructor from parcel and activity
+        public APIManager(Parcel parcel, FirstLogActivity activity){
+            this.activity = activity;
+            userAccount;
+            googlePlayer;
+            rtmc = null;
+            playerId;
+            currentRoomConfig = null;
+            Room currentRoom = null; //the room we belong to. Null otherwise
+            String roomID = null;
+            InvitationsClient invitationsClient = null;
+            GoogleSignInClient signInClient = null;
+            String mIncomingInvitationId = null;
+            FirstLogActivity activity;
+            String myParticipantId=null;
+            HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
 
-    RoomConfig mJoinedRoom = null;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            GoogleSignInAccount userAccount;
+            com.google.android.gms.games.Player googlePlayer;
+            RealTimeMultiplayerClient rtmc = null;
+            String playerId;
+            RoomConfig currentRoomConfig = null;
+            Room currentRoom = null; //the room we belong to. Null otherwise
+
+            String roomID = null;
+
+            InvitationsClient invitationsClient = null;
+            GoogleSignInClient signInClient = null;
+            String mIncomingInvitationId = null;
+            FirstLogActivity activity;
+            String myParticipantId=null;
+            HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
+
+            parcel.write
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    */
+    public void initialize(){
+        signInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+    }
+
+
+
+    //start external log in activity to retrieve google player's account
+    public void startSignInIntent() {
+        Intent intent = signInClient.getSignInIntent();
+        activity.startActivityForResult(intent, RC_SIGN_IN);
+    }
+
+    //tries to log in silently and automatically without prompt. If it succeeds, it connects to the google game account and retrieve google Player object.
+    //returns a Task to notify if we have a success
+    public Task<GoogleSignInAccount> signInSilently() {
+        Log.i(CONTAG, "signin silent");
+
+        Task<GoogleSignInAccount> silentSignInTask = signInClient.silentSignIn();
+
+        silentSignInTask.addOnCompleteListener(activity, new OnCompleteListener<GoogleSignInAccount>() {
+            @Override
+            public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                if (task.isSuccessful()) {
+                    Log.i("debug", "signInSilently(): success");
+                    // The signed in account is stored in the task's result.
+                    onConnected(task.getResult());
+
+                    invitationsClient = Games.getInvitationsClient(activity.getApplicationContext(), userAccount);
+
+                    // register listener so we are notified if we receive an invitation to play
+                    // while we are in the game
+                    invitationsClient.registerInvitationCallback(invitationCallback);
+                } else {
+                    Log.i("debug", "signInSilently(): failed");
+
+
+                    //automatic log in failed.
+                    //todo : notify user that he has to log in manually
+                }
+            }
+        });
+        return silentSignInTask;
+    }
+
+    private void onConnected(GoogleSignInAccount googleSignInAccount) {
+        Log.d("debug", "onConnected(): connected to Google APIs");
+        if (userAccount != googleSignInAccount) {
+
+            userAccount = googleSignInAccount;
+            Log.i("debug", "alloc rtmc");
+            // update the clients
+            rtmc = Games.getRealTimeMultiplayerClient(activity, googleSignInAccount);
+            invitationsClient = Games.getInvitationsClient(activity, googleSignInAccount);
+
+            // get the playerId from the PlayersClient
+            PlayersClient playersClient = Games.getPlayersClient(activity, googleSignInAccount);
+            playersClient.getCurrentPlayer()
+                    .addOnSuccessListener(new OnSuccessListener<com.google.android.gms.games.Player>() {
+                        @Override
+                        public void onSuccess(com.google.android.gms.games.Player player) {
+                            googlePlayer = player;
+                            playerId = player.getPlayerId();
+                            Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            handleException(e, "problem with player id");
+                        }
+                    });
+        }
+
+
+
+        // register listener so we are notified if we receive an invitation to play
+        // while we are in the game
+        invitationsClient.registerInvitationCallback(invitationCallback);
+
+        // get the invitation from the connection hint
+        // Retrieve the TurnBasedMatch from the connectionHint
+        GamesClient gamesClient = Games.getGamesClient(activity, googleSignInAccount);
+        gamesClient.getActivationHint()
+                .addOnSuccessListener(new OnSuccessListener<Bundle>() {
+                    @Override
+                    public void onSuccess(Bundle hint) {
+                        if (hint != null) {
+                            Invitation invitation =
+                                    hint.getParcelable(Multiplayer.EXTRA_INVITATION);
+
+                            if (invitation != null && invitation.getInvitationId() != null) {
+                                // retrieve and cache the invitation ID
+                                Log.d("debug", "onConnected: connection hint has a room invite!");
+                                acceptInviteToRoom(invitation.getInvitationId());
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        handleException(e, "There was a problem getting the activation hint!");
+                    }
+                });
+    }
+
+    //returns if an invitation is pending
+    public boolean isInvitationPending(){
+        return mIncomingInvitationId != null;
+    }
+
+
+    public boolean isConnected(){
+        return rtmc != null;
+    }
+
+    public void signOut() {
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(activity,
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        signInClient.signOut().addOnCompleteListener(activity,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // at this point, the user is signed out.
+                        Log.i("info", "Déconnexion réussie");
+                    }
+                });
+    }
+
+    public void unregisterListeners() {
+        if (invitationsClient != null) {
+            invitationsClient.unregisterInvitationCallback(invitationCallback);
+        }
+    }
+
+    // Accept the given invitation.
+    public void acceptInviteToRoom(String invitationId) {
+        // accept the invitation
+        Log.d("debug", "Accepting invitation: " + invitationId);
+
+        currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
+                .setInvitationIdToAccept(invitationId)
+                .setOnMessageReceivedListener(mMessageReceivedHandler)
+                .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                .build();
+
+        //switchToScreen(R.id.screen_wait);
+        activity.keepScreenOn();
+
+        rtmc.join(currentRoomConfig)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Room Joined Successfully!");
+                    }
+                });
+    }
+
+    //called after the player pick some players to invite in the invitation activity
+    public void startRoomAfterPlayerPickup(ArrayList<String> invitees, int minAutoPlayers, int maxAutoPlayers){
+        // Create the room configuration.
+        RoomConfig.Builder roomBuilder = RoomConfig.builder(mRoomUpdateCallback)
+                .setOnMessageReceivedListener(mMessageReceivedHandler)
+                .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                .addPlayersToInvite(invitees);
+        if (minAutoPlayers > 0) {
+            roomBuilder.setAutoMatchCriteria(
+                    RoomConfig.createAutoMatchCriteria(minAutoPlayers, maxAutoPlayers, 0));
+        }
+
+        // Save the roomConfig so we can use it if we call leave().
+        currentRoomConfig = roomBuilder.build();
+        Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                .create(currentRoomConfig);
+    }
+
+    public void startRoomFromInvitation(Invitation invitation){
+        RoomConfig.Builder builder = RoomConfig.builder(mRoomUpdateCallback)
+                .setOnMessageReceivedListener(mMessageReceivedHandler)
+                .setRoomStatusUpdateCallback    (mRoomStatusCallbackHandler)
+                .setInvitationIdToAccept(invitation.getInvitationId());
+        currentRoomConfig = builder.build();
+        Task<Void> joinTask = Games.getRealTimeMultiplayerClient(activity,
+                GoogleSignIn.getLastSignedInAccount(activity))
+                .join(currentRoomConfig);
+
+        // prevent screen from sleeping during handshake
+        activity.keepScreenOn();
+
+        joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    Log.i("info", "success on joining room");
+                } else {
+                    // Task failed with an exception
+                    Exception exception = task.getException();
+                    Log.i("error", "exception occurred during room joining " +
+                            exception.getMessage());
+                }
+
+            }
+        });
+    }
+
+    /**
+     * returns null if signin successfull, StatusErrorMessage otherwise
+     */
+    public String onSigninReturn(GoogleSignInResult result){
+        if (result.isSuccess()) {
+            // The signed in account is stored in the result
+            userAccount = result.getSignInAccount();
+            onConnected(userAccount);
+            return null;
+        } else {
+            String message = result.getStatus().getStatusMessage();
+            if (message == null || message.isEmpty()) {
+                return "";
+            }
+            else{
+                return message;
+            }
+        }
+    }
 
     public void  sendDeck(Player player){
         return;
@@ -66,16 +385,7 @@ public class APIManager implements iCoreToNetwork {
         return;
     }
     public void createLobby() {
-        RoomConfig roomConfig = RoomConfig.builder(mRoomUpdateCallback)
-                                        //.setOnMessageReceivedListener(mMessageReceivedHandler)
-                                        .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
-                                        .build();
-
-        mJoinedRoom = roomConfig;
-
-        // Create the room
-        //Games.getRealTimeMultiplayerClient(this, GoogleSignIn.getLastSignedInAccount(null))
-         //       .create(roomConfig);
+        return;
     }
 
     /**
@@ -87,9 +397,13 @@ public class APIManager implements iCoreToNetwork {
         public void onRoomCreated(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
-                Log.d(TAG, "Room " + room.getRoomId() + " created.");
+                roomID = room.getRoomId();
+                currentRoom = room;
+                Log.d(TAG, "Room " + roomID + " created.");
+                showWaitingRoom(4);
+                activity.onRoomCreated(roomID);
             } else {
-                Log.w(TAG, "Error creating room: " + i);
+                Log.w(TAG, GamesCallbackStatusCodes.getStatusCodeString(i));
             }
         }
 
@@ -97,21 +411,38 @@ public class APIManager implements iCoreToNetwork {
         public void onJoinedRoom(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
+                currentRoom = room;
+                roomID = room.getRoomId();
+                activity.onJoinedRoom(roomID);
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
+                Log.i("debug", "currentRoomBeforeWaitingRoom : " + currentRoom);
+                showWaitingRoom(4);
+
             } else {
-                Log.w(TAG, "Error joining room: " + " ");
+                Log.w(TAG, "Error joining room:");
             }
         }
 
         @Override
         public void onLeftRoom(int i, @NonNull String s) {
-            Log.d(TAG, "Left room" + s);
+            if (i == GamesCallbackStatusCodes.INTERNAL_ERROR){
+                Log.i("info", "failed to leave the room");
+            }
+            else {
+
+                Log.i("info", "Room left");
+                currentRoom = null;
+                currentRoomConfig = null;
+                roomID = null;
+                activity.onLeftRoom();
+            }
         }
 
         @Override
         public void onRoomConnected(int i, @Nullable Room room) {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " connected.");
+                activity.onRoomConnected();
             } else {
                 Log.w(TAG, "Error connecting to room: " + i);
             }
@@ -187,7 +518,146 @@ public class APIManager implements iCoreToNetwork {
      * Leaves the current lobby. If we were lobby leader, assign leader role
      * to a new player in lobby. Deletes the lobby otherwise.
      */
-    public void leaveLobby() {}
+    public void leaveLobby() {
+        Log.i("info", "in leaveLobby");
+        if (currentRoom != null){
+            Log.i("info", "yes");
+            rtmc.leave(currentRoomConfig, roomID);
+        }
+        //done in the leave method
+        //currentRoom = null;
+        //currentRoomConfig = null;
+        //roomID = null;
+    }
+    // Show the waiting room UI to track the progress of other players as they enter the
+    // room and get connected.
+
+    public void showWaitingRoom(int maxPlayersToStartGame) {
+        // minimum number of players required for our game
+        // For simplicity, we require everyone to join the game before we start it
+        // (this is signaled by Integer.MAX_VALUE).
+        if(currentRoom != null){
+            rtmc.getWaitingRoomIntent(currentRoom, maxPlayersToStartGame)
+                    .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                        @Override
+                        public void onSuccess(Intent intent) {
+                            // show waiting room UI
+                            activity.startActivityForResult(intent, RC_WAITING_ROOM);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            handleException(e, "creation failed");
+                        }
+                    });
+        }
+        else{
+            Log.i(CONTAG, "dans aucune room");
+        }
+    }
+
+
+    public void startQuickGame(int nbOfPlayers) {
+
+        //we want to match n-1 other players
+        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(nbOfPlayers-1, nbOfPlayers-1, 0);
+
+        currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
+                .setOnMessageReceivedListener(mMessageReceivedHandler)
+                .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
+                .setAutoMatchCriteria(autoMatchCriteria)
+                .build();
+
+
+        // Create the room
+        Task<Void> roomCreation = rtmc.create(currentRoomConfig);
+
+        roomCreation.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    Log.i(CONTAG, "success on creating room");
+                } else {
+                    // Task failed with an exception
+                    Exception exception = task.getException();
+                    Log.i(CONTAG, "exception occured during room creation " +
+                            exception.getMessage());
+                }
+
+            }
+        });
+    }
+
+    //s'aider des exemple pour coder le handleException
+    /**
+     * Since a lot of the operations use tasks, we can use a common handler for whenever one fails.
+     *
+     * @param exception The exception to evaluate.  Will try to display a more descriptive reason for the exception.
+     * @param details   Will display alongside the exception if you wish to provide more details for why the exception
+     *                  happened
+     */
+    private void handleException(Exception exception, String details) {
+        int status = 0;
+
+        if (exception instanceof ApiException) {
+            ApiException apiException = (ApiException) exception;
+            status = apiException.getStatusCode();
+        }
+        //TODO : switch case des status
+    }
+
+    private InvitationCallback invitationCallback = new InvitationCallback() {
+        // Called when we get an invitation to play a game. We react by showing that to the user.
+        @Override
+        public void onInvitationReceived(@NonNull Invitation invitation) {
+            // We got an invitation to play a game! So, store it in
+            // mIncomingInvitationId
+            // and show the popup on the screen.
+            mIncomingInvitationId = invitation.getInvitationId();
+            //call the activity to display that we have an invitation
+            activity.onInvitationReceived(mIncomingInvitationId, invitation.getInviter().getDisplayName());
+        }
+
+        @Override
+        public void onInvitationRemoved(@NonNull String invitationId) {
+
+            if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
+                mIncomingInvitationId = null;
+                activity.hidePopUps(); // This will hide the invitation popup
+            }
+        }
+    };
+
+    /**
+     * Callbacks to handle reception of messages.
+     */
+
+    private OnRealTimeMessageReceivedListener mMessageReceivedHandler =
+            new OnRealTimeMessageReceivedListener() {
+                @Override
+                public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
+                    byte[] buf = realTimeMessage.getMessageData();
+                    String sender = realTimeMessage.getSenderParticipantId();
+                    Log.d(TAG, "Message received: " + (char) buf[0] + "/" + (int) buf[1]);
+
+                    //TODO : on fait quoi ?
+                }
+            };
+
+    public void invitePlayers(){
+        // launch the player selection screen
+        // minimum: 1 other player; maximum: 3 other players
+        Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                .getSelectOpponentsIntent(1, 3, true)
+                .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                    @Override
+                    public void onSuccess(Intent intent) {
+                        activity.startActivityForResult(intent, RC_SELECT_PLAYERS);
+                    }
+                });
+    }
 
 
     /**
@@ -238,4 +708,46 @@ public class APIManager implements iCoreToNetwork {
      * @param announce: the announce to broadcast
      */
     public void announce(Announces announce) {}
+
+
+    //////////methods taken from the tutorial.
+    // send a message to all participants except us using the sendReliableMessage method
+    void sendToAllReliably(byte[] message) {
+        for (String participantId : currentRoom.getParticipantIds()) {
+            if (!participantId.equals(myParticipantId)) {
+                Task<Integer> task = Games.
+                        getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                        .sendReliableMessage(message, currentRoom.getRoomId(), participantId,
+                                handleMessageSentCallback).addOnCompleteListener(new OnCompleteListener<Integer>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Integer> task) {
+                                recordMessageToken(task.getResult());
+                            }
+                        });
+                Log.i("message", "sendReliable");
+
+            }
+        }
+    }
+
+    //put the message in queue
+    synchronized void recordMessageToken(int tokenId) {
+        pendingMessageSet.add(tokenId);
+        Log.i("message", "recordMessageToken");
+    }
+
+    //callback raised when the message with tokenId tokenId is sent
+    private RealTimeMultiplayerClient.ReliableMessageSentCallback handleMessageSentCallback =
+            new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
+                @Override
+                public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientId) {
+                    // handle the message being sent.
+                    synchronized (this) {
+                        pendingMessageSet.remove(tokenId);
+                        Log.i("message", "sentCallBack.onRealTimeMessageSent");
+                    }
+                }
+            };
+    ///////////////
+
 }

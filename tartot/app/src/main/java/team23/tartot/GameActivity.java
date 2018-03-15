@@ -21,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.google.android.gms.games.multiplayer.realtime.Room;
 
 import java.util.ArrayList;
 
@@ -29,6 +30,7 @@ import team23.tartot.core.Deck;
 import team23.tartot.core.GameManager;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
+import team23.tartot.network.APIManager;
 
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
@@ -44,10 +46,20 @@ public class GameActivity extends AppCompatActivity {
     protected Deck deck = new Deck();
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
+    private APIManager apiManager;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        //create the APIMananger that will make the connections with the other players
+        Intent creation = getIntent();
+        if (creation == null){
+            Log.i("debug", "echec de la récupération de l'intent nécessaire à la mise en réseau");
+        }
+        //TODO : restore when parcelable implemented
+        //apiManager = new APIManager(this, (Room) creation.getParcelableExtra("room"), (String) creation.getStringExtra("playerId"));
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
@@ -287,4 +299,6 @@ public class GameActivity extends AppCompatActivity {
         return cardColorIV;
     }
 }
+
+
 
