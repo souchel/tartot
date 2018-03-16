@@ -2,12 +2,15 @@ package team23.tartot;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +46,14 @@ public class MenuActivity extends AppCompatActivity {
     private ApiManagerService mApiManagerService;
     private boolean mBound = false;
 
+    //broadcast receiver to receive broadcast from the apiManagerService
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("broadcast", intent.getStringExtra("value"));
+        }
+    };
+
     // This array lists all the individual screens our game has.
     final static int[] SCREENS = {R.id.log_in_screen, R.id.main_menu_screen, R.id.lobby_screen};
     //id of the currently showed screen
@@ -56,11 +67,16 @@ public class MenuActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_first_log);
 
+
     }
 
     @Override
     public void onStart(){
         super.onStart();
+
+        //register the broadcast receiver
+        IntentFilter intentFilter = new IntentFilter("apiManagerService");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
 
         // Bind to ApiManagerService
         Intent intent = new Intent(this, ApiManagerService.class);
@@ -220,7 +236,9 @@ public class MenuActivity extends AppCompatActivity {
         super.onPause();
         // unregister our listeners.  They will be re-registered via
         // onResume->mApiManagerService.signInSilently->onConnected.
-        mApiManagerService.unregisterListeners();
+        if (mBound) {
+            mApiManagerService.unregisterListeners();
+        }
     }
 
     @Override

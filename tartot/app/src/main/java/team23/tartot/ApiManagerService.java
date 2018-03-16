@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -158,7 +159,7 @@ public class ApiManagerService extends Service {
                     // The signed in account is stored in the task's result.
                     onConnected(task.getResult());
 
-                    invitationsClient = Games.getInvitationsClient(getApplicationContext(), userAccount);
+                    //invitationsClient = Games.getInvitationsClient(getApplicationContext(), userAccount);
 
                     // register listener so we are notified if we receive an invitation to play
                     // while we are in the game
@@ -177,32 +178,36 @@ public class ApiManagerService extends Service {
 
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
         Log.d("debug", "onConnected(): connected to Google APIs");
-        if (userAccount != googleSignInAccount) {
 
-            userAccount = googleSignInAccount;
-            Log.i("debug", "alloc rtmc");
-            // update the clients
-            rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), googleSignInAccount);
-            invitationsClient = Games.getInvitationsClient(getApplicationContext(), googleSignInAccount);
+        Intent intent = new Intent();
+        intent.setAction("apiManagerService");
+        intent.putExtra("value", "signedin silent");
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
-            // get the playerId from the PlayersClient
-            PlayersClient playersClient = Games.getPlayersClient(getApplicationContext(), googleSignInAccount);
-            playersClient.getCurrentPlayer()
-                    .addOnSuccessListener(new OnSuccessListener<Player>() {
-                        @Override
-                        public void onSuccess(com.google.android.gms.games.Player player) {
-                            googlePlayer = player;
-                            playerId = player.getPlayerId();
-                            Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            handleException(e, "problem with player id");
-                        }
-                    });
-        }
+
+        userAccount = googleSignInAccount;
+        Log.i("debug", "alloc rtmc");
+        // update the clients
+        rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), googleSignInAccount);
+        invitationsClient = Games.getInvitationsClient(getApplicationContext(), googleSignInAccount);
+
+        // get the playerId from the PlayersClient
+        PlayersClient playersClient = Games.getPlayersClient(getApplicationContext(), googleSignInAccount);
+        playersClient.getCurrentPlayer()
+                .addOnSuccessListener(new OnSuccessListener<Player>() {
+                    @Override
+                    public void onSuccess(com.google.android.gms.games.Player player) {
+                        googlePlayer = player;
+                        playerId = player.getPlayerId();
+                        Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        handleException(e, "problem with player id");
+                    }
+                });
 
 
 
