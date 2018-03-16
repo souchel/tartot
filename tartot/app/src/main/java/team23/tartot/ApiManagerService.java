@@ -1,17 +1,15 @@
-package team23.tartot.network;
+package team23.tartot;
 
-import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -20,11 +18,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.InvitationsClient;
+import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.InvitationCallback;
 import com.google.android.gms.games.multiplayer.Multiplayer;
@@ -34,7 +33,6 @@ import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -44,23 +42,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import team23.tartot.FirstLogActivity;
-import team23.tartot.R;
 import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
-import team23.tartot.core.Player;
 import team23.tartot.core.iPlayer;
 
 import static android.content.ContentValues.TAG;
-import static java.lang.Integer.valueOf;
 
-/**
- * Created by thomas on 2/20/18.
- */
-//TODO : implement Parcelable
-//TODO : implement interface networkToUi
-public class APIManager implements iCoreToNetwork {
+public class ApiManagerService extends Service {
     //some constants
     private static final String CONTAG = "connectionDebug";
     //request codes
@@ -86,88 +75,82 @@ public class APIManager implements iCoreToNetwork {
     // If non-null, this is the id of the invitation we received via the
     // invitation listener
     private String mIncomingInvitationId = null;
-    private FirstLogActivity activity;
+
+    //very bad idea apparently
+
     private String myParticipantId=null;
     private HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
 
 
-    /**
-     * constructor
-     * Initialize the google play RealTimeMultiplayerClient instance in order to be able to use its functions.
-     */
-    public APIManager(FirstLogActivity activity){
-        this.activity = activity;
-        GoogleSignIn.getLastSignedInAccount(activity);
-        this.rtmc = Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity));
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+
+
+    public ApiManagerService() {
+    }
+
+    //called at service creation
+    @Override
+    public void onCreate(){
         //this.myParticipantId = currentRoom.getParticipantId(playerId);
-
+        initialize().addOnSuccessListener(new OnSuccessListener<GoogleSignInAccount>() {
+            @Override
+            public void onSuccess(GoogleSignInAccount googleSignInAccount) {
+                Log.i(CONTAG, "signedin silent");
+            }
+        });
     }
-    /*
-        //constructor from parcel and activity
-        public APIManager(Parcel parcel, FirstLogActivity activity){
-            this.activity = activity;
-            userAccount;
-            googlePlayer;
-            rtmc = null;
-            playerId;
-            currentRoomConfig = null;
-            Room currentRoom = null; //the room we belong to. Null otherwise
-            String roomID = null;
-            InvitationsClient invitationsClient = null;
-            GoogleSignInClient signInClient = null;
-            String mIncomingInvitationId = null;
-            FirstLogActivity activity;
-            String myParticipantId=null;
-            HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
 
+    //called at each request
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+
+        return START_NOT_STICKY;
+    }
+    /**
+     * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
+     */
+    public class LocalBinder extends Binder {
+        ApiManagerService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return ApiManagerService.this;
         }
+    }
 
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            GoogleSignInAccount userAccount;
-            com.google.android.gms.games.Player googlePlayer;
-            RealTimeMultiplayerClient rtmc = null;
-            String playerId;
-            RoomConfig currentRoomConfig = null;
-            Room currentRoom = null; //the room we belong to. Null otherwise
-
-            String roomID = null;
-
-            InvitationsClient invitationsClient = null;
-            GoogleSignInClient signInClient = null;
-            String mIncomingInvitationId = null;
-            FirstLogActivity activity;
-            String myParticipantId=null;
-            HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
-
-            parcel.write
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-    */
-    public void initialize(){
-        signInClient = GoogleSignIn.getClient(activity, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
     }
 
 
+    public Task<GoogleSignInAccount> initialize(){
+        userAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+        this.rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), userAccount);
+        signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        return signInSilently();
+    }
 
-    //start external log in activity to retrieve google player's account
-    public void startSignInIntent() {
-        Intent intent = signInClient.getSignInIntent();
-        activity.startActivityForResult(intent, RC_SIGN_IN);
+    public void update(){
+        //if we are in a room, we don't update everything because we want to keep the connection
+        if(currentRoom != null){
+
+        }
+        //otherwise we update the accounts
+        else{
+            initialize();
+        }
+        return ;
     }
 
     //tries to log in silently and automatically without prompt. If it succeeds, it connects to the google game account and retrieve google Player object.
     //returns a Task to notify if we have a success
     public Task<GoogleSignInAccount> signInSilently() {
         Log.i(CONTAG, "signin silent");
-
         Task<GoogleSignInAccount> silentSignInTask = signInClient.silentSignIn();
 
-        silentSignInTask.addOnCompleteListener(activity, new OnCompleteListener<GoogleSignInAccount>() {
+        silentSignInTask.addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
             @Override
             public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                 if (task.isSuccessful()) {
@@ -175,7 +158,7 @@ public class APIManager implements iCoreToNetwork {
                     // The signed in account is stored in the task's result.
                     onConnected(task.getResult());
 
-                    invitationsClient = Games.getInvitationsClient(activity.getApplicationContext(), userAccount);
+                    invitationsClient = Games.getInvitationsClient(getApplicationContext(), userAccount);
 
                     // register listener so we are notified if we receive an invitation to play
                     // while we are in the game
@@ -199,13 +182,13 @@ public class APIManager implements iCoreToNetwork {
             userAccount = googleSignInAccount;
             Log.i("debug", "alloc rtmc");
             // update the clients
-            rtmc = Games.getRealTimeMultiplayerClient(activity, googleSignInAccount);
-            invitationsClient = Games.getInvitationsClient(activity, googleSignInAccount);
+            rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), googleSignInAccount);
+            invitationsClient = Games.getInvitationsClient(getApplicationContext(), googleSignInAccount);
 
             // get the playerId from the PlayersClient
-            PlayersClient playersClient = Games.getPlayersClient(activity, googleSignInAccount);
+            PlayersClient playersClient = Games.getPlayersClient(getApplicationContext(), googleSignInAccount);
             playersClient.getCurrentPlayer()
-                    .addOnSuccessListener(new OnSuccessListener<com.google.android.gms.games.Player>() {
+                    .addOnSuccessListener(new OnSuccessListener<Player>() {
                         @Override
                         public void onSuccess(com.google.android.gms.games.Player player) {
                             googlePlayer = player;
@@ -229,7 +212,7 @@ public class APIManager implements iCoreToNetwork {
 
         // get the invitation from the connection hint
         // Retrieve the TurnBasedMatch from the connectionHint
-        GamesClient gamesClient = Games.getGamesClient(activity, googleSignInAccount);
+        GamesClient gamesClient = Games.getGamesClient(getApplicationContext(), googleSignInAccount);
         gamesClient.getActivationHint()
                 .addOnSuccessListener(new OnSuccessListener<Bundle>() {
                     @Override
@@ -265,9 +248,9 @@ public class APIManager implements iCoreToNetwork {
     }
 
     public void signOut() {
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(activity,
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(getApplicationContext(),
                 GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        signInClient.signOut().addOnCompleteListener(activity,
+        signInClient.signOut().addOnCompleteListener(
                 new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -294,8 +277,9 @@ public class APIManager implements iCoreToNetwork {
                 .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
                 .build();
 
+        //TODO: keep screen on
         //switchToScreen(R.id.screen_wait);
-        activity.keepScreenOn();
+        //activity.keepScreenOn();
 
         rtmc.join(currentRoomConfig)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -320,7 +304,7 @@ public class APIManager implements iCoreToNetwork {
 
         // Save the roomConfig so we can use it if we call leave().
         currentRoomConfig = roomBuilder.build();
-        Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+        Games.getRealTimeMultiplayerClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
                 .create(currentRoomConfig);
     }
 
@@ -330,12 +314,13 @@ public class APIManager implements iCoreToNetwork {
                 .setRoomStatusUpdateCallback    (mRoomStatusCallbackHandler)
                 .setInvitationIdToAccept(invitation.getInvitationId());
         currentRoomConfig = builder.build();
-        Task<Void> joinTask = Games.getRealTimeMultiplayerClient(activity,
-                GoogleSignIn.getLastSignedInAccount(activity))
+        Task<Void> joinTask = Games.getRealTimeMultiplayerClient(getApplicationContext(),
+                GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
                 .join(currentRoomConfig);
 
+        //TODO : keep screen on
         // prevent screen from sleeping during handshake
-        activity.keepScreenOn();
+        //activity.keepScreenOn();
 
         joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -352,6 +337,10 @@ public class APIManager implements iCoreToNetwork {
 
             }
         });
+    }
+
+    public Intent getSignInIntent(){
+        return signInClient.getSignInIntent();
     }
 
     /**
@@ -374,10 +363,10 @@ public class APIManager implements iCoreToNetwork {
         }
     }
 
-    public void  sendDeck(Player player){
+    public void  sendDeck(team23.tartot.core.Player player){
         return;
     }
-    public void announce(List<Announces> a, Player player){
+    public void announce(List<Announces> a, team23.tartot.core.Player player){
         return;
     }
 
@@ -401,7 +390,7 @@ public class APIManager implements iCoreToNetwork {
                 currentRoom = room;
                 Log.d(TAG, "Room " + roomID + " created.");
                 showWaitingRoom(4);
-                activity.onRoomCreated(roomID);
+                //TODO : activity.onRoomCreated(roomID);
             } else {
                 Log.w(TAG, GamesCallbackStatusCodes.getStatusCodeString(i));
             }
@@ -413,7 +402,7 @@ public class APIManager implements iCoreToNetwork {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 currentRoom = room;
                 roomID = room.getRoomId();
-                activity.onJoinedRoom(roomID);
+                //TODO : activity.onJoinedRoom(roomID);
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
                 Log.i("debug", "currentRoomBeforeWaitingRoom : " + currentRoom);
                 showWaitingRoom(4);
@@ -434,7 +423,7 @@ public class APIManager implements iCoreToNetwork {
                 currentRoom = null;
                 currentRoomConfig = null;
                 roomID = null;
-                activity.onLeftRoom();
+                //TODO : activity.onLeftRoom();
             }
         }
 
@@ -442,7 +431,7 @@ public class APIManager implements iCoreToNetwork {
         public void onRoomConnected(int i, @Nullable Room room) {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " connected.");
-                activity.onRoomConnected();
+                //TODO : activity.onRoomConnected();
             } else {
                 Log.w(TAG, "Error connecting to room: " + i);
             }
@@ -542,7 +531,7 @@ public class APIManager implements iCoreToNetwork {
                         @Override
                         public void onSuccess(Intent intent) {
                             // show waiting room UI
-                            activity.startActivityForResult(intent, RC_WAITING_ROOM);
+                            //TODO wait for that to finish and return intent : activity.startActivityForResult(intent, RC_WAITING_ROOM);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -617,7 +606,7 @@ public class APIManager implements iCoreToNetwork {
             // and show the popup on the screen.
             mIncomingInvitationId = invitation.getInvitationId();
             //call the activity to display that we have an invitation
-            activity.onInvitationReceived(mIncomingInvitationId, invitation.getInviter().getDisplayName());
+            //TODO push this : activity.onInvitationReceived(mIncomingInvitationId, invitation.getInviter().getDisplayName());
         }
 
         @Override
@@ -625,7 +614,7 @@ public class APIManager implements iCoreToNetwork {
 
             if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
                 mIncomingInvitationId = null;
-                activity.hidePopUps(); // This will hide the invitation popup
+                //TODO : activity.hidePopUps(); // This will hide the invitation popup
             }
         }
     };
@@ -646,15 +635,15 @@ public class APIManager implements iCoreToNetwork {
                 }
             };
 
-    public void invitePlayers(){
+    public void getInvitePlayersIntent(){
         // launch the player selection screen
         // minimum: 1 other player; maximum: 3 other players
-        Games.getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+        Games.getRealTimeMultiplayerClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
                 .getSelectOpponentsIntent(1, 3, true)
                 .addOnSuccessListener(new OnSuccessListener<Intent>() {
                     @Override
                     public void onSuccess(Intent intent) {
-                        activity.startActivityForResult(intent, RC_SELECT_PLAYERS);
+                        //TODO : wait for that to finish and return intent : activity.startActivityForResult(intent, RC_SELECT_PLAYERS);
                     }
                 });
     }
@@ -695,7 +684,7 @@ public class APIManager implements iCoreToNetwork {
      * @param destination: the player we send the cards to
      * @param cards: the cards delt
      */
-    public void dealCards(Player destination, Card[] cards) {}
+    public void dealCards(team23.tartot.core.Player destination, Card[] cards) {}
 
     /**
      * notify other players the card we chosed to play
@@ -716,7 +705,7 @@ public class APIManager implements iCoreToNetwork {
         for (String participantId : currentRoom.getParticipantIds()) {
             if (!participantId.equals(myParticipantId)) {
                 Task<Integer> task = Games.
-                        getRealTimeMultiplayerClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                        getRealTimeMultiplayerClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
                         .sendReliableMessage(message, currentRoom.getRoomId(), participantId,
                                 handleMessageSentCallback).addOnCompleteListener(new OnCompleteListener<Integer>() {
                             @Override

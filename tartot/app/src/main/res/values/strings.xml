@@ -3,7 +3,7 @@
     <string name="title_activity_first_log">Tartot</string>
 
 
-    <!-- Strings related to FirstLogActivity -->
+    <!-- Strings related to MenuActivity -->
     <string name="text_view_first_log">Bienvenue dans Tartot, quel est ton pseudo ?</string>
     <string name="edit_text_first_log">Entrer un pseudo (votre pseudo Google par défaut)</string>
     <string name="button_first_log">Accéder au menu</string>

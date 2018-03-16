@@ -5,34 +5,24 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.media.Image;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.google.android.gms.games.multiplayer.realtime.Room;
 
 import java.util.ArrayList;
 
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
-import team23.tartot.core.GameManager;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
-import team23.tartot.network.APIManager;
 
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
@@ -51,7 +41,7 @@ public class GameActivity extends AppCompatActivity {
     protected Deck deck = new Deck();
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
-    private APIManager apiManager;
+    private ApiManagerService apiManager;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

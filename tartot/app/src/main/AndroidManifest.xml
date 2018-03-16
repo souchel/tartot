@@ -9,20 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <!-- for dark mode : android:theme="@style/Theme.AppCompat.NoActionBar" -->
         <activity
-            android:name=".FirstLogActivity"
-            android:label="@string/title_activity_first_log"
-            android:screenOrientation="landscape">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
             android:name=".GameActivity"
-            android:screenOrientation="landscape"></activity>
+            android:screenOrientation="landscape" />
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
@@ -31,6 +22,20 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <service
+            android:name=".ApiManagerService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity android:name=".MenuActivity"
+            android:label="@string/title_activity_first_log"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

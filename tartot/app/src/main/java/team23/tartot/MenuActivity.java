@@ -2,11 +2,12 @@ package team23.tartot;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -19,41 +20,19 @@ import android.widget.TextView;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.InvitationsClient;
-import com.google.android.gms.games.PlayersClient;
-import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Invitation;
-import com.google.android.gms.games.multiplayer.InvitationCallback;
 import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
-import com.google.android.gms.games.multiplayer.realtime.Room;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
-import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import team23.tartot.core.Player;
-import team23.tartot.network.APIManager;
 
-import static android.content.ContentValues.TAG;
 import static java.lang.Integer.valueOf;
 
-public class FirstLogActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity {
 
     //request codes
     int RC_SIGN_IN = 23;
@@ -61,7 +40,8 @@ public class FirstLogActivity extends AppCompatActivity {
     private static final int RC_SELECT_PLAYERS = 9006; //request code for external invitation activity
     private static final int RC_INVITATION_INBOX = 9008;
 
-    private APIManager apiManager = null;
+    private ApiManagerService mApiManagerService;
+    private boolean mBound = false;
 
     // This array lists all the individual screens our game has.
     final static int[] SCREENS = {R.id.log_in_screen, R.id.main_menu_screen, R.id.lobby_screen};
@@ -76,16 +56,49 @@ public class FirstLogActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_first_log);
 
-        //try to restore apiManager. Create it otherwise
-        if(savedInstanceState != null) {
-            apiManager = savedInstanceState.getParcelable("apiManager");
-        }
-        if (apiManager == null){
-            apiManager = new APIManager(this);
-        }
-        apiManager.initialize();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        // Bind to ApiManagerService
+        Intent intent = new Intent(this, ApiManagerService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         switchToMainScreen();
 
+
+
+        // Management of the welcome TextView displaying
+        final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
+        String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
+        welcomeTextView.setText(welcome);
+
+        initListeners();
+
+
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
+            mApiManagerService = binder.getService();
+            mBound = true;
+            mApiManagerService.update();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+    private void initListeners(){
         final Button firstLogButton = findViewById(R.id.button_first_log);
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -100,24 +113,19 @@ public class FirstLogActivity extends AppCompatActivity {
         findViewById(R.id.logInBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 // start the asynchronous sign in flow by starting an activityForResult dealing with the sign in
-                apiManager.startSignInIntent();
+                startActivityForResult(mApiManagerService.getSignInIntent(), RC_SIGN_IN);
             }
         });
 
         //logOutBtn callback
         findViewById(R.id.logOutBtn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                apiManager.signOut();
+                mApiManagerService.signOut();
             }
         });
 
-        // Management of the welcome TextView displaying
-        final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
+       // setOnClickListener of the button to access the lobby
         final Button goToLobbyButton = findViewById(R.id.button_go_to_lobby);
-        String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
-        welcomeTextView.setText(welcome);
-
-        // setOnClickListener of the button to access the lobby
         goToLobbyButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 switchToScreen(R.id.lobby_screen);
@@ -128,7 +136,7 @@ public class FirstLogActivity extends AppCompatActivity {
         final Button goToGameButton = findViewById(R.id.button_go_to_game);
         goToGameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Intent goToGameIntent = new Intent(FirstLogActivity.this, GameActivity.class);
+                Intent goToGameIntent = new Intent(MenuActivity.this, GameActivity.class);
                 startActivity(goToGameIntent);
             }
         });
@@ -138,7 +146,7 @@ public class FirstLogActivity extends AppCompatActivity {
         button_leave_lobby.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                apiManager.leaveLobby();
+                mApiManagerService.leaveLobby();
                 // Sending to main menu again
                 switchToMainScreen();
             }
@@ -166,7 +174,7 @@ public class FirstLogActivity extends AppCompatActivity {
         displayWaitingRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                apiManager.showWaitingRoom(4);
+                mApiManagerService.showWaitingRoom(4);
             }
         });
 
@@ -176,7 +184,7 @@ public class FirstLogActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Spinner sp = findViewById(R.id.playerNbSpinner);
                 int nbOfPlayers = valueOf(sp.getSelectedItem().toString());
-                apiManager.startQuickGame(nbOfPlayers);
+                mApiManagerService.startQuickGame(nbOfPlayers);
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
             }
@@ -190,7 +198,12 @@ public class FirstLogActivity extends AppCompatActivity {
         super.onResume();
         // Since the state of the signed in user can change when the activity is not active
         // it is recommended to try and sign in silently from when the app resumes.
-        apiManager.signInSilently().addOnSuccessListener(this, new OnSuccessListener<GoogleSignInAccount>() {
+
+        if (mBound){
+            mApiManagerService.update();
+        }
+        //TODO : action after signin (in onServceConnected ?)
+        /*mApiManagerService.signInSilently().addOnSuccessListener(this, new OnSuccessListener<GoogleSignInAccount>() {
             @Override
             public void onSuccess(GoogleSignInAccount googleSignInAccount) {
                 //on s'est bien connecté, on peut afficher le boutton pour accéder au menu principal
@@ -198,7 +211,7 @@ public class FirstLogActivity extends AppCompatActivity {
                 //à enlever quand on aura fusionné les activités de menu.
                 switchToMainScreen();
             }
-        });
+        });*/
         Log.i("debug","resume");
     }
 
@@ -206,8 +219,8 @@ public class FirstLogActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         // unregister our listeners.  They will be re-registered via
-        // onResume->apiManager.signInSilently->onConnected.
-        apiManager.unregisterListeners();
+        // onResume->mApiManagerService.signInSilently->onConnected.
+        mApiManagerService.unregisterListeners();
     }
 
     @Override
@@ -240,7 +253,11 @@ public class FirstLogActivity extends AppCompatActivity {
         switchToScreen(curScreen); // We change the current screen for the same, but it updates the notifications
     }
 
+    //startActivity when a service asks to
+    public void requestForStartActivityForResul(Intent intent, int requestCode){
+        this.startActivityForResult(intent, RC_SIGN_IN);
 
+    }
 
     //handles the return of the intent of external activity log in
     @Override
@@ -263,7 +280,7 @@ public class FirstLogActivity extends AppCompatActivity {
             int maxAutoPlayers = data.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
 
             //start the room
-            apiManager.startRoomAfterPlayerPickup(invitees, minAutoPlayers, maxAutoPlayers);
+            mApiManagerService.startRoomAfterPlayerPickup(invitees, minAutoPlayers, maxAutoPlayers);
         }
 
         /**
@@ -279,7 +296,7 @@ public class FirstLogActivity extends AppCompatActivity {
 
             Invitation invitation = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
             if (invitation != null) {
-                apiManager.startRoomFromInvitation(invitation);
+                mApiManagerService.startRoomFromInvitation(invitation);
             }
         }
         /**
@@ -298,13 +315,13 @@ public class FirstLogActivity extends AppCompatActivity {
                 //On fait quoi nous ?
             } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
                 // player wants to leave the room.
-                apiManager.leaveLobby();
+                mApiManagerService.leaveLobby();
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         }
         //if we come back from the manual signin
         else if (requestCode == RC_SIGN_IN) {
-            String errorMessage = apiManager.onSigninReturn(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+            String errorMessage = mApiManagerService.onSigninReturn(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
             //check if signin successfull (<=> message is null)
             if (errorMessage != null)
                 new AlertDialog.Builder(this).setMessage(errorMessage)
@@ -315,7 +332,7 @@ public class FirstLogActivity extends AppCompatActivity {
         Intent goToGameIntent = new Intent(this, GameActivity.class);
         //TODO : notify api manager we switched to game !
         //TODO : implement parcelable so that we can pass it to the next activity !
-        //we pass the apiManager object to the gameActivity to keep the connection
+        //we pass the mApiManagerService object to the gameActivity to keep the connection
         //goToGameIntent.putExtra("apiManager", apiManager);
         startActivity(goToGameIntent);
     }
@@ -335,11 +352,11 @@ public class FirstLogActivity extends AppCompatActivity {
         // should we show the invitation popup?
         boolean showInvPopup;
         //la belle condition ternaire
-        findViewById(R.id.invitation_popup).setVisibility(apiManager.isInvitationPending() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.invitation_popup).setVisibility(mBound && mApiManagerService.isInvitationPending() ? View.VISIBLE : View.GONE);
     }
 
     void switchToMainScreen() {
-        if (apiManager.isConnected()) {
+        if (mBound && mApiManagerService.isConnected()) {
             switchToScreen(R.id.main_menu_screen);
         } else {
             switchToScreen(R.id.log_in_screen);
@@ -386,7 +403,7 @@ public class FirstLogActivity extends AppCompatActivity {
 
 
     private void invitePlayers() {
-        apiManager.invitePlayers();
+        mApiManagerService.getInvitePlayersIntent();
     }
 
 
