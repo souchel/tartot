@@ -23,9 +23,6 @@
         <activity
             android:name=".GameActivity"
             android:screenOrientation="landscape"></activity>
-        <activity
-            android:name=".MainMenuActivity"
-            android:screenOrientation="landscape"></activity>
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
@@ -34,9 +31,6 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity
-            android:name=".LobbyActivity"
-            android:screenOrientation="landscape"></activity>
     </application>
 
 </manifest>
