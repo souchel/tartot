@@ -89,7 +89,6 @@ public class FirstLogActivity extends AppCompatActivity {
         final Button firstLogButton = findViewById(R.id.button_first_log);
         firstLogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Intent goToMainMenuIntent = new Intent(FirstLogActivity.this, MainMenuActivity.class);
                 String username = ((EditText) findViewById(R.id.edit_text_first_log)).getText().toString();
                 newPlayer = new Player(username);
                 switchToMainScreen();
