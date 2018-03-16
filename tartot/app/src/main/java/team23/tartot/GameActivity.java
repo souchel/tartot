@@ -357,20 +357,29 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onTurnEnded () {
-        //TODO CLEAR THE GAMEZONE
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         for (int i=0; i<middleGameZone.getChildCount(); i++) {
-            LinearLayout subLL = (LinearLayout) middleGameZone.getChildAt(i);
-            for (int j=0; j<subLL.getChildCount(); j++) {
-                FrameLayout cardFrame = (FrameLayout) subLL.getChildAt(j);
+            LinearLayout verticalLL = (LinearLayout) middleGameZone.getChildAt(i);
+            for (int j=0; j<verticalLL.getChildCount(); j++) {
+                FrameLayout cardFrame = (FrameLayout) verticalLL.getChildAt(j);
                 cardFrame.removeAllViews();
             }
         }
     }
 
-    protected int findVerticalPositionByPlayer(Player player) {
+    protected int findVerticalPositionByPlayer(Player player, int playersAmount) {
+        if (playersAmount == 3) {
+
+        } else if (playersAmount == 4 )  {
+
+        } else if (playersAmount == 5) {
+
+        } else {
+            return 0;
+        }
         return 1;
     }
+
 
     protected int findHorizontalPositionByPlayer (Player player) {
         return 0;
