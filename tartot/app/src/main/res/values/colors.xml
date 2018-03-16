@@ -12,4 +12,6 @@
     <color name="backgroundColor">#EEEEEE</color>
     <color name="highlight">#AAAAAA</color>
 
+    <color name="unchosable">#666666</color>
+
 </resources>

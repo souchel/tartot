@@ -44,5 +44,11 @@
     <string name="inv_popup_text">Incoming invitation!</string>
     <string name="is_inviting_you">is inviting you</string>
 
+    <!-- Strings related to Bid -->
+    <string name="small">Small</string>
+    <string name="guard">Guard</string>
+    <string name="guard_without">Guard Without</string>
+    <string name="guard_against">Guard Against</string>
+
 
 </resources>

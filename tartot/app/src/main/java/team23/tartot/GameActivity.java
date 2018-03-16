@@ -78,13 +78,19 @@ public class GameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 deck.shuffle();
                 hand = new ArrayList<>();
-                Log.i("deck",deck.toString());
 
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
                     hand.add(deck.getCardList().get(i));
                 }
 
                 addCardsToDeck(hand);
+
+                ArrayList<Bid> possibleBids = new ArrayList<>();
+                //possibleBids.add(Bid.SMALL);
+                possibleBids.add(Bid.GUARD);
+                possibleBids.add(Bid.GUARD_WITHOUT);
+                possibleBids.add(Bid.GUARD_AGAINST);
+                onBidAsked(possibleBids);
             }
         });
     }
@@ -402,8 +408,60 @@ public class GameActivity extends AppCompatActivity {
      * @param possibleBids ArrayList of Bids that the player may choose
      * @return the Bid chosen
      */
-    public Bid onBidAsked(ArrayList<Bid> possibleBids) {
-        return Bid.GUARD;
+    public void onBidAsked(ArrayList<Bid> possibleBids) {
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        for (Bid bid : Bid.values()) {
+            Button bidButton = createButtonForBidLayout(bid, findBidInBidList(bid, possibleBids));
+            //bidButton.setOnClickListener(bidListener);
+            bidsLayout.addView(bidButton);
+        }
+        if (!possibleBids.isEmpty()) {
+
+        }
+    }
+
+    protected Button createButtonForBidLayout(Bid bid, int i) {
+        Button bidButton = new Button(getApplicationContext());
+        bidButton.setText(bid.toString(getApplicationContext()));
+        //TODO FAIRE QUE CA SOIT MOINS MOCHE, FRAGMENT ?
+        if (i >= 0) {
+            bidButton.setBackgroundColor(getResources().getColor(R.color.backgroundColor));
+            bidButton.setTextColor(getResources().getColor(R.color.black));
+        } else {
+            bidButton.setBackgroundColor(getResources().getColor(R.color.unchosable));
+            bidButton.setTextColor(getResources().getColor(R.color.highlight));
+        }
+        return bidButton;
+    }
+
+    /*
+    View.OnClickListener bidListener = new View.OnClickListener() {
+        LinearLayout bidLayout = findViewById(R.id.bids_layout);
+        @Override
+        public void onClick(View v) {
+            bidLayout.removeAllViews();
+            //TODO RENVOYER LE BON BID
+        }
+    };
+    */
+
+    /**
+     *
+     * @param bid
+     * @param bidList
+     * @return
+     */
+    protected int findBidInBidList (Bid bid, ArrayList<Bid> bidList) {
+        int pos = -1;
+
+        for (int i=0; i<bidList.size(); i++) {
+            if (bid == bidList.get(i)) {
+                pos = i;
+                break;
+            }
+        }
+
+        return pos;
     }
 
     public void onShowCard(Card card, Player player) {
