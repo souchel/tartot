@@ -1,6 +1,7 @@
 package team23.tartot;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -42,6 +43,8 @@ public class GameActivity extends AppCompatActivity {
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
     private ApiManagerService apiManager;
+    protected Bid chosenBid = Bid.PASS;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +64,7 @@ public class GameActivity extends AppCompatActivity {
         initializeDeck(); //initialize the whole deck of 78 Cards
         initializeGameBoard(playersAmount); //initialize the centered zone where, where the cards played will be shown and the places where the player wil be. There is a ConstraintLayout in the xml and x FrameLayout will be created to place the played cards correctly in front of each player.
         initializePlayersPlacement();
+        initializeBidsLayout();
 
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
@@ -68,13 +72,19 @@ public class GameActivity extends AppCompatActivity {
             public void onClick(View v) {
                 deck.shuffle();
                 hand = new ArrayList<>();
-                Log.i("deck",deck.toString());
 
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
                     hand.add(deck.getCardList().get(i));
                 }
 
                 addCardsToDeck(hand);
+
+                ArrayList<Bid> possibleBids = new ArrayList<>();
+                //possibleBids.add(Bid.SMALL);
+                possibleBids.add(Bid.GUARD);
+                possibleBids.add(Bid.GUARD_WITHOUT);
+                possibleBids.add(Bid.GUARD_AGAINST);
+                onBidAsked(possibleBids);
             }
         });
     }
@@ -96,7 +106,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void initializePlayersPlacement() {
+    protected void initializePlayersPlacement() {
         //TODO PLACE CORRECTLY PEOPLE.
     }
 
@@ -105,7 +115,7 @@ public class GameActivity extends AppCompatActivity {
      * method called at the creation of the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
      * @param playersAmount an int that corresponds to GameManager.players.size()
      */
-    public void initializeGameBoard(int playersAmount) {
+    protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
 
         //If there is 4 players
@@ -151,6 +161,28 @@ public class GameActivity extends AppCompatActivity {
             middleGameZone.addView(rightLL);
         }
     }
+
+
+    protected void initializeBidsLayout() {
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        bidsLayout.setVisibility(View.GONE);
+        for (Bid bid : Bid.values()) {
+            final Bid thisBid = bid;
+            Button bidButton = createButtonForBidLayout(bid);
+            bidButton.setOnClickListener(new View.OnClickListener() {
+                LinearLayout bidLayout = findViewById(R.id.bids_layout);
+                @Override
+                public void onClick(View v) {
+                    chosenBid = thisBid;
+                    Log.i("bid", chosenBid.toString());
+                    bidLayout.removeAllViews();
+                    bidLayout.setVisibility(View.GONE);
+                }
+            });
+            bidsLayout.addView(bidButton);
+        }
+    }
+
 
 
     /**
@@ -359,20 +391,29 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onTurnEnded () {
-        //TODO CLEAR THE GAMEZONE
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         for (int i=0; i<middleGameZone.getChildCount(); i++) {
-            LinearLayout subLL = (LinearLayout) middleGameZone.getChildAt(i);
-            for (int j=0; j<subLL.getChildCount(); j++) {
-                FrameLayout cardFrame = (FrameLayout) subLL.getChildAt(j);
+            LinearLayout verticalLL = (LinearLayout) middleGameZone.getChildAt(i);
+            for (int j=0; j<verticalLL.getChildCount(); j++) {
+                FrameLayout cardFrame = (FrameLayout) verticalLL.getChildAt(j);
                 cardFrame.removeAllViews();
             }
         }
     }
 
-    protected int findVerticalPositionByPlayer(Player player) {
+    protected int findVerticalPositionByPlayer(Player player, int playersAmount) {
+        if (playersAmount == 3) {
+
+        } else if (playersAmount == 4 )  {
+
+        } else if (playersAmount == 5) {
+
+        } else {
+            return 0;
+        }
         return 1;
     }
+
 
     protected int findHorizontalPositionByPlayer (Player player) {
         return 0;
@@ -383,8 +424,53 @@ public class GameActivity extends AppCompatActivity {
      * @param possibleBids ArrayList of Bids that the player may choose
      * @return the Bid chosen
      */
-    public Bid onBidAsked(ArrayList<Bid> possibleBids) {
-        return Bid.GUARD;
+    public void onBidAsked(ArrayList<Bid> possibleBids) {
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        bidsLayout.setVisibility(View.VISIBLE);
+        for (int i =0; i<bidsLayout.getChildCount(); i++) {
+            Button bidButton = (Button) bidsLayout.getChildAt(i);
+            Bid bid = getBidByButton(bidButton);
+
+            if (possibleBids.contains(bid) || bid == Bid.PASS) {
+                bidButton.setBackgroundColor(getResources().getColor(R.color.white));
+                bidButton.setTextColor(getResources().getColor(R.color.black));
+            } else {
+                bidButton.setBackgroundColor(getResources().getColor(R.color.unchosable));
+                bidButton.setTextColor(getResources().getColor(R.color.highlight));
+                bidButton.setEnabled(false);
+            }
+        }
+    }
+
+    protected Bid getBidByButton(Button button){
+        Bid bid = Bid.PASS;
+        String stringBid = button.getText().toString();
+        Resources res = getApplicationContext().getResources();
+        if (stringBid.equals(res.getString(R.string.pass))) {
+            bid = Bid.PASS;
+        } else if (stringBid.equals(res.getString(R.string.small))) {
+            bid = Bid.SMALL;
+        } else if (stringBid.equals(res.getString(R.string.guard))) {
+            bid = Bid.GUARD;
+        } else if (stringBid.equals(res.getString(R.string.guard_without))) {
+            bid = Bid.GUARD_WITHOUT;
+        } else if (stringBid.equals(res.getString(R.string.guard_against))) {
+            bid = Bid.GUARD_AGAINST;
+        }
+        return bid;
+    }
+
+
+    protected Button createButtonForBidLayout(Bid bid) {
+        Button bidButton = new Button(getApplicationContext());
+        bidButton.setText(bid.toString(getApplicationContext()));
+        //TODO FAIRE QUE CA SOIT MOINS MOCHE, FRAGMENT ?
+        return bidButton;
+    }
+
+
+    public Bid getChosenBid() {
+        return this.chosenBid;
     }
 
     public void onShowCard(Card card, Player player) {

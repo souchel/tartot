@@ -9,7 +9,10 @@
     <color name="transparent">#00000000</color>
     <color name="red">#EE0000</color>
     <color name="black">#111111</color>
+    <color name="white">#FFFFFF</color>
     <color name="backgroundColor">#EEEEEE</color>
     <color name="highlight">#AAAAAA</color>
+
+    <color name="unchosable">#666666</color>
 
 </resources>
