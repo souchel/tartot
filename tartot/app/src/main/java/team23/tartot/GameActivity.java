@@ -446,6 +446,7 @@ public class GameActivity extends AppCompatActivity {
             } else {
                 bidButton.setBackgroundColor(getResources().getColor(R.color.unchosable));
                 bidButton.setTextColor(getResources().getColor(R.color.highlight));
+                bidButton.setEnabled(false);
             }
         }
     }
