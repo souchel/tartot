@@ -2,6 +2,7 @@ package team23.tartot;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -169,21 +170,29 @@ public class ApiManagerService extends Service {
 
 
                     //automatic log in failed.
-                    //todo : notify user that he has to log in manually
+                    localBroadcast("manual_log");
                 }
             }
         });
         return silentSignInTask;
     }
 
-    private void onConnected(GoogleSignInAccount googleSignInAccount) {
-        Log.d("debug", "onConnected(): connected to Google APIs");
-
+    //used to push actions to the activities (on events coming from the network for example)
+    private void localBroadcast(String value){
         Intent intent = new Intent();
         intent.setAction("apiManagerService");
-        intent.putExtra("value", "signedin silent");
+        intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
 
+    private void localBroadcast(String value, Intent intent) {
+        intent.setAction("apiManagerService");
+        intent.putExtra("value", value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void onConnected(GoogleSignInAccount googleSignInAccount) {
+        Log.d("debug", "onConnected(): connected to Google APIs");
 
         userAccount = googleSignInAccount;
         Log.i("debug", "alloc rtmc");
@@ -200,6 +209,8 @@ public class ApiManagerService extends Service {
                         googlePlayer = player;
                         playerId = player.getPlayerId();
                         Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
+                        localBroadcast("connected");
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -282,10 +293,9 @@ public class ApiManagerService extends Service {
                 .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
                 .build();
 
-        //TODO: keep screen on
+        //TODO: wait screen
         //switchToScreen(R.id.screen_wait);
-        //activity.keepScreenOn();
-
+        localBroadcast("keep_screen_on");
         rtmc.join(currentRoomConfig)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -323,9 +333,8 @@ public class ApiManagerService extends Service {
                 GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
                 .join(currentRoomConfig);
 
-        //TODO : keep screen on
         // prevent screen from sleeping during handshake
-        //activity.keepScreenOn();
+        localBroadcast("keep_screen_on");
 
         joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -395,7 +404,11 @@ public class ApiManagerService extends Service {
                 currentRoom = room;
                 Log.d(TAG, "Room " + roomID + " created.");
                 showWaitingRoom(4);
-                //TODO : activity.onRoomCreated(roomID);
+
+                //notify the activity
+                Intent intent = new Intent();
+                intent.putExtra("room_id", roomID);
+                localBroadcast("room_created", intent);
             } else {
                 Log.w(TAG, GamesCallbackStatusCodes.getStatusCodeString(i));
             }
@@ -407,10 +420,14 @@ public class ApiManagerService extends Service {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 currentRoom = room;
                 roomID = room.getRoomId();
-                //TODO : activity.onJoinedRoom(roomID);
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
                 Log.i("debug", "currentRoomBeforeWaitingRoom : " + currentRoom);
                 showWaitingRoom(4);
+
+                //notify the activity
+                Intent intent = new Intent();
+                intent.putExtra("room_id", roomID);
+                localBroadcast("room_joined", intent);
 
             } else {
                 Log.w(TAG, "Error joining room:");
@@ -428,7 +445,9 @@ public class ApiManagerService extends Service {
                 currentRoom = null;
                 currentRoomConfig = null;
                 roomID = null;
-                //TODO : activity.onLeftRoom();
+
+                //notify the activity
+                localBroadcast("room_left");
             }
         }
 
@@ -436,7 +455,9 @@ public class ApiManagerService extends Service {
         public void onRoomConnected(int i, @Nullable Room room) {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " connected.");
-                //TODO : activity.onRoomConnected();
+
+                //notify the activity
+                localBroadcast("room_connected");
             } else {
                 Log.w(TAG, "Error connecting to room: " + i);
             }
@@ -535,8 +556,11 @@ public class ApiManagerService extends Service {
                     .addOnSuccessListener(new OnSuccessListener<Intent>() {
                         @Override
                         public void onSuccess(Intent intent) {
-                            // show waiting room UI
-                            //TODO wait for that to finish and return intent : activity.startActivityForResult(intent, RC_WAITING_ROOM);
+                            // ask the activity the display the waiting room ui (send the google intent)
+                            Intent broadcastIntent = new Intent();
+                            broadcastIntent.putExtra("intent", intent);
+                            localBroadcast("show_waiting_room", broadcastIntent);
+
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -610,8 +634,12 @@ public class ApiManagerService extends Service {
             // mIncomingInvitationId
             // and show the popup on the screen.
             mIncomingInvitationId = invitation.getInvitationId();
+
             //call the activity to display that we have an invitation
-            //TODO push this : activity.onInvitationReceived(mIncomingInvitationId, invitation.getInviter().getDisplayName());
+            Intent intent = new Intent();
+            intent.putExtra("invitation_id", mIncomingInvitationId);
+            intent.putExtra("invitation", invitation);
+            localBroadcast("invitation_received", intent);
         }
 
         @Override
@@ -619,7 +647,8 @@ public class ApiManagerService extends Service {
 
             if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
                 mIncomingInvitationId = null;
-                //TODO : activity.hidePopUps(); // This will hide the invitation popup
+                //hide pop ups in the activity
+                localBroadcast("hide_popup");
             }
         }
     };
@@ -648,7 +677,10 @@ public class ApiManagerService extends Service {
                 .addOnSuccessListener(new OnSuccessListener<Intent>() {
                     @Override
                     public void onSuccess(Intent intent) {
-                        //TODO : wait for that to finish and return intent : activity.startActivityForResult(intent, RC_SELECT_PLAYERS);
+                        //ask the activity to display the player picker ui
+                        Intent broadcastIntent = new Intent();
+                        broadcastIntent.putExtra("intent", intent);
+                        localBroadcast("show_player_picker", broadcastIntent);
                     }
                 });
     }

@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -50,7 +51,41 @@ public class MenuActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("broadcast", intent.getStringExtra("value"));
+            String code = intent.getStringExtra("value");
+            Log.i("broadcast", code);
+            if (code.equals("manual_log")){
+                Toast.makeText(getApplicationContext(), R.string.text_view_google_log_in, Toast.LENGTH_LONG).show();
+            }
+            else if(code.equals("connected")){
+                onConnected();
+            }
+            else if(code.equals("keep_screen_on")){
+                keepScreenOn();
+            }
+            else if(code.equals("room_created")){
+                onRoomCreated(intent.getStringExtra("room_id"));
+            }
+            else if(code.equals("room_joined")){
+                onJoinedRoom(intent.getStringExtra("room_id"));
+            }
+            else if(code.equals("room_left")){
+                onLeftRoom();
+            }
+            else if(code.equals("room_connected")){
+                onRoomConnected();
+            }
+            else if(code.equals("show_waiting_room")){
+                startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_WAITING_ROOM);
+            }
+            else if(code.equals("invitation_received")){
+                onInvitationReceived(intent.getStringExtra("invitation_id"), ((Invitation) intent.getParcelableExtra("invitation")).getInviter().getDisplayName());
+            }
+            else if(code.equals("hide_popup")){
+                hidePopUps();
+            }
+            else if(code.equals("show_player_picker")){
+                startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_SELECT_PLAYERS);
+            }
         }
     };
 
@@ -218,19 +253,15 @@ public class MenuActivity extends AppCompatActivity {
         if (mBound){
             mApiManagerService.update();
         }
-        //TODO : action after signin (in onServceConnected ?)
-        /*mApiManagerService.signInSilently().addOnSuccessListener(this, new OnSuccessListener<GoogleSignInAccount>() {
-            @Override
-            public void onSuccess(GoogleSignInAccount googleSignInAccount) {
-                //on s'est bien connecté, on peut afficher le boutton pour accéder au menu principal
-                findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
-                //à enlever quand on aura fusionné les activités de menu.
-                switchToMainScreen();
-            }
-        });*/
         Log.i("debug","resume");
     }
 
+    private void onConnected(){
+        //on s'est bien connecté, on peut afficher le boutton pour accéder au menu principal
+        findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
+        //à enlever quand on aura fusionné les activités de menu.
+        switchToMainScreen();
+    }
     @Override
     protected void onPause() {
         super.onPause();
