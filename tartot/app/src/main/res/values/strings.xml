@@ -45,6 +45,7 @@
     <string name="is_inviting_you">is inviting you</string>
 
     <!-- Strings related to Bid -->
+    <string name="pass">Pass</string>
     <string name="small">Small</string>
     <string name="guard">Guard</string>
     <string name="guard_without">Guard Without</string>

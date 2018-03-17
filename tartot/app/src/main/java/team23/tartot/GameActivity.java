@@ -1,6 +1,7 @@
 package team23.tartot;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -52,6 +53,7 @@ public class GameActivity extends AppCompatActivity {
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
     private APIManager apiManager;
+    protected Bid chosenBid = Bid.PASS;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +73,7 @@ public class GameActivity extends AppCompatActivity {
         initializeDeck(); //initialize the whole deck of 78 Cards
         initializeGameBoard(playersAmount); //initialize the centered zone where, where the cards played will be shown and the places where the player wil be. There is a ConstraintLayout in the xml and x FrameLayout will be created to place the played cards correctly in front of each player.
         initializePlayersPlacement();
+        initializeBidsLayout();
 
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
@@ -112,7 +115,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void initializePlayersPlacement() {
+    protected void initializePlayersPlacement() {
         //TODO PLACE CORRECTLY PEOPLE.
     }
 
@@ -121,7 +124,7 @@ public class GameActivity extends AppCompatActivity {
      * method called at the creation of the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
      * @param playersAmount an int that corresponds to GameManager.players.size()
      */
-    public void initializeGameBoard(int playersAmount) {
+    protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
 
         //If there is 4 players
@@ -167,6 +170,28 @@ public class GameActivity extends AppCompatActivity {
             middleGameZone.addView(rightLL);
         }
     }
+
+
+    protected void initializeBidsLayout() {
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        bidsLayout.setVisibility(View.GONE);
+        for (Bid bid : Bid.values()) {
+            final Bid thisBid = bid;
+            Button bidButton = createButtonForBidLayout(bid);
+            bidButton.setOnClickListener(new View.OnClickListener() {
+                LinearLayout bidLayout = findViewById(R.id.bids_layout);
+                @Override
+                public void onClick(View v) {
+                    chosenBid = thisBid;
+                    Log.i("bid", chosenBid.toString());
+                    bidLayout.removeAllViews();
+                    bidLayout.setVisibility(View.GONE);
+                }
+            });
+            bidsLayout.addView(bidButton);
+        }
+    }
+
 
 
     /**
@@ -410,58 +435,50 @@ public class GameActivity extends AppCompatActivity {
      */
     public void onBidAsked(ArrayList<Bid> possibleBids) {
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
-        for (Bid bid : Bid.values()) {
-            Button bidButton = createButtonForBidLayout(bid, findBidInBidList(bid, possibleBids));
-            //bidButton.setOnClickListener(bidListener);
-            bidsLayout.addView(bidButton);
-        }
-        if (!possibleBids.isEmpty()) {
+        bidsLayout.setVisibility(View.VISIBLE);
+        for (int i =0; i<bidsLayout.getChildCount(); i++) {
+            Button bidButton = (Button) bidsLayout.getChildAt(i);
+            Bid bid = getBidByButton(bidButton);
 
+            if (possibleBids.contains(bid) || bid == Bid.PASS) {
+                bidButton.setBackgroundColor(getResources().getColor(R.color.white));
+                bidButton.setTextColor(getResources().getColor(R.color.black));
+            } else {
+                bidButton.setBackgroundColor(getResources().getColor(R.color.unchosable));
+                bidButton.setTextColor(getResources().getColor(R.color.highlight));
+            }
         }
     }
 
-    protected Button createButtonForBidLayout(Bid bid, int i) {
+    protected Bid getBidByButton(Button button){
+        Bid bid = Bid.PASS;
+        String stringBid = button.getText().toString();
+        Resources res = getApplicationContext().getResources();
+        if (stringBid.equals(res.getString(R.string.pass))) {
+            bid = Bid.PASS;
+        } else if (stringBid.equals(res.getString(R.string.small))) {
+            bid = Bid.SMALL;
+        } else if (stringBid.equals(res.getString(R.string.guard))) {
+            bid = Bid.GUARD;
+        } else if (stringBid.equals(res.getString(R.string.guard_without))) {
+            bid = Bid.GUARD_WITHOUT;
+        } else if (stringBid.equals(res.getString(R.string.guard_against))) {
+            bid = Bid.GUARD_AGAINST;
+        }
+        return bid;
+    }
+
+
+    protected Button createButtonForBidLayout(Bid bid) {
         Button bidButton = new Button(getApplicationContext());
         bidButton.setText(bid.toString(getApplicationContext()));
         //TODO FAIRE QUE CA SOIT MOINS MOCHE, FRAGMENT ?
-        if (i >= 0) {
-            bidButton.setBackgroundColor(getResources().getColor(R.color.backgroundColor));
-            bidButton.setTextColor(getResources().getColor(R.color.black));
-        } else {
-            bidButton.setBackgroundColor(getResources().getColor(R.color.unchosable));
-            bidButton.setTextColor(getResources().getColor(R.color.highlight));
-        }
         return bidButton;
     }
 
-    /*
-    View.OnClickListener bidListener = new View.OnClickListener() {
-        LinearLayout bidLayout = findViewById(R.id.bids_layout);
-        @Override
-        public void onClick(View v) {
-            bidLayout.removeAllViews();
-            //TODO RENVOYER LE BON BID
-        }
-    };
-    */
 
-    /**
-     *
-     * @param bid
-     * @param bidList
-     * @return
-     */
-    protected int findBidInBidList (Bid bid, ArrayList<Bid> bidList) {
-        int pos = -1;
-
-        for (int i=0; i<bidList.size(); i++) {
-            if (bid == bidList.get(i)) {
-                pos = i;
-                break;
-            }
-        }
-
-        return pos;
+    public Bid getChosenBid() {
+        return this.chosenBid;
     }
 
     public void onShowCard(Card card, Player player) {
