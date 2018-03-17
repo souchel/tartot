@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
@@ -184,11 +185,11 @@ public class GameActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     chosenBid = thisBid;
                     Log.i("bid", chosenBid.toString());
-                    bidLayout.removeAllViews();
                     bidLayout.setVisibility(View.GONE);
                 }
             });
             bidsLayout.addView(bidButton);
+            //bidsLayout.setBackground(getResources().getDrawable(R.drawable.bids_layout_shadow));
         }
     }
 
@@ -473,7 +474,7 @@ public class GameActivity extends AppCompatActivity {
     protected Button createButtonForBidLayout(Bid bid) {
         Button bidButton = new Button(getApplicationContext());
         bidButton.setText(bid.toString(getApplicationContext()));
-        //TODO FAIRE QUE CA SOIT MOINS MOCHE, FRAGMENT ?
+        bidButton.setLayoutParams(new FrameLayout.LayoutParams(530,77));
         return bidButton;
     }
 
