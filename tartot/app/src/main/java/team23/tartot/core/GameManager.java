@@ -45,6 +45,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		chien = new Deck();
 		stats = new Points(players);
 		bid = null;
+		bid = bid.PASS;
 		attackDeck = new Deck();
 		defenseDeck = new Deck();
 	}
@@ -62,6 +63,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		chien = new Deck();
 		stats = new Points(players);
 		bid = null;
+		bid = bid.PASS;
 		this.position = position;
 	}
 	
@@ -162,6 +164,19 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			askBid(bid);
 		}
 	}
+	@Override
+	public void askBid(Bid bid) {
+		if (bid == null)
+		{
+			//TODO on appelle la methode dans activite qui fait choisir le bide au joueur local
+		}
+		else
+		{
+			this.bid = bid ;
+		}
+		//TODO bid(bid to send to others);
+		checkBidProgress();
+	}
 	private void checkBidProgress() {
 		boolean check = true;
 		for (boolean pos : saidBid) {
@@ -170,16 +185,21 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			}
 		}
 		if (check) {
-			for (Player player : players) {
-				if (player.getPosition() == bid.getPlayerPosition()) {
-					player.setTeam(Team.ATTACK);
-					for (Card card : chien.getCardList()) {
-						player.getHand().addCard(card);
-					}
-				} else player.setTeam(Team.DEFENSE);
+			//TODO vérifier que la condition marche
+			if (bid == bid.PASS){
+				prepareNextRound();
+				//TODO faire compter la pass dans les stats
+			} else {
+				for (Player player : players) {
+					if (player.getPosition() == bid.getPlayerPosition()) {
+						player.setTeam(Team.ATTACK);
+						for (Card card : chien.getCardList()) {
+							player.getHand().addCard(card);
+						}
+					} else player.setTeam(Team.DEFENSE);
+				}
+				//TODO demander au joueur de faire son ecart via l activite correspondante
 			}
-			//TODO demander au joueur de faire son ecart via l activite correspondante
-			
 		}
 	}
 	@Override
@@ -226,21 +246,6 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 			}
 		}
 		return true ;
-	}
-	
-	
-	@Override
-	public void askBid(Bid bid) {
-		if (bid == null)
-		{
-			//TODO on appelle la methode dans activite qui fait choisir le bide au joueur local
-		}
-		else
-		{
-			this.bid = bid ;
-		}
-		//TODO bid(bid to send to others);
-		checkBidProgress();
 	}
 	
 	//announce phase
@@ -390,7 +395,9 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 	public void reinitializeForNextRound() {
 		//le deck se r�initialise pas mais ce partage par des m�thodes network
 		chien = new Deck();
+		//TODO utilité de bid = null ? (à voire aussi dans les constructeurs)
 		bid = null;
+		bid = bid.PASS;
 		playersAnnounces = null;
 		gotAnnounces = new boolean[4];
 		saidBid = new boolean[4];
