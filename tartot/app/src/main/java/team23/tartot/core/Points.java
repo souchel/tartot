@@ -2,6 +2,8 @@ package team23.tartot.core;
 
 import java.util.ArrayList;
 
+import team23.tartot.GameService;
+
 public class Points {
 	private Player[] players;
 	private double[] points;
@@ -31,12 +33,12 @@ public class Points {
 	public void updatePointsAndBid(Bid bid, int attackOudlerNumber, ArrayList<Announces> annonces, double pointsAttack)
 	{
 		double[] pointsGame = new double[players.length];
-		double pointsNeeded = GameManager.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ; 
+		double pointsNeeded = GameService.oudlerNumberIntoPointsNeeded(attackOudlerNumber) ;
 		updatePointsMisery(pointsGame, annonces, players);
 				
 		int multiplier ;
 		int additionnalPoints ;
-		if (GameManager.theAttackWins(pointsNeeded, pointsAttack))
+		if (GameService.theAttackWins(pointsNeeded, pointsAttack))
 		{
 			multiplier = 1 ;
 			additionnalPoints = 0;
@@ -70,9 +72,9 @@ public class Points {
 				switch (a2) 
 				{
 			      case SLAM : updatePointsSlam(pointsGame, a2); break;
-			      case SIMPLE_HANDFUL : updatePointsHandful(pointsGame, 20, GameManager.theAttackWins(pointsNeeded, pointsAttack), players) ; break;
-			      case DOUBLE_HANDFUL : updatePointsHandful(pointsGame, 30, GameManager.theAttackWins(pointsNeeded, pointsAttack), players); break;
-			      case TRIPLE_HANDFUL : updatePointsHandful(pointsGame, 40, GameManager.theAttackWins(pointsNeeded, pointsAttack), players); break;
+			      case SIMPLE_HANDFUL : updatePointsHandful(pointsGame, 20, GameService.theAttackWins(pointsNeeded, pointsAttack), players) ; break;
+			      case DOUBLE_HANDFUL : updatePointsHandful(pointsGame, 30, GameService.theAttackWins(pointsNeeded, pointsAttack), players); break;
+			      case TRIPLE_HANDFUL : updatePointsHandful(pointsGame, 40, GameService.theAttackWins(pointsNeeded, pointsAttack), players); break;
 			      case PETIT_AU_BOUT : updatePointsPetitAuBout(pointsGame , a2, bid);
 				  case MISERY: break;
 				  default: break;

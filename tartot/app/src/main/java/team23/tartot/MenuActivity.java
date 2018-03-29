@@ -1,7 +1,7 @@
 package team23.tartot;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,14 +21,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 
@@ -45,7 +46,7 @@ public class MenuActivity extends AppCompatActivity {
     private static final int RC_INVITATION_INBOX = 9008;
 
     private ApiManagerService mApiManagerService;
-    private boolean mBound = false;
+    private boolean mBoundToConnectionService = false;
 
     //broadcast receiver to receive broadcast from the apiManagerService
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -98,16 +99,23 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("debug","create");
-
+        Log.i("debug","MenuActivity onCreate");
         setContentView(R.layout.activity_first_log);
-
 
     }
 
     @Override
     public void onStart(){
         super.onStart();
+        Log.i("debug", "MenuActivity onStart");
+
+        //check if the network service is running
+        boolean running = isServiceRunning(ApiManagerService.class);
+        Log.i("debug", "menu activity, service running ? " + running);
+        if(running == false){
+            Intent intent = new Intent(this, ApiManagerService.class);
+            startService(intent);
+        }
 
         //register the broadcast receiver
         IntentFilter intentFilter = new IntentFilter("apiManagerService");
@@ -115,17 +123,33 @@ public class MenuActivity extends AppCompatActivity {
 
         // Bind to ApiManagerService
         Intent intent = new Intent(this, ApiManagerService.class);
+        intent.putExtra("origin", "menu");
+        Log.i("debug", "act bindService");
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         switchToMainScreen();
 
 
 
         // Management of the welcome TextView displaying
-        final TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
-        String welcome = welcomeTextView.getText().toString() + " Hsb511"; // + getExtra.getUsername();
-        welcomeTextView.setText(welcome);
+        setWelcomeMessage();
 
         initListeners();
+    }
+
+    private void setWelcomeMessage(){
+        TextView welcomeTextView = findViewById(R.id.text_view_welcome_main_menu);
+        String username = "";
+        if(mBoundToConnectionService){
+            username = mApiManagerService.getPLayerName();
+        }
+        String welcome = getResources().getString(R.string.text_view_welcome_main_menu) + " " + username + " !";
+        welcomeTextView.setText(welcome);
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.i("debug", "MenuActivity onStop");
+        unbindService(mConnection);
 
 
     }
@@ -139,15 +163,42 @@ public class MenuActivity extends AppCompatActivity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
             mApiManagerService = binder.getService();
-            mBound = true;
+            mBoundToConnectionService = true;
+            Log.i("debug", "menu act, onServiceConnected");
+            //update the connection side
             mApiManagerService.update();
+            //update the ui side
+            updateUI();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            mBoundToConnectionService = false;
         }
     };
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateUI(){
+        setWelcomeMessage();
+
+        final Button button_lobby_id = findViewById(R.id.button_lobby_id);
+        Room r = mApiManagerService.getCurrentRoom();
+        if (r != null){
+            button_lobby_id.setText("Lobby ID : " + r.getRoomId());
+        }
+        else{
+            button_lobby_id.setText("Dans aucune salle");
+        }
+    }
 
     private void initListeners(){
         final Button firstLogButton = findViewById(R.id.button_first_log);
@@ -247,13 +298,13 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i("debug","resume");
         // Since the state of the signed in user can change when the activity is not active
         // it is recommended to try and sign in silently from when the app resumes.
 
-        if (mBound){
+        if (mBoundToConnectionService){
             mApiManagerService.update();
         }
-        Log.i("debug","resume");
     }
 
     private void onConnected(){
@@ -267,7 +318,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onPause();
         // unregister our listeners.  They will be re-registered via
         // onResume->mApiManagerService.signInSilently->onConnected.
-        if (mBound) {
+        if (mBoundToConnectionService) {
             mApiManagerService.unregisterListeners();
         }
     }
@@ -302,12 +353,6 @@ public class MenuActivity extends AppCompatActivity {
         switchToScreen(curScreen); // We change the current screen for the same, but it updates the notifications
     }
 
-    //startActivity when a service asks to
-    public void requestForStartActivityForResul(Intent intent, int requestCode){
-        this.startActivityForResult(intent, RC_SIGN_IN);
-
-    }
-
     //handles the return of the intent of external activity log in
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -316,6 +361,7 @@ public class MenuActivity extends AppCompatActivity {
          * called after the player pickup in the invitation activity
          */
         if (requestCode == RC_SELECT_PLAYERS) {
+            Log.d("MenuActivity", "onActivityResult select player");
             if (resultCode != Activity.RESULT_OK) {
                 // Canceled or some other error.
                 return;
@@ -370,13 +416,11 @@ public class MenuActivity extends AppCompatActivity {
         }
         //if we come back from the manual signin
         else if (requestCode == RC_SIGN_IN) {
-            String errorMessage = mApiManagerService.onSigninReturn(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
-            //check if signin successfull (<=> message is null)
-            if (errorMessage != null)
-                new AlertDialog.Builder(this).setMessage(errorMessage)
-                        .setNeutralButton(android.R.string.ok, null).show();
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            mApiManagerService.onSigninReturn(task);
         }
     }
+
     private void startGame(){
         Intent goToGameIntent = new Intent(this, GameActivity.class);
         //TODO : notify api manager we switched to game !
@@ -401,11 +445,11 @@ public class MenuActivity extends AppCompatActivity {
         // should we show the invitation popup?
         boolean showInvPopup;
         //la belle condition ternaire
-        findViewById(R.id.invitation_popup).setVisibility(mBound && mApiManagerService.isInvitationPending() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.invitation_popup).setVisibility(mBoundToConnectionService && mApiManagerService.isInvitationPending() ? View.VISIBLE : View.GONE);
     }
 
     void switchToMainScreen() {
-        if (mBound && mApiManagerService.isConnected()) {
+        if (mBoundToConnectionService && mApiManagerService.isConnected()) {
             switchToScreen(R.id.main_menu_screen);
         } else {
             switchToScreen(R.id.log_in_screen);

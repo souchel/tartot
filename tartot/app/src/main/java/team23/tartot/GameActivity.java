@@ -1,15 +1,18 @@
 package team23.tartot;
 
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -46,21 +49,17 @@ public class GameActivity extends AppCompatActivity {
     protected Deck deck = new Deck();
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
-    private ApiManagerService apiManager;
     protected Bid chosenBid = Bid.PASS;
+    private ApiManagerService mApiManagerService;
+    private GameService mGameService;
+    private boolean mNetworkBound = false;
+    private boolean mGameBound = false;
 
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        //create the APIMananger that will make the connections with the other players
-        Intent creation = getIntent();
-        if (creation == null){
-            Log.i("debug", "echec de la récupération de l'intent nécessaire à la mise en réseau");
-        }
-        //TODO : restore when parcelable implemented
-        //apiManager = new APIManager(this, (Room) creation.getParcelableExtra("room"), (String) creation.getStringExtra("playerId"));
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
@@ -91,6 +90,96 @@ public class GameActivity extends AppCompatActivity {
                 onBidAsked(possibleBids);
             }
         });
+    }
+
+    public void onStart(){
+        super.onStart();
+
+        //bind to the api service
+
+        //register the broadcast receiver
+        IntentFilter intentFilter = new IntentFilter("apiManagerService");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
+
+        // Bind to ApiManagerService
+        Intent intent = new Intent(this, ApiManagerService.class);
+        bindService(intent, mNetworkConnection, Context.BIND_AUTO_CREATE);
+    }
+
+
+    //broadcast receiver to receive broadcast from the apiManagerService
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String code = intent.getStringExtra("value");
+        }
+    };
+
+    /** Defines callbacks for service binding, passed to bindService() for the network service*/
+    private ServiceConnection mNetworkConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
+            mApiManagerService = binder.getService();
+            mNetworkBound = true;
+            mApiManagerService.update();
+            onConnected();
+            Button logBtn = findViewById(R.id.log);
+            logBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mApiManagerService.logState();
+                    mApiManagerService.sendToAllReliably("heeeelllooo".getBytes());
+                }
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mNetworkBound = false;
+        }
+    };
+
+    /** Defines callbacks for service binding, passed to bindService() for the game service*/
+    private ServiceConnection mGameConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            GameService.LocalBinder binder = (GameService.LocalBinder) service;
+            mGameService = binder.getService();
+            mGameBound = true;
+            mApiManagerService.update();
+            onConnected();
+            Button logBtn = findViewById(R.id.log);
+            logBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mApiManagerService.logState();
+                    mApiManagerService.sendToAllReliably("heeeelllooo".getBytes());
+                }
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mGameBound = false;
+        }
+    };
+
+    //called when we have successfully established a connection with the API manager service
+    private void onConnected(){
+        ArrayList<String[]> players = mApiManagerService.getPlayersInRoom();
+        Log.i("GameManager","onConnected");
+        /*
+        for (String[] p : players){
+            Log.i("player", p[0] + p[1]);
+        }
+        */
     }
 
     //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER
