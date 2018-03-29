@@ -294,10 +294,10 @@ public class ApiManagerService extends Service {
     }
 
     public String getPLayerName(){
-        Log.i("etrange", GoogleSignIn.getLastSignedInAccount(getApplicationContext()).getDisplayName() + "");
-        Log.i("etrange", userAccount.getDisplayName() + "");
-
-        return GoogleSignIn.getLastSignedInAccount(getApplicationContext()).getDisplayName();
+        if(googlePlayer == null){
+            return "";
+        }
+        return googlePlayer.getDisplayName();
     }
     public void signOut() {
         GoogleSignInClient signInClient = GoogleSignIn.getClient(getApplicationContext(),

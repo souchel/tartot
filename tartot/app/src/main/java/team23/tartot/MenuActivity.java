@@ -312,6 +312,7 @@ public class MenuActivity extends AppCompatActivity {
         findViewById(R.id.button_first_log).setVisibility(View.VISIBLE);
         //à enlever quand on aura fusionné les activités de menu.
         switchToMainScreen();
+        updateUI();
     }
     @Override
     protected void onPause() {
