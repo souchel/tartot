@@ -473,7 +473,7 @@ public class MenuActivity extends AppCompatActivity {
         button_lobby_id.setText("No room"); // TODO: Locale
     }
 
-    //TODO : do something ?
+    //TODO : this callback is called when the room is complete (everyone joined) so we should start the game. However, the start relies on the onActivityResult from the waiting room.
     public void onRoomConnected(){
         return;
     }

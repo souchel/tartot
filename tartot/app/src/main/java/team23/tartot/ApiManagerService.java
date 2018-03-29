@@ -488,6 +488,12 @@ public class ApiManagerService extends Service {
             }
         }
 
+        /**
+         * Called when all the participants in a real-time room are fully connected.
+         * This gets called once all invitations are accepted and any necessary automatching has been completed
+         * @param i status code
+         * @param room
+         */
         @Override
         public void onRoomConnected(int i, @Nullable Room room) {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
@@ -809,11 +815,11 @@ public class ApiManagerService extends Service {
 
 
     public ArrayList<String[]> getPlayersInRoom(){
-        Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
         if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
             return null;
         }
         else{
+            Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
             ArrayList<String> ids = mCurrentRoom.getParticipantIds();
             ArrayList<String[]> ret = new ArrayList<String[]>(ids.size());
             /*
@@ -844,6 +850,9 @@ public class ApiManagerService extends Service {
     //////////methods taken from the tutorial.
     // send a message to all participants except us using the sendReliableMessage method
     void sendToAllReliably(byte[] message) {
+        if(mCurrentRoom == null){
+            return;
+        }
         for (String participantId : mCurrentRoom.getParticipantIds()) {
             if (!participantId.equals(mMyParticipantId)) {
                 Task<Integer> task = Games.
