@@ -99,6 +99,20 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
     };
 
+    public String[] getUsernames() {
+        if(!mBoundToNetwork){
+            Log.e("GameServiceError", "not bound to ApiManagerService");
+            return new String[]{" "};
+        }
+        //{ [String username ; int status], ... }
+        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
+        String[] usernames = new String[namesAndStatus.size()];
+        for (int i=0; i < namesAndStatus.size() ; i++){
+            usernames[i] = namesAndStatus.get(i)[0];
+        }
+        return usernames;
+    }
+
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
      */

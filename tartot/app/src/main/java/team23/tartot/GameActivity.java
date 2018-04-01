@@ -153,7 +153,8 @@ public class GameActivity extends AppCompatActivity {
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                //TODO : test button to send data
+                    setPlayersTextview();
+                    //TODO : test button to send data
                 }
             });
         }
@@ -169,7 +170,12 @@ public class GameActivity extends AppCompatActivity {
         //TODO : get all info of the game to render the UI
     }
 
-    private void setPlayersTextview(String[] usernames){
+    private void setPlayersTextview(){
+        if(!mGameServiceBound){
+            Log.e("GameActivityError", "not bound to GameService");
+            return;
+        }
+        String[] usernames = mGameService.getUsernames();
         EditText et = findViewById(R.id.connectedPlayers);
         String s = "";
         for (String p : usernames){

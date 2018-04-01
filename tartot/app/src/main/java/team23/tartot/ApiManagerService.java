@@ -816,7 +816,16 @@ public class ApiManagerService extends Service {
 
     public ArrayList<String[]> getPlayersInRoom(){
         if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
-            return null;
+            //for testing purpose only
+            ArrayList<String[]> ret = new ArrayList<>();
+            ret.add(new String[]{"joueur1", "1"});
+            ret.add(new String[]{"joueur2", "1"});
+            ret.add(new String[]{"joueur3", "1"});
+            ret.add(new String[]{"joueur4", "1"});
+            return ret;
+
+            //TODO : return null in the final version
+            //return null;
         }
         else{
             Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
