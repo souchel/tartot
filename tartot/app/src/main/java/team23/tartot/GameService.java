@@ -24,7 +24,7 @@ import team23.tartot.network.iNetworkToCore;
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
 
     // Binder given to clients
-    private final IBinder mBinder = new LocalBinder();
+    private final IBinder mBinder = new LocalBinderGame();
     private boolean mInGame = false;
     public GameService() {
     }
@@ -46,7 +46,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
      */
-    public class LocalBinder extends Binder {
+    public class LocalBinderGame extends Binder {
         GameService getService() {
             // Return this instance of LocalService so clients can call public methods
             return GameService.this;

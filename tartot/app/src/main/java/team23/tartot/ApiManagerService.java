@@ -822,12 +822,39 @@ public class ApiManagerService extends Service {
             Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
             ArrayList<String> ids = mCurrentRoom.getParticipantIds();
             ArrayList<String[]> ret = new ArrayList<String[]>(ids.size());
-            /*
             for (int i=0 ; i < ids.size() ; i++){
                 Participant p = mCurrentRoom.getParticipant(ids.get(i));
                 String[] couple = {p.getDisplayName(), p.getStatus() + ""};
                 ret.set(i, couple);
-            }*/
+            }
+            return ret;
+        }
+    }
+
+    public String[] getActivePlayersInRoom(){
+        if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
+            //TODO: retirer ceci quand on aura fini les tests
+            return new String[]{"joueur1", "joueur2", "joueur3", "joueur4"};
+            //return null;
+        }
+        else{
+            Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
+            ArrayList<String> ids = mCurrentRoom.getParticipantIds();
+            int count = 0;
+            for (int i=0 ; i < ids.size() ; i++){
+                Participant p = mCurrentRoom.getParticipant(ids.get(i));
+                if (p.getStatus() == Participant.STATUS_JOINED) {
+                    count++;
+                }
+            }
+            String[] ret = new String[count];
+            for (int i=0 ; i < ids.size() ; i++){
+                Participant p = mCurrentRoom.getParticipant(ids.get(i));
+                if (p.getStatus() == Participant.STATUS_JOINED) {
+                    ret[i] = p.getDisplayName();
+                }
+            }
+
             return ret;
         }
     }
