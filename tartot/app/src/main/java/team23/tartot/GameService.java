@@ -1,9 +1,19 @@
 package team23.tartot;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +36,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     // Binder given to clients
     private final IBinder mBinder = new LocalBinderGame();
     private boolean mInGame = false;
+    private boolean mBoundToNetwork = false;
+    private ApiManagerService mApiManagerService;
     public GameService() {
     }
 
@@ -37,11 +49,55 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     //called at each request
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        String[] usernames = intent.getStringArrayExtra("usernames");
-        initialize(usernames);
-        mInGame = true;
+
+        //check if the game service is running
+        boolean running = isServiceRunning(GameService.class);
+        Log.i("debug", "menu activity, service running ? " + running);
+        if(running == false){
+            Log.e("GameServiceError", "le service réseau ne tourne pas");
+            stopSelf();
+        }
+
+        //register the broadcast receiver
+        IntentFilter intentFilter = new IntentFilter("apiManagerService");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
+
+        // Bind to APIManagerService
+        Intent networkIntent = new Intent(this, ApiManagerService.class);
+        intent.putExtra("origin", "gameService");
+        Log.i("debug", "act bindService");
+        bindService(networkIntent, mNetworkConnection, Context.BIND_AUTO_CREATE);
+
         return START_NOT_STICKY;
     }
+
+    /** Defines callbacks for service binding, passed to bindService() for the game service*/
+    private ServiceConnection mNetworkConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
+            mApiManagerService = binder.getService();
+            mBoundToNetwork = true;
+            /*
+            Button logBtn = findViewById(R.id.log);
+            logBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //TODO : test button to send data
+                }
+            });*/
+            initialize();
+        }
+
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBoundToNetwork = false;
+        }
+    };
 
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
@@ -65,6 +121,25 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return false;
     }
+
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //broadcast receiver to receive broadcast from the APIManagerService
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String code = intent.getStringExtra("value");
+        }
+    };
 
 
 
@@ -113,12 +188,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         defenseDeck = new Deck();
     }
 
-    public void initialize(String[] usernames, int position) {
+    public void initialize() {
+        //{ [String username ; int status], ... }
+        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
         deck = new Deck();
-        players = new Player[usernames.length];
-        for (int i = 0 ; i < usernames.length; i++)
+        players = new Player[namesAndStatus.size()];
+        for (int i = 0 ; i < namesAndStatus.size(); i++)
         {
-            players[i] = new Player(usernames[i],i);
+            players[i] = new Player(namesAndStatus.get(i)[0],i);
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }

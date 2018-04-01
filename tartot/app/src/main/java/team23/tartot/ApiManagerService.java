@@ -821,11 +821,13 @@ public class ApiManagerService extends Service {
         else{
             Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
             ArrayList<String> ids = mCurrentRoom.getParticipantIds();
-            ArrayList<String[]> ret = new ArrayList<String[]>(ids.size());
+            ArrayList<String[]> ret = new ArrayList<>(ids.size());
             for (int i=0 ; i < ids.size() ; i++){
+                Log.d("debug",ids.size() + " " + i);
                 Participant p = mCurrentRoom.getParticipant(ids.get(i));
                 String[] couple = {p.getDisplayName(), p.getStatus() + ""};
-                ret.set(i, couple);
+                Log.d("debug",couple.toString());
+                ret.add(couple);
             }
             return ret;
         }

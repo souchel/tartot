@@ -52,12 +52,8 @@ public class GameActivity extends AppCompatActivity {
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
     protected Bid chosenBid = Bid.PASS;
-    private ApiManagerService mApiManagerService;
     private GameService mGameService;
-    private boolean mNetworkBound = false;
-    private boolean mGameBound = false;
-    private String[] mUsernames = null;
-
+    private boolean mGameServiceBound = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,29 +93,29 @@ public class GameActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-        //register the broadcast receivers
-        IntentFilter networkIntentFilter = new IntentFilter("apiManagerService");
-        IntentFilter gameIntentFilter = new IntentFilter("gameService");
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, gameIntentFilter);
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, networkIntentFilter);
+        //check if the game service is running
+        boolean running = isServiceRunning(GameService.class);
+        Log.i("debug", "game activity, service running ? " + running);
+        if(running == false){
+            startGameService();
+        }
 
+        //register the broadcast receiver
+        IntentFilter intentFilter = new IntentFilter("gameService");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
 
-        // Bind to ApiManagerService
-        Intent networkIntent = new Intent(this, ApiManagerService.class);
-        networkIntent.putExtra("origin", "game");
-        Log.d("debug", "act bindNetworkService");
-        bindService(networkIntent, mNetworkConnection, Context.BIND_AUTO_CREATE);
-
-        //the next part of the code is run in mNetworkConnection.onServiceConnected
+        // Bind to GameService
+        Intent intent = new Intent(this, GameService.class);
+        intent.putExtra("origin", "game");
+        Log.i("debug", "act bindService");
+        bindService(intent, mGameConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void startGameService(String[] usernames){
+    private void startGameService(){
         boolean running = isServiceRunning(GameService.class);
         Log.d("debug", "game activity, service running ? " + running);
         if(running == false){
-
             Intent intent = new Intent(this, GameService.class);
-            intent.putExtra("usernames", usernames);
             startService(intent);
         }
     }
@@ -134,50 +130,11 @@ public class GameActivity extends AppCompatActivity {
         return false;
     }
 
-    //broadcast receiver to receive broadcast from the apiManagerService
+    //broadcast receiver to receive broadcast from the GameService
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String code = intent.getStringExtra("value");
-        }
-    };
-
-    /** Defines callbacks for service binding, passed to bindService() for the network service*/
-    private ServiceConnection mNetworkConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
-            mApiManagerService = binder.getService();
-            mNetworkBound = true;
-            mApiManagerService.update();
-            onConnected();
-            Button logBtn = findViewById(R.id.log);
-            logBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mApiManagerService.logState();
-                    mApiManagerService.sendToAllReliably("heeeelllooo".getBytes());
-                }
-            });
-
-            //get the usernames of the connected players
-            mUsernames = mApiManagerService.getActivePlayersInRoom();
-            setPlayersTextview(mUsernames);
-            //check if the game service is running. Start it otherwise
-            startGameService(mUsernames);
-
-            //Bind to GameService
-            Intent gameIntent = new Intent(GameActivity.this, GameService.class);
-            Log.i("debug", "act bindService");
-            bindService(gameIntent, mGameConnection, Context.BIND_AUTO_CREATE);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mNetworkBound = false;
         }
     };
 
@@ -190,34 +147,26 @@ public class GameActivity extends AppCompatActivity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             GameService.LocalBinderGame binder = (GameService.LocalBinderGame) service;
             mGameService = binder.getService();
-            mGameBound = true;
-            mApiManagerService.update();
-            onConnected();
+            mGameServiceBound = true;
+            onConnectedToGameService();
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mApiManagerService.logState();
-                    mApiManagerService.sendToAllReliably("heeeelllooo".getBytes());
+                //TODO : test button to send data
                 }
             });
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mGameBound = false;
+            mGameServiceBound = false;
         }
     };
 
-    //called when we have successfully established a connection with the API manager service
-    private void onConnected(){
-        ArrayList<String[]> players = mApiManagerService.getPlayersInRoom();
-        Log.i("GameManager","onConnected");
-        /*
-        for (String[] p : players){
-            Log.i("player", p[0] + p[1]);
-        }
-        */
+    //called when we have successfully established a connection with the Game service
+    private void onConnectedToGameService(){
+        //TODO : get all info of the game to render the UI
     }
 
     private void setPlayersTextview(String[] usernames){
