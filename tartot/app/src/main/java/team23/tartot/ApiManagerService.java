@@ -884,6 +884,10 @@ public class ApiManagerService extends Service {
 
     }
 
+    public void sendCard(Card card){
+
+    }
+
     //////////methods taken from the tutorial.
     // send a message to all participants except us using the sendReliableMessage method
     void sendToAllReliably(byte[] message) {
@@ -906,6 +910,7 @@ public class ApiManagerService extends Service {
             }
         }
     }
+
 
     //put the message in queue
     synchronized void recordMessageToken(int tokenId) {

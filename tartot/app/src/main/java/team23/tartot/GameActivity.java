@@ -151,6 +151,8 @@ public class GameActivity extends AppCompatActivity {
             mGameService = binder.getService();
             mGameServiceBound = true;
             onConnectedToGameService();
+
+            // Example button to exlain sending mecanism
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
