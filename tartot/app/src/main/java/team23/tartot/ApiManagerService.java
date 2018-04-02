@@ -2,7 +2,7 @@ package team23.tartot;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.icu.lang.UCharacter;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -10,14 +10,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
@@ -29,6 +27,7 @@ import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.InvitationCallback;
 import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.Room;
@@ -53,7 +52,8 @@ import static android.content.ContentValues.TAG;
 
 public class ApiManagerService extends Service {
     //some constants
-    private static final String CONTAG = "connectionDebug";
+    private static final String API_LC = "ConnService_lifecycle";
+    private static final String CONTAG = "ConnService";
     //request codes
     int RC_SIGN_IN = 23;
     private static final int RC_WAITING_ROOM = 9007;
@@ -66,21 +66,17 @@ public class ApiManagerService extends Service {
     private RealTimeMultiplayerClient rtmc = null;
     private String playerId;
     private RoomConfig currentRoomConfig = null;
-    private Room currentRoom = null; //the room we belong to. Null otherwise
-    // Room ID where the currently active game is taking place; null if we're
-    // not playing.
-    private String roomID = null;
+    private Room mCurrentRoom = null; //the room we belong to. Null otherwise
+    private ArrayList<String> mBoundComponents = new ArrayList<String>();
+    private boolean mInRoom = false;
     // Client used to interact with the Invitation system.
     private InvitationsClient invitationsClient = null;
     // Client used to sign in with Google APIs
-    private GoogleSignInClient signInClient = null;
     // If non-null, this is the id of the invitation we received via the
     // invitation listener
     private String mIncomingInvitationId = null;
 
-    //very bad idea apparently
-
-    private String myParticipantId=null;
+    private String mMyParticipantId =null;
     private HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
 
 
@@ -93,21 +89,23 @@ public class ApiManagerService extends Service {
 
     //called at service creation
     @Override
-    public void onCreate(){
-        //this.myParticipantId = currentRoom.getParticipantId(playerId);
-        initialize().addOnSuccessListener(new OnSuccessListener<GoogleSignInAccount>() {
-            @Override
-            public void onSuccess(GoogleSignInAccount googleSignInAccount) {
-                Log.i(CONTAG, "signedin silent");
-            }
-        });
+    public void onCreate() {
+        Log.i(API_LC, "onCreate");
+        //this.mMyParticipantId = mCurrentRoom.getParticipantId(playerId);
+        Task<GoogleSignInAccount> task = initialize();
+        if (task != null) {
+            task.addOnSuccessListener(new OnSuccessListener<GoogleSignInAccount>() {
+                @Override
+                public void onSuccess(GoogleSignInAccount googleSignInAccount) {
+                }
+            });
+        }
     }
 
     //called at each request
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-        signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
 
         return START_NOT_STICKY;
     }
@@ -123,20 +121,54 @@ public class ApiManagerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        String origin = intent.getStringExtra("origin");
+        //keep track of the components we are bound to
+        if (origin != null){
+            Log.i(CONTAG, "ApiManagerService onBind : " + origin);
+            mBoundComponents.add(origin);
+            if (mBoundComponents.size() > 1){
+                Log.i("alert", "warning : service lié à 2 composants en même temps. A-t-on quitté proprement les activités ?");
+            }
+            return mBinder;
+        }
+        else{
+            return null;
+        }
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent){
+        Log.i(CONTAG, "ApiManagerService onUnbind");
+        //if we are not in game, we can kill the service
+        if (mCurrentRoom == null){
+            Log.i(CONTAG, "ApiManagerService onUnbind not in room : calling stopSelf ...");
+            stopSelf();
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroy(){
+        Log.i(CONTAG, "ApiManagerService onDestroy");
+        super.onDestroy();
     }
 
 
     public Task<GoogleSignInAccount> initialize(){
         userAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+        //try to see if the user is already signed in. If null, he is not signed in.
+        if (userAccount == null){
+            localBroadcast(BroadcastCode.MANUAL_LOG);
+
+            return null;
+        }
         this.rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), userAccount);
-        signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         return signInSilently();
     }
 
     public void update(){
         //if we are in a room, we don't update everything because we want to keep the connection
-        if(currentRoom != null){
+        if(mCurrentRoom != null){
 
         }
         //otherwise we update the accounts
@@ -149,14 +181,14 @@ public class ApiManagerService extends Service {
     //tries to log in silently and automatically without prompt. If it succeeds, it connects to the google game account and retrieve google Player object.
     //returns a Task to notify if we have a success
     public Task<GoogleSignInAccount> signInSilently() {
-        Log.i(CONTAG, "signin silent");
+        Log.i(CONTAG, "ApiManagerService.signInSilently()");
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         Task<GoogleSignInAccount> silentSignInTask = signInClient.silentSignIn();
 
         silentSignInTask.addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
             @Override
             public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                 if (task.isSuccessful()) {
-                    Log.i("debug", "signInSilently(): success");
                     // The signed in account is stored in the task's result.
                     onConnected(task.getResult());
 
@@ -166,11 +198,10 @@ public class ApiManagerService extends Service {
                     // while we are in the game
                     invitationsClient.registerInvitationCallback(invitationCallback);
                 } else {
-                    Log.i("debug", "signInSilently(): failed");
 
 
                     //automatic log in failed.
-                    localBroadcast("manual_log");
+                    localBroadcast(BroadcastCode.MANUAL_LOG);
                 }
             }
         });
@@ -178,24 +209,22 @@ public class ApiManagerService extends Service {
     }
 
     //used to push actions to the activities (on events coming from the network for example)
-    private void localBroadcast(String value){
+    private void localBroadcast(BroadcastCode value){
         Intent intent = new Intent();
         intent.setAction("apiManagerService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
-    private void localBroadcast(String value, Intent intent) {
+    private void localBroadcast(BroadcastCode value, Intent intent) {
         intent.setAction("apiManagerService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
-        Log.d("debug", "onConnected(): connected to Google APIs");
-
+        Log.i(CONTAG, "APIManagerService.onConnected()");
         userAccount = googleSignInAccount;
-        Log.i("debug", "alloc rtmc");
         // update the clients
         rtmc = Games.getRealTimeMultiplayerClient(getApplicationContext(), googleSignInAccount);
         invitationsClient = Games.getInvitationsClient(getApplicationContext(), googleSignInAccount);
@@ -208,8 +237,7 @@ public class ApiManagerService extends Service {
                     public void onSuccess(com.google.android.gms.games.Player player) {
                         googlePlayer = player;
                         playerId = player.getPlayerId();
-                        Log.i("le-nom", "m "+ googlePlayer.getDisplayName());
-                        localBroadcast("connected");
+                        localBroadcast(BroadcastCode.CONNECTED_TO_GOOGLE);
 
                     }
                 })
@@ -239,7 +267,6 @@ public class ApiManagerService extends Service {
 
                             if (invitation != null && invitation.getInvitationId() != null) {
                                 // retrieve and cache the invitation ID
-                                Log.d("debug", "onConnected: connection hint has a room invite!");
                                 acceptInviteToRoom(invitation.getInvitationId());
                             }
                         }
@@ -258,11 +285,19 @@ public class ApiManagerService extends Service {
         return mIncomingInvitationId != null;
     }
 
-
+    public Room getCurrentRoom(){
+        return mCurrentRoom;
+    }
     public boolean isConnected(){
         return rtmc != null;
     }
 
+    public String getPLayerName(){
+        if(googlePlayer == null){
+            return "";
+        }
+        return googlePlayer.getDisplayName();
+    }
     public void signOut() {
         GoogleSignInClient signInClient = GoogleSignIn.getClient(getApplicationContext(),
                 GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
@@ -271,7 +306,6 @@ public class ApiManagerService extends Service {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         // at this point, the user is signed out.
-                        Log.i("info", "Déconnexion réussie");
                     }
                 });
     }
@@ -285,7 +319,6 @@ public class ApiManagerService extends Service {
     // Accept the given invitation.
     public void acceptInviteToRoom(String invitationId) {
         // accept the invitation
-        Log.d("debug", "Accepting invitation: " + invitationId);
 
         currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setInvitationIdToAccept(invitationId)
@@ -295,12 +328,11 @@ public class ApiManagerService extends Service {
 
         //TODO: wait screen
         //switchToScreen(R.id.screen_wait);
-        localBroadcast("keep_screen_on");
+        localBroadcast(BroadcastCode.KEEP_SCREEN_ON);
         rtmc.join(currentRoomConfig)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Room Joined Successfully!");
                     }
                 });
     }
@@ -334,19 +366,17 @@ public class ApiManagerService extends Service {
                 .join(currentRoomConfig);
 
         // prevent screen from sleeping during handshake
-        localBroadcast("keep_screen_on");
+        localBroadcast(BroadcastCode.KEEP_SCREEN_ON);
 
         joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     // Task completed successfully
-                    Log.i("info", "success on joining room");
                 } else {
                     // Task failed with an exception
                     Exception exception = task.getException();
-                    Log.i("error", "exception occurred during room joining " +
-                            exception.getMessage());
+                            exception.getMessage();
                 }
 
             }
@@ -354,27 +384,25 @@ public class ApiManagerService extends Service {
     }
 
     public Intent getSignInIntent(){
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(getApplicationContext(), GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         return signInClient.getSignInIntent();
     }
 
     /**
      * returns null if signin successfull, StatusErrorMessage otherwise
      */
-    public String onSigninReturn(GoogleSignInResult result){
-        if (result.isSuccess()) {
-            // The signed in account is stored in the result
-            userAccount = result.getSignInAccount();
-            onConnected(userAccount);
-            return null;
-        } else {
-            String message = result.getStatus().getStatusMessage();
-            if (message == null || message.isEmpty()) {
-                return "";
-            }
-            else{
-                return message;
-            }
+    public String onSigninReturn(Task<GoogleSignInAccount> completedTask){
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            // Signed in successfully, show authenticated UI.
+            return(account.getDisplayName());
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            return("marche pas");
         }
+
     }
 
     public void  sendDeck(team23.tartot.core.Player player){
@@ -392,23 +420,33 @@ public class ApiManagerService extends Service {
     }
 
     /**
+     * @return true if we are in a room
+     */
+    public boolean inRoom(){
+        return mCurrentRoom != null;
+    }
+    /**
      * Callbacks to handle errors during the creation of a room.
      * Very close to doc examples.
      */
     private RoomUpdateCallback mRoomUpdateCallback = new RoomUpdateCallback() {
+        /**
+         * Called when the client attempts to create a real-time room
+         * @param i A status code indicating the result of the operation.
+         * @param room The room data that was created if successful. The room can be null if the create(RoomConfig) operation failed.
+         */
         @Override
         public void onRoomCreated(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
-                roomID = room.getRoomId();
-                currentRoom = room;
-                Log.d(TAG, "Room " + roomID + " created.");
+                mCurrentRoom = room;
+                Log.d(TAG, "Room " + mCurrentRoom.getRoomId()+ " created.");
                 showWaitingRoom(4);
 
                 //notify the activity
                 Intent intent = new Intent();
-                intent.putExtra("room_id", roomID);
-                localBroadcast("room_created", intent);
+                intent.putExtra("room_id", mCurrentRoom.getRoomId());
+                localBroadcast(BroadcastCode.ROOM_CREATED, intent);
             } else {
                 Log.w(TAG, GamesCallbackStatusCodes.getStatusCodeString(i));
             }
@@ -418,16 +456,15 @@ public class ApiManagerService extends Service {
         public void onJoinedRoom(int i, @Nullable Room room) {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
-                currentRoom = room;
-                roomID = room.getRoomId();
+                mCurrentRoom = room;
                 Log.d(TAG, "Room " + room.getRoomId() + " joined.");
-                Log.i("debug", "currentRoomBeforeWaitingRoom : " + currentRoom);
+                Log.i("debug", "currentRoomBeforeWaitingRoom : " + mCurrentRoom);
                 showWaitingRoom(4);
 
                 //notify the activity
                 Intent intent = new Intent();
-                intent.putExtra("room_id", roomID);
-                localBroadcast("room_joined", intent);
+                intent.putExtra("room_id", room.getRoomId());
+                localBroadcast(BroadcastCode.ROOM_JOINED, intent);
 
             } else {
                 Log.w(TAG, "Error joining room:");
@@ -442,22 +479,27 @@ public class ApiManagerService extends Service {
             else {
 
                 Log.i("info", "Room left");
-                currentRoom = null;
+                mCurrentRoom = null;
                 currentRoomConfig = null;
-                roomID = null;
 
                 //notify the activity
-                localBroadcast("room_left");
+                localBroadcast(BroadcastCode.ROOM_LEFT);
             }
         }
 
+        /**
+         * Called when all the participants in a real-time room are fully connected.
+         * This gets called once all invitations are accepted and any necessary automatching has been completed
+         * @param i status code
+         * @param room
+         */
         @Override
         public void onRoomConnected(int i, @Nullable Room room) {
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 Log.d(TAG, "Room " + room.getRoomId() + " connected.");
 
                 //notify the activity
-                localBroadcast("room_connected");
+                localBroadcast(BroadcastCode.ROOM_CONNECTED);
             } else {
                 Log.w(TAG, "Error connecting to room: " + i);
             }
@@ -471,61 +513,94 @@ public class ApiManagerService extends Service {
     private RoomStatusUpdateCallback mRoomStatusCallbackHandler = new RoomStatusUpdateCallback() {
         @Override
         public void onRoomConnecting(@Nullable Room room) {
-
+            // Update the UI status since we are in the process of connecting to a specific room.
+            Log.i(CONTAG, "onRoomConnecting");
         }
 
         @Override
         public void onRoomAutoMatching(@Nullable Room room) {
-
+            // Update the UI status since we are in the process of matching other players.
+            Log.i(CONTAG, "onRoomAutoMatching");
         }
 
         @Override
         public void onPeerInvitedToRoom(@Nullable Room room, @NonNull List<String> list) {
+            // Update the UI status since we are in the process of matching other players.
+            Log.i(CONTAG, "onPeerInvitedToRoom");
 
         }
 
         @Override
         public void onPeerDeclined(@Nullable Room room, @NonNull List<String> list) {
+            // Peer declined invitation, see if game should be canceled
+            Log.i(CONTAG, "onPeerDeclined");
 
         }
 
         @Override
         public void onPeerJoined(@Nullable Room room, @NonNull List<String> list) {
+            // Update UI status indicating new players have joined!
+            Log.i(CONTAG, "onPeerJoined");
 
         }
 
         @Override
         public void onPeerLeft(@Nullable Room room, @NonNull List<String> list) {
+            // Peer left, see if game should be canceled.
+            Log.i(CONTAG, "onPeerLeft");
 
         }
 
         @Override
         public void onConnectedToRoom(@Nullable Room room) {
+            // Connected to room, record the room Id.
+            Log.i(CONTAG, "onConnectedToRoom");
+            mCurrentRoom = room;
+            Games.getPlayersClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
+                    .getCurrentPlayerId().addOnSuccessListener(new OnSuccessListener<String>() {
+                @Override
+                public void onSuccess(String playerId) {
+                    mMyParticipantId = mCurrentRoom.getParticipantId(playerId);
+                }
+            });
+
 
         }
 
         @Override
         public void onDisconnectedFromRoom(@Nullable Room room) {
-
+            Log.i(CONTAG, "onDisconnectedFromRoom");
+            // This usually happens due to a network error, leave the game.
+            Games.getRealTimeMultiplayerClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
+                    .leave(currentRoomConfig, room.getRoomId());
+            // show error message and return to main screen
+            mCurrentRoom = null;
+            currentRoomConfig = null;
         }
 
         @Override
         public void onPeersConnected(@Nullable Room room, @NonNull List<String> list) {
+            Log.i(CONTAG, "onPeerConnected");
 
         }
 
         @Override
         public void onPeersDisconnected(@Nullable Room room, @NonNull List<String> list) {
+            Log.i(CONTAG, "onPeersDisconnected");
 
         }
 
         @Override
         public void onP2PConnected(@NonNull String s) {
+            // Update status due to new peer to peer connection.
+            Log.i(CONTAG, "onP2PConnected");
 
         }
 
         @Override
         public void onP2PDisconnected(@NonNull String s) {
+            // Update status due to  peer to peer connection being disconnected.
+            Log.i(CONTAG, "onP2PDisconnected");
 
         }
     };
@@ -535,12 +610,13 @@ public class ApiManagerService extends Service {
      */
     public void leaveLobby() {
         Log.i("info", "in leaveLobby");
-        if (currentRoom != null){
+        if (mCurrentRoom != null){
             Log.i("info", "yes");
-            rtmc.leave(currentRoomConfig, roomID);
+            //the callback is in charge of setting the mCurrentRoom to null
+            rtmc.leave(currentRoomConfig, mCurrentRoom.getRoomId());
         }
         //done in the leave method
-        //currentRoom = null;
+        //mCurrentRoom = null;
         //currentRoomConfig = null;
         //roomID = null;
     }
@@ -551,15 +627,15 @@ public class ApiManagerService extends Service {
         // minimum number of players required for our game
         // For simplicity, we require everyone to join the game before we start it
         // (this is signaled by Integer.MAX_VALUE).
-        if(currentRoom != null){
-            rtmc.getWaitingRoomIntent(currentRoom, maxPlayersToStartGame)
+        if(mCurrentRoom != null){
+            rtmc.getWaitingRoomIntent(mCurrentRoom, maxPlayersToStartGame)
                     .addOnSuccessListener(new OnSuccessListener<Intent>() {
                         @Override
                         public void onSuccess(Intent intent) {
                             // ask the activity the display the waiting room ui (send the google intent)
                             Intent broadcastIntent = new Intent();
                             broadcastIntent.putExtra("intent", intent);
-                            localBroadcast("show_waiting_room", broadcastIntent);
+                            localBroadcast(BroadcastCode.SHOW_WAITING_ROOM, broadcastIntent);
 
                         }
                     })
@@ -580,7 +656,8 @@ public class ApiManagerService extends Service {
 
         //we want to match n-1 other players
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(nbOfPlayers-1, nbOfPlayers-1, 0);
-
+        //reset the object
+        currentRoomConfig = null;
         currentRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mMessageReceivedHandler)
                 .setRoomStatusUpdateCallback(mRoomStatusCallbackHandler)
@@ -639,7 +716,7 @@ public class ApiManagerService extends Service {
             Intent intent = new Intent();
             intent.putExtra("invitation_id", mIncomingInvitationId);
             intent.putExtra("invitation", invitation);
-            localBroadcast("invitation_received", intent);
+            localBroadcast(BroadcastCode.INVITATION_RECEIVED, intent);
         }
 
         @Override
@@ -648,7 +725,7 @@ public class ApiManagerService extends Service {
             if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
                 mIncomingInvitationId = null;
                 //hide pop ups in the activity
-                localBroadcast("hide_popup");
+                localBroadcast(BroadcastCode.INVITATION_REMOVED);
             }
         }
     };
@@ -663,7 +740,7 @@ public class ApiManagerService extends Service {
                 public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
                     byte[] buf = realTimeMessage.getMessageData();
                     String sender = realTimeMessage.getSenderParticipantId();
-                    Log.d(TAG, "Message received: " + (char) buf[0] + "/" + (int) buf[1]);
+                    Log.d(TAG, "Message received: " + buf.toString());
 
                     //TODO : on fait quoi ?
                 }
@@ -680,7 +757,7 @@ public class ApiManagerService extends Service {
                         //ask the activity to display the player picker ui
                         Intent broadcastIntent = new Intent();
                         broadcastIntent.putExtra("intent", intent);
-                        localBroadcast("show_player_picker", broadcastIntent);
+                        localBroadcast(BroadcastCode.SHOW_PLAYER_PICKER, broadcastIntent);
                     }
                 });
     }
@@ -736,14 +813,92 @@ public class ApiManagerService extends Service {
     public void announce(Announces announce) {}
 
 
+    public ArrayList<String[]> getPlayersInRoom(){
+        if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
+            //for testing purpose only
+            ArrayList<String[]> ret = new ArrayList<>();
+            ret.add(new String[]{"joueur1", "1"});
+            ret.add(new String[]{"joueur2", "1"});
+            ret.add(new String[]{"joueur3", "1"});
+            ret.add(new String[]{"joueur4", "1"});
+            return ret;
+
+            //TODO : return null in the final version
+            //return null;
+        }
+        else{
+            Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
+            ArrayList<String> ids = mCurrentRoom.getParticipantIds();
+            ArrayList<String[]> ret = new ArrayList<>(ids.size());
+            for (int i=0 ; i < ids.size() ; i++){
+                Log.d("debug",ids.size() + " " + i);
+                Participant p = mCurrentRoom.getParticipant(ids.get(i));
+                String[] couple = {p.getDisplayName(), p.getStatus() + ""};
+                Log.d("debug",couple.toString());
+                ret.add(couple);
+            }
+            return ret;
+        }
+    }
+
+    public String[] getActivePlayersInRoom(){
+        if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
+            //TODO: retirer ceci quand on aura fini les tests
+            return new String[]{"joueur1", "joueur2", "joueur3", "joueur4"};
+            //return null;
+        }
+        else{
+            Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
+            ArrayList<String> ids = mCurrentRoom.getParticipantIds();
+            int count = 0;
+            for (int i=0 ; i < ids.size() ; i++){
+                Participant p = mCurrentRoom.getParticipant(ids.get(i));
+                if (p.getStatus() == Participant.STATUS_JOINED) {
+                    count++;
+                }
+            }
+            String[] ret = new String[count];
+            for (int i=0 ; i < ids.size() ; i++){
+                Participant p = mCurrentRoom.getParticipant(ids.get(i));
+                if (p.getStatus() == Participant.STATUS_JOINED) {
+                    ret[i] = p.getDisplayName();
+                }
+            }
+
+            return ret;
+        }
+    }
+
+    public void logState(){
+        if (mCurrentRoom != null) {
+            Log.i(CONTAG, "room: " + mCurrentRoom);
+            Log.i(CONTAG, "status: " + mCurrentRoom.getStatus());
+            ArrayList<Participant> participants = mCurrentRoom.getParticipants();
+            for (Participant p : participants) {
+                Log.i(CONTAG, p.isConnectedToRoom() + " " + p.getStatus() + " " + p.getDisplayName());
+            }
+        }
+        else{
+            Log.i(CONTAG, "in no room right now");
+        }
+
+    }
+
+    public void sendCard(Card card){
+
+    }
+
     //////////methods taken from the tutorial.
     // send a message to all participants except us using the sendReliableMessage method
     void sendToAllReliably(byte[] message) {
-        for (String participantId : currentRoom.getParticipantIds()) {
-            if (!participantId.equals(myParticipantId)) {
+        if(mCurrentRoom == null){
+            return;
+        }
+        for (String participantId : mCurrentRoom.getParticipantIds()) {
+            if (!participantId.equals(mMyParticipantId)) {
                 Task<Integer> task = Games.
                         getRealTimeMultiplayerClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
-                        .sendReliableMessage(message, currentRoom.getRoomId(), participantId,
+                        .sendReliableMessage(message, mCurrentRoom.getRoomId(), participantId,
                                 handleMessageSentCallback).addOnCompleteListener(new OnCompleteListener<Integer>() {
                             @Override
                             public void onComplete(@NonNull Task<Integer> task) {
@@ -755,6 +910,7 @@ public class ApiManagerService extends Service {
             }
         }
     }
+
 
     //put the message in queue
     synchronized void recordMessageToken(int tokenId) {
@@ -774,6 +930,5 @@ public class ApiManagerService extends Service {
                     }
                 }
             };
-    ///////////////
 
 }

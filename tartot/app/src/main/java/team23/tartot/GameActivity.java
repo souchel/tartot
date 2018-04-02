@@ -1,21 +1,26 @@
 package team23.tartot;
 
+import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -50,21 +55,13 @@ public class GameActivity extends AppCompatActivity {
     protected Deck deck = new Deck();
     private int cardNumber = 0;
     protected ArrayList<Card> hand = new ArrayList<>();
-    private ApiManagerService apiManager;
     protected Bid chosenBid = Bid.PASS;
-
+    private GameService mGameService;
+    private boolean mGameServiceBound = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-
-        //create the APIMananger that will make the connections with the other players
-        Intent creation = getIntent();
-        if (creation == null){
-            Log.i("debug", "echec de la récupération de l'intent nécessaire à la mise en réseau");
-        }
-        //TODO : restore when parcelable implemented
-        //apiManager = new APIManager(this, (Room) creation.getParcelableExtra("room"), (String) creation.getStringExtra("playerId"));
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
@@ -106,6 +103,103 @@ public class GameActivity extends AppCompatActivity {
                 Log.i("showC", "onShowCard done");
             }
         });
+    }
+
+    public void onStart() {
+        super.onStart();
+
+        //check if the game service is running
+        boolean running = isServiceRunning(GameService.class);
+        Log.i("debug", "game activity, service running ? " + running);
+        if(running == false){
+            startGameService();
+        }
+
+        //register the broadcast receiver
+        IntentFilter intentFilter = new IntentFilter("gameService");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
+
+        // Bind to GameService
+        Intent intent = new Intent(this, GameService.class);
+        intent.putExtra("origin", "game");
+        Log.i("debug", "act bindService");
+        bindService(intent, mGameConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void startGameService(){
+        boolean running = isServiceRunning(GameService.class);
+        Log.d("debug", "game activity, service running ? " + running);
+        if(running == false){
+            Intent intent = new Intent(this, GameService.class);
+            startService(intent);
+        }
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //broadcast receiver to receive broadcast from the GameService
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+
+        }
+
+    };
+
+    /** Defines callbacks for service binding, passed to bindService() for the game service*/
+    private ServiceConnection mGameConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            GameService.LocalBinderGame binder = (GameService.LocalBinderGame) service;
+            mGameService = binder.getService();
+            mGameServiceBound = true;
+            onConnectedToGameService();
+
+            // Example button to exlain sending mecanism
+            Button logBtn = findViewById(R.id.log);
+            logBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //TODO : test button to send data
+                }
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mGameServiceBound = false;
+        }
+    };
+
+    //called when we have successfully established a connection with the Game service
+    private void onConnectedToGameService(){
+        //TODO : get all info of the game to render the UI
+    }
+
+    private void setPlayersTextview(){
+        if(!mGameServiceBound){
+            Log.e("GameActivityError", "not bound to GameService");
+            return;
+        }
+        String[] usernames = mGameService.getUsernames();
+        EditText et = findViewById(R.id.connectedPlayers);
+        String s = "";
+        for (String p : usernames){
+            s += p + "\n";
+        }
+        et.setText(s);
     }
 
     //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER

@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import team23.tartot.GameService;
+
 public class TestManager {
 	public static void main(String[] args) throws IOException {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
-		GameManager gameManager = new GameManager(usernames);
+		GameService gameManager = new GameService();
+		gameManager.initialize(usernames);
 		Player laure = new Player("Laure",4);
 		Player paul = new Player("Paul",2);
 		Player hugo = new Player("Hugo",0);

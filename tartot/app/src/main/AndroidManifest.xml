@@ -27,7 +27,12 @@
             android:enabled="true"
             android:exported="false" />
 
+<<<<<<< HEAD
         <activity android:name=".MenuActivity"
+=======
+        <activity
+            android:name=".MenuActivity"
+>>>>>>> a86ef6b7243ee39315ca43c9c85531d620edba54
             android:label="@string/title_activity_first_log"
             android:screenOrientation="landscape">
             <intent-filter>
@@ -36,6 +41,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
+=======
+
+        <service
+            android:name=".GameService"
+            android:enabled="true"
+            android:exported="true"></service>
+>>>>>>> a86ef6b7243ee39315ca43c9c85531d620edba54
     </application>
 
 </manifest>

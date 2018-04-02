@@ -2,6 +2,8 @@ package team23.tartot.core;
 import java.io.*;
 import java.util.ArrayList;
 
+import team23.tartot.GameService;
+
 public class Test {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Une carte est creee");
@@ -16,9 +18,10 @@ public class Test {
 		System.out.println("");
 		System.out.println("");
 		System.out.println("On instancie maintenant une partie entre Hugo, Guillaume, Paul et Thomas");
-		GameManager gameManager ;
+		GameService gameManager ;
 		String[] usernames = {"Hugo", "Guillaume", "Paul", "Thomas"};
-		gameManager = new GameManager(usernames);
+		gameManager = new GameService();
+		gameManager.initialize(usernames);
 		gameManager.initializeGame();
 		System.out.println("deck une fois melange :" + gameManager.getDeck());
 		System.out.println("taille du paquet : "+ gameManager.getDeck().getCardList().size());
