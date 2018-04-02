@@ -53,7 +53,7 @@ public class MenuActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
-            Log.i("broadcast", code.toString());
+            Log.i("MenuActivityBroadcast", code.toString());
 
             switch (code){
                 case MANUAL_LOG:
@@ -154,6 +154,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onStop();
         Log.i("debug", "MenuActivity onStop");
         unbindService(mConnection);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(broadcastReceiver);
 
 
     }

@@ -1,5 +1,7 @@
 package team23.tartot.core;
 
+import android.os.Parcelable;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -16,6 +18,7 @@ public class Card implements Serializable{
 		suit = s;
 		value = v;
 	}
+
 	public double pointValue()
 	{
 		//Attention si la carte n existe pas ex 15 de trefle la valeur est debile

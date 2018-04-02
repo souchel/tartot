@@ -116,7 +116,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         //register the broadcast receiver
-        IntentFilter intentFilter = new IntentFilter("gameService");
+        IntentFilter intentFilter = new IntentFilter("GameService");
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
 
         // Bind to GameService
@@ -150,6 +150,12 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            Log.i("GameActivityBroadcast", code.toString());
+            switch(code){
+                case EXAMPLE:
+                    setPlayersTextview(intent.getStringExtra("text"));
+                    break;
+            }
 
         }
 
@@ -167,7 +173,7 @@ public class GameActivity extends AppCompatActivity {
             mGameServiceBound = true;
             onConnectedToGameService();
 
-            // Example button to exlain sending mecanism
+            // Example button to explain sending mecanism
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -201,6 +207,15 @@ public class GameActivity extends AppCompatActivity {
             s += p + "\n";
         }
         et.setText(s);
+    }
+
+    public void setPlayersTextview(String text){
+        if(!mGameServiceBound){
+            Log.e("GameActivityError", "not bound to GameService");
+            return;
+        }
+        EditText et = findViewById(R.id.connectedPlayers);
+        et.setText(text);
     }
 
     //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER

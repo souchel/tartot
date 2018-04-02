@@ -762,8 +762,15 @@ public class ApiManagerService extends Service {
                             // ignore close exception
                         }
                     }
-
-                    Log.i("olalala",o.toString());
+                    if (o instanceof Card) {
+                        Card c = (Card) o;
+                        Log.i("DECODAGE", c.getValue() + " ");
+                        Intent intent = new Intent();
+                        intent.putExtra("card", c);
+                        //TODO : répérer les joueurs par leur id pour éviter les conflits de noms ?
+                        intent.putExtra("player", mCurrentRoom.getParticipant(sender).getDisplayName());
+                        localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
+                    }
 
                     //TODO : on fait quoi ?
                 }

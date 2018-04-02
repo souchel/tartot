@@ -15,8 +15,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,13 +102,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     //used to push actions to the GameActivity (on events coming from the ApiManagerService for example)
     private void localBroadcast(BroadcastCode value){
         Intent intent = new Intent();
-        intent.setAction("apiManagerService");
+        intent.setAction("GameService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void localBroadcast(BroadcastCode value, Intent intent) {
-        intent.setAction("apiManagerService");
+        Log.d("GameService", "localBroadcast " + value.toString());
+        intent.setAction("GameService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
@@ -168,6 +173,17 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            switch (code){
+                case CARD_RECEIVED:
+                    Card c = (Card) intent.getSerializableExtra("card");
+                    String senderUsername = intent.getStringExtra("player");
+                    Log.i("senderusername",senderUsername);
+                    Intent j = new Intent();
+                    j.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderUsername);
+                    localBroadcast(BroadcastCode.EXAMPLE, j);
+                    break;
+
+            }
         }
     };
 
@@ -189,6 +205,29 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             ex.printStackTrace();
         }
         mApiManagerService.sendToAllReliably(bos.toByteArray());
+
+        //////test
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInput in = null;
+        Object o=null;
+        try {
+            in = new ObjectInputStream(bis);
+            o = in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+        if (o instanceof Card) {
+            Log.i("DECODAGE", ((Card) o).getValue() + " ");
+        }
+
+        Log.i("DECODAGE",o.toString());
+        ////test
     }
 
 
