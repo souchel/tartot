@@ -158,6 +158,7 @@ public class GameActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     //TODO : test button to send data
+                    mGameService.exampleMessage();
                 }
             });
         }

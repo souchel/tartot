@@ -15,6 +15,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -176,8 +179,16 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //we do some treatment to update the state of the game (play a card, update score etc)
 
         //then we send info to the others players in the room by calling the ApiManagerService
-
-        mApiManagerService.sendToAllReliably();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(new Card(Suit.SPADE, 5));
+            out.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        mApiManagerService.sendToAllReliably(bos.toByteArray());
     }
 
 

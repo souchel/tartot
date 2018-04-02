@@ -1,6 +1,10 @@
 package team23.tartot.core;
 
-public class Card {
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+
+public class Card implements Serializable{
 	private Suit suit;
 	// la valeur de la carte 11 = valet etc si la carte n est pas un atout
 	//le 22  d atout correspond a l excuse
@@ -62,7 +66,4 @@ public class Card {
 		} else return false;
 	}
 
-	public byte[] toBytes(){
-
-	}
 }

@@ -39,6 +39,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -741,6 +746,24 @@ public class ApiManagerService extends Service {
                     byte[] buf = realTimeMessage.getMessageData();
                     String sender = realTimeMessage.getSenderParticipantId();
                     Log.d(TAG, "Message received: " + buf.toString());
+
+                    ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+                    ObjectInput in = null;
+                    Object o=null;
+                    try {
+                        in = new ObjectInputStream(bis);
+                        o = in.readObject();
+                    } catch (IOException | ClassNotFoundException e) {
+                        try {
+                            if (in != null) {
+                                in.close();
+                            }
+                        } catch (IOException ex) {
+                            // ignore close exception
+                        }
+                    }
+
+                    Log.i("olalala",o.toString());
 
                     //TODO : on fait quoi ?
                 }
