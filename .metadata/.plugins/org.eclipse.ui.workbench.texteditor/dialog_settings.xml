@@ -2,12 +2,13 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="ecarter" key="selection"/>
+		<item value="shuffle" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="shuffle"/>
 			<item value="ecarter"/>
 			<item value="saidBid"/>
 			<item value="playersAnnounces"/>
@@ -15,7 +16,6 @@
 			<item value="TODO"/>
 			<item value="dealCards"/>
 			<item value="position"/>
-			<item value="shuffle"/>
 			<item value="dealer"/>
 			<item value="player"/>
 		</list>
