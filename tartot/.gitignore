@@ -79,7 +79,7 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
-<<<<<<< HEAD
+
 /.metadata/
 
 .metadata
@@ -134,8 +134,3 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
-=======
-
-build.gradle
-app/build.gradle
->>>>>>> 9c51b2a6b367d2707dd41f4da8ec663101af85c6
