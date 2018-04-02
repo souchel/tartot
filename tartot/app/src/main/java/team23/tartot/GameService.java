@@ -81,15 +81,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             ApiManagerService.LocalBinder binder = (ApiManagerService.LocalBinder) service;
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
-            /*
-            Button logBtn = findViewById(R.id.log);
-            logBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //TODO : test button to send data
-                }
-            });*/
             initialize();
+            notifyFullState();
         }
 
 
@@ -99,6 +92,26 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
     };
 
+    //used to push actions to the GameActivity (on events coming from the ApiManagerService for example)
+    private void localBroadcast(BroadcastCode value){
+        Intent intent = new Intent();
+        intent.setAction("apiManagerService");
+        intent.putExtra("value", value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void localBroadcast(BroadcastCode value, Intent intent) {
+        intent.setAction("apiManagerService");
+        intent.putExtra("value", value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    /**
+     * send a local broadcast to GameActivity with state of the game (players, positions, points, cards, ...)
+     */
+    private void notifyFullState(){
+
+    }
     public String[] getUsernames() {
         if(!mBoundToNetwork){
             Log.e("GameServiceError", "not bound to ApiManagerService");
@@ -151,7 +164,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String code = intent.getStringExtra("value");
+            BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
         }
     };
 

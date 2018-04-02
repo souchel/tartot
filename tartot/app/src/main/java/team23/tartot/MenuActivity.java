@@ -52,41 +52,45 @@ public class MenuActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String code = intent.getStringExtra("value");
-            Log.i("broadcast", code);
-            if (code.equals("manual_log")){
-                Toast.makeText(getApplicationContext(), R.string.text_view_google_log_in, Toast.LENGTH_LONG).show();
+            BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            Log.i("broadcast", code.toString());
+
+            switch (code){
+                case MANUAL_LOG:
+                    Toast.makeText(getApplicationContext(), R.string.text_view_google_log_in, Toast.LENGTH_LONG).show();
+                    break;
+                case CONNECTED_TO_GOOGLE:
+                    onConnected();
+                    break;
+                case KEEP_SCREEN_ON:
+                    keepScreenOn();
+                    break;
+                case ROOM_CREATED:
+                    onRoomCreated(intent.getStringExtra("room_id"));
+                    break;
+                case ROOM_JOINED:
+                    onJoinedRoom(intent.getStringExtra("room_id"));
+                    break;
+                case ROOM_LEFT:
+                    onLeftRoom();
+                    break;
+                case ROOM_CONNECTED:
+                    onRoomConnected();
+                    break;
+                case SHOW_WAITING_ROOM:
+                    startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_WAITING_ROOM);
+                    break;
+                case INVITATION_RECEIVED:
+                    onInvitationReceived(intent.getStringExtra("invitation_id"), ((Invitation) intent.getParcelableExtra("invitation")).getInviter().getDisplayName());
+                    break;
+                case INVITATION_REMOVED:
+                    hidePopUps();
+                    break;
+                case SHOW_PLAYER_PICKER:
+                    startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_SELECT_PLAYERS);
+                    break;
             }
-            else if(code.equals("connected")){
-                onConnected();
-            }
-            else if(code.equals("keep_screen_on")){
-                keepScreenOn();
-            }
-            else if(code.equals("room_created")){
-                onRoomCreated(intent.getStringExtra("room_id"));
-            }
-            else if(code.equals("room_joined")){
-                onJoinedRoom(intent.getStringExtra("room_id"));
-            }
-            else if(code.equals("room_left")){
-                onLeftRoom();
-            }
-            else if(code.equals("room_connected")){
-                onRoomConnected();
-            }
-            else if(code.equals("show_waiting_room")){
-                startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_WAITING_ROOM);
-            }
-            else if(code.equals("invitation_received")){
-                onInvitationReceived(intent.getStringExtra("invitation_id"), ((Invitation) intent.getParcelableExtra("invitation")).getInviter().getDisplayName());
-            }
-            else if(code.equals("hide_popup")){
-                hidePopUps();
-            }
-            else if(code.equals("show_player_picker")){
-                startActivityForResult((Intent) intent.getParcelableExtra("intent"), RC_SELECT_PLAYERS);
-            }
+
         }
     };
 

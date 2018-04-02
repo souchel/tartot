@@ -2,6 +2,7 @@ package team23.tartot;
 
 import android.app.Service;
 import android.content.Intent;
+import android.icu.lang.UCharacter;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -74,8 +75,6 @@ public class ApiManagerService extends Service {
     // If non-null, this is the id of the invitation we received via the
     // invitation listener
     private String mIncomingInvitationId = null;
-
-    //very bad idea apparently
 
     private String mMyParticipantId =null;
     private HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
@@ -159,7 +158,7 @@ public class ApiManagerService extends Service {
         userAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
         //try to see if the user is already signed in. If null, he is not signed in.
         if (userAccount == null){
-            localBroadcast("manual_log");
+            localBroadcast(BroadcastCode.MANUAL_LOG);
 
             return null;
         }
@@ -202,7 +201,7 @@ public class ApiManagerService extends Service {
 
 
                     //automatic log in failed.
-                    localBroadcast("manual_log");
+                    localBroadcast(BroadcastCode.MANUAL_LOG);
                 }
             }
         });
@@ -210,14 +209,14 @@ public class ApiManagerService extends Service {
     }
 
     //used to push actions to the activities (on events coming from the network for example)
-    private void localBroadcast(String value){
+    private void localBroadcast(BroadcastCode value){
         Intent intent = new Intent();
         intent.setAction("apiManagerService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
-    private void localBroadcast(String value, Intent intent) {
+    private void localBroadcast(BroadcastCode value, Intent intent) {
         intent.setAction("apiManagerService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
@@ -238,7 +237,7 @@ public class ApiManagerService extends Service {
                     public void onSuccess(com.google.android.gms.games.Player player) {
                         googlePlayer = player;
                         playerId = player.getPlayerId();
-                        localBroadcast("connected");
+                        localBroadcast(BroadcastCode.CONNECTED_TO_GOOGLE);
 
                     }
                 })
@@ -329,7 +328,7 @@ public class ApiManagerService extends Service {
 
         //TODO: wait screen
         //switchToScreen(R.id.screen_wait);
-        localBroadcast("keep_screen_on");
+        localBroadcast(BroadcastCode.KEEP_SCREEN_ON);
         rtmc.join(currentRoomConfig)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -367,7 +366,7 @@ public class ApiManagerService extends Service {
                 .join(currentRoomConfig);
 
         // prevent screen from sleeping during handshake
-        localBroadcast("keep_screen_on");
+        localBroadcast(BroadcastCode.KEEP_SCREEN_ON);
 
         joinTask.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -447,7 +446,7 @@ public class ApiManagerService extends Service {
                 //notify the activity
                 Intent intent = new Intent();
                 intent.putExtra("room_id", mCurrentRoom.getRoomId());
-                localBroadcast("room_created", intent);
+                localBroadcast(BroadcastCode.ROOM_CREATED, intent);
             } else {
                 Log.w(TAG, GamesCallbackStatusCodes.getStatusCodeString(i));
             }
@@ -465,7 +464,7 @@ public class ApiManagerService extends Service {
                 //notify the activity
                 Intent intent = new Intent();
                 intent.putExtra("room_id", room.getRoomId());
-                localBroadcast("room_joined", intent);
+                localBroadcast(BroadcastCode.ROOM_JOINED, intent);
 
             } else {
                 Log.w(TAG, "Error joining room:");
@@ -484,7 +483,7 @@ public class ApiManagerService extends Service {
                 currentRoomConfig = null;
 
                 //notify the activity
-                localBroadcast("room_left");
+                localBroadcast(BroadcastCode.ROOM_LEFT);
             }
         }
 
@@ -500,7 +499,7 @@ public class ApiManagerService extends Service {
                 Log.d(TAG, "Room " + room.getRoomId() + " connected.");
 
                 //notify the activity
-                localBroadcast("room_connected");
+                localBroadcast(BroadcastCode.ROOM_CONNECTED);
             } else {
                 Log.w(TAG, "Error connecting to room: " + i);
             }
@@ -636,7 +635,7 @@ public class ApiManagerService extends Service {
                             // ask the activity the display the waiting room ui (send the google intent)
                             Intent broadcastIntent = new Intent();
                             broadcastIntent.putExtra("intent", intent);
-                            localBroadcast("show_waiting_room", broadcastIntent);
+                            localBroadcast(BroadcastCode.SHOW_WAITING_ROOM, broadcastIntent);
 
                         }
                     })
@@ -717,7 +716,7 @@ public class ApiManagerService extends Service {
             Intent intent = new Intent();
             intent.putExtra("invitation_id", mIncomingInvitationId);
             intent.putExtra("invitation", invitation);
-            localBroadcast("invitation_received", intent);
+            localBroadcast(BroadcastCode.INVITATION_RECEIVED, intent);
         }
 
         @Override
@@ -726,7 +725,7 @@ public class ApiManagerService extends Service {
             if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
                 mIncomingInvitationId = null;
                 //hide pop ups in the activity
-                localBroadcast("hide_popup");
+                localBroadcast(BroadcastCode.INVITATION_REMOVED);
             }
         }
     };
@@ -758,7 +757,7 @@ public class ApiManagerService extends Service {
                         //ask the activity to display the player picker ui
                         Intent broadcastIntent = new Intent();
                         broadcastIntent.putExtra("intent", intent);
-                        localBroadcast("show_player_picker", broadcastIntent);
+                        localBroadcast(BroadcastCode.SHOW_PLAYER_PICKER, broadcastIntent);
                     }
                 });
     }

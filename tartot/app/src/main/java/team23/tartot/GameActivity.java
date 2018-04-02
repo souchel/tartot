@@ -134,8 +134,10 @@ public class GameActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String code = intent.getStringExtra("value");
+            BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+
         }
+
     };
 
     /** Defines callbacks for service binding, passed to bindService() for the game service*/
@@ -153,7 +155,6 @@ public class GameActivity extends AppCompatActivity {
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    setPlayersTextview();
                     //TODO : test button to send data
                 }
             });
