@@ -288,12 +288,8 @@ public class GameActivity extends AppCompatActivity {
                     TextView testTV = findViewById(R.id.textViewTest);
                     testTV.setText(value+" de "+ suit);
 
-                    //Player myPlayer = GameManager.getMyPlayer();
-                    Player myPlayer = new Player("playerTest");
-
-                    int relativePosition = getRelativePositionByPlayer(myPlayer);
-
-                    FrameLayout cardFL = getCardLayoutByRelativePosition(4, 0); //relativePosition
+                    //we recuperate the FrameLayout with the method /!\ should be changed dynamically for V0.2, but pos is always 0 because it's the card played by him
+                    FrameLayout cardFL = getCardLayoutByRelativePosition(4, 0);
 
                     playCardInGameZone(value, suit, cardFL);
 
