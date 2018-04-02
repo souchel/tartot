@@ -177,7 +177,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
         //then we send info to the others players in the room by calling the ApiManagerService
 
-        mApiManagerService.sendToAllReliably();
+        //mApiManagerService.sendToAllReliably();
     }
 
 
