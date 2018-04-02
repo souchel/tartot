@@ -22,15 +22,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
 
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
+import team23.tartot.core.GameManager;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
 
@@ -39,8 +42,9 @@ public class GameActivity extends AppCompatActivity {
     final private static int CARD_HEIGHT = 160;
     final private static int TEXT_SIZE_NORMAL = 16;
     final private static int TEXT_SIZE_TRUMP = 10;
-
     final private static int NUMBER_OF_CARDS = 18;
+
+    //GameManager gm = new GameManager();
     int playersAmount = 4; //should be initialized with GameManager.players.size()
 
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
@@ -86,6 +90,17 @@ public class GameActivity extends AppCompatActivity {
                 possibleBids.add(Bid.GUARD_WITHOUT);
                 possibleBids.add(Bid.GUARD_AGAINST);
                 onBidAsked(possibleBids);
+            }
+        });
+
+        findViewById(R.id.show_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Player p = new Player("hugo");
+                Card c = new Card(Suit.DIAMOND, 12);
+                Log.i("showC", c.toString());
+                onShowCard(c,p);
+                Log.i("showC", "onShowCard done");
             }
         });
     }
@@ -216,49 +231,69 @@ public class GameActivity extends AppCompatActivity {
      */
     protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
+        //TODO CHANGE THIS SHIT, CREATE THE FRAMELAYOUT WITH A FOR AND THEN, PLACE IT ONE BY ONE IN A GRIDLAYOUT ?
 
-        //If there is 4 players
-        if (playersAmount == 4) {
-            //we create 3 vertical LinearLayout, 1 for the card left, 1 for the cards up and down and 1 for the card right
-            LinearLayout leftLL = new LinearLayout(getApplicationContext());
-            leftLL.setOrientation(LinearLayout.VERTICAL);
-            FrameLayout emptyLeftHalfFL = new FrameLayout(getApplicationContext());
-            emptyLeftHalfFL.setLayoutParams(halfLayoutParams);
-            FrameLayout cardLeft = new FrameLayout(getApplicationContext());
-            cardLeft.setLayoutParams(normalLayoutParams);
-            cardLeft.setBackgroundColor(getResources().getColor(R.color.highlight));
-            leftLL.addView(emptyLeftHalfFL);
-            leftLL.addView(cardLeft);
-            leftLL.setPadding(8,0,8,0);
+        /*
+        for (int i=0; i<playersAmount; i++) {
 
-            LinearLayout middleLL = new LinearLayout(getApplicationContext());
-            middleLL.setOrientation(LinearLayout.VERTICAL);
-            FrameLayout cardUp = new FrameLayout(getApplicationContext());
-            //cardUp.setPadding(0,0,0,8);
-            cardUp.setLayoutParams(normalLayoutParams);
-            cardUp.setBackgroundColor(getResources().getColor(R.color.highlight));
-            FrameLayout cardDown = new FrameLayout(getApplicationContext());
-            cardDown.setLayoutParams(normalLayoutParams);
-            cardDown.setBackgroundColor(getResources().getColor(R.color.highlight));
-            //cardDown.setPadding(0,8,0,0);
-            middleLL.addView(cardUp);
-            middleLL.addView(cardDown);
+            //If there is 4 players
 
-            LinearLayout rightLL = new LinearLayout(getApplicationContext());
-            rightLL.setOrientation(LinearLayout.VERTICAL);
-            FrameLayout emptyRightHalfLL = new FrameLayout(getApplicationContext());
-            emptyRightHalfLL.setLayoutParams(halfLayoutParams);
-            FrameLayout cardRight = new FrameLayout(getApplicationContext());
-            cardRight.setLayoutParams(normalLayoutParams);
-            cardRight.setBackgroundColor(getResources().getColor(R.color.highlight));
-            rightLL.addView(emptyRightHalfLL);
-            rightLL.addView(cardRight);
-            rightLL.setPadding(8,0,8,0);
+            if (playersAmount == 4) {
+                FrameLayout cardLayout = new FrameLayout(getApplicationContext());
+                cardLayout.setLayoutParams(normalLayoutParams);
+                cardLayout.setBackgroundColor(getResources().getColor(R.color.highlight));
 
-            middleGameZone.addView(leftLL);
-            middleGameZone.addView(middleLL);
-            middleGameZone.addView(rightLL);
-        }
+                GridLayout.Spec rowSpan = GridLayout.spec(1,1);
+                GridLayout.Spec colSpan = GridLayout.spec(1,1);
+                GridLayout.LayoutParams gridParams = new GridLayout.LayoutParams(rowSpan, colSpan);
+
+                middleGameZone.addView(cardLayout,gridParams);
+                }
+
+        }*/
+
+        //we create 3 vertical LinearLayout, 1 for the card left, 1 for the cards up and down and 1 for the card right
+        LinearLayout leftLL = new LinearLayout(getApplicationContext());
+        leftLL.setOrientation(LinearLayout.VERTICAL);
+        FrameLayout emptyLeftHalfFL = new FrameLayout(getApplicationContext());
+        emptyLeftHalfFL.setLayoutParams(halfLayoutParams);
+        FrameLayout cardLeft = new FrameLayout(getApplicationContext());
+        cardLeft.setLayoutParams(normalLayoutParams);
+        cardLeft.setBackgroundColor(getResources().getColor(R.color.highlight));
+        leftLL.addView(emptyLeftHalfFL);
+        leftLL.addView(cardLeft);
+        leftLL.setPadding(8,0,8,0);
+
+        LinearLayout middleLL = new LinearLayout(getApplicationContext());
+        middleLL.setOrientation(LinearLayout.VERTICAL);
+        FrameLayout cardUp = new FrameLayout(getApplicationContext());
+        //cardUp.setPadding(0,0,0,8);
+        cardUp.setLayoutParams(normalLayoutParams);
+        cardUp.setBackgroundColor(getResources().getColor(R.color.highlight));
+        FrameLayout cardDown = new FrameLayout(getApplicationContext());
+        cardDown.setLayoutParams(normalLayoutParams);
+        cardDown.setBackgroundColor(getResources().getColor(R.color.highlight));
+        //cardDown.setPadding(0,8,0,0);
+        middleLL.addView(cardUp);
+        middleLL.addView(cardDown);
+
+        LinearLayout rightLL = new LinearLayout(getApplicationContext());
+        rightLL.setOrientation(LinearLayout.VERTICAL);
+        FrameLayout emptyRightHalfLL = new FrameLayout(getApplicationContext());
+        emptyRightHalfLL.setLayoutParams(halfLayoutParams);
+        FrameLayout cardRight = new FrameLayout(getApplicationContext());
+        cardRight.setLayoutParams(normalLayoutParams);
+        cardRight.setBackgroundColor(getResources().getColor(R.color.highlight));
+        rightLL.addView(emptyRightHalfLL);
+        rightLL.addView(cardRight);
+        rightLL.setPadding(8,0,8,0);
+
+        middleGameZone.addView(leftLL);
+        middleGameZone.addView(middleLL);
+        middleGameZone.addView(rightLL);
+
+
+
     }
 
 
@@ -283,7 +318,6 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * public method to trigger when the cards are distributed.All the Cards in the player's hand are graphically created:
      * in a FrameLayout, that will be add in one of the horizontal LinearLayout, we add one ImageView (for color and background),
@@ -297,57 +331,11 @@ public class GameActivity extends AppCompatActivity {
 
         for (int j = 0; j < hand.size(); j++) {
             Card currentCard = hand.get(j);
-            final String value = currentCard.valueToString();
-            final String suit = currentCard.getSuit().toString();
-
-            Log.i("deck", value + " " + suit);
 
             //We create a (in the future several) FrameLayout for one Card
             final FrameLayout cardFL = new FrameLayout(getApplicationContext());
 
-            //WE DEAL WITH THE BACKGROUND, deprecated: to make the card displaying faster, we merged the card background and color
-            //ImageView cardBackgroundIV = createCardBackground();
-
-            //WE DEAL WITH THE COLOR
-            ImageView cardColorIV = createCardColor(suit);
-
-            //WE DEAL WITH THE VALUE
-            TextView cardValueUpTV = new TextView(getApplicationContext());
-            //TextView cardValueDownTV = new TextView(getApplicationContext());
-            //We create the 2 textViews, one for the value up and one for the one down
-            if (suit != "t") {
-                cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
-                //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
-            } else if (suit == "t") {
-                cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
-                //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
-            }
-            //We create a button for the action
-            Button cardButton = new Button(getApplicationContext());
-            cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
-            cardButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    TextView testTV = findViewById(R.id.textViewTest);
-                    testTV.setText(value+" de "+ suit);
-                    onCardClicked(value, suit);
-                    //TODO REMOVE THE CARD FROM THE PLAYER'S HAND
-                    LinearLayout ll = (LinearLayout) cardFL.getParent();
-                    //ll.removeViewAt(3); //TODO FIND THE GOOD VIEW INDEX
-                    //TODO MANAGE BETTER THE CARD DISPLAYING
-                }
-            });
-
-            // we add the image view
-            //cardFL.addView(cardBackgroundIV); optimization of the cards loading !
-            cardFL.addView(cardColorIV);
-            cardFL.addView(cardValueUpTV);
-            //cardFL.addView(cardValueDownTV);
-            cardFL.addView(cardButton);
-
-            //we set Layout Parameters
-            cardFL.setLayoutParams(normalLayoutParams);
-
+            addCardToLayout(currentCard, cardFL, false);
             //we add the frameLayout to the horizontal LinearLayout depending on the number of card already displayed
             if (cardNumber < NUMBER_OF_CARDS/2) {
                 cardsDownLayout.addView(cardFL);
@@ -360,28 +348,65 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void onCardClicked(String value, String suit) {
-        LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
-        LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
-        FrameLayout playedCardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+    public void addCardToLayout(final Card card, FrameLayout fl, boolean unclickable) {
+        final FrameLayout cardFL = fl;
+        final String value = card.valueToString();
+        final String suit = card.getSuit().toString();
 
+        final Card thisCard = card;
+
+
+        //WE DEAL WITH THE BACKGROUND, deprecated: to make the card displaying faster, we merged the card background and color
         //ImageView cardBackgroundIV = createCardBackground();
+
+        //WE DEAL WITH THE COLOR
         ImageView cardColorIV = createCardColor(suit);
+
+        //WE DEAL WITH THE VALUE
         TextView cardValueUpTV = new TextView(getApplicationContext());
-        TextView cardValueDownTV = new TextView(getApplicationContext());
+        //TextView cardValueDownTV = new TextView(getApplicationContext());
         //We create the 2 textViews, one for the value up and one for the one down
         if (suit != "t") {
             cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
+            //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
         } else if (suit == "t") {
             cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
+            //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
+        }
+        //We create a button for the action
+        Button cardButton = new Button(getApplicationContext());
+        cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
+        if (!unclickable) {
+            cardButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    TextView testTV = findViewById(R.id.textViewTest);
+                    testTV.setText(value+" de "+ suit);
+
+                    //we recuperate the FrameLayout with the method /!\ should be changed dynamically for V0.2, but pos is always 0 because it's the card played by him
+                    FrameLayout cardFL = getCardLayoutByRelativePosition(4, 0);
+
+                    playCardInGameZone(value, suit, cardFL);
+
+
+                    //TODO REMOVE THE CARD FROM THE PLAYER'S HAND
+                    //LinearLayout ll = (LinearLayout) cardFL.getParent();
+                    //ll.removeViewAt(3); //TODO FIND THE GOOD VIEW INDEX
+                }
+            });
         }
 
-        //playedCardLayout.addView(cardBackgroundIV);
-        playedCardLayout.addView(cardColorIV);
-        playedCardLayout.addView(cardValueUpTV);
-        playedCardLayout.addView(cardValueDownTV);
+        // we add the image view
+        //cardFL.addView(cardBackgroundIV); optimization of the cards loading !
+        cardFL.addView(cardColorIV);
+        cardFL.addView(cardValueUpTV);
+        //cardFL.addView(cardValueDownTV);
+        cardFL.addView(cardButton);
+
+        //we set Layout Parameters
+        cardFL.setLayoutParams(normalLayoutParams);
+
+
     }
 
     /**
@@ -490,6 +515,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onTurnEnded () {
+        //TODO CLEAN THE MIDDLEGAMEZONE DEPENDING ON THE GAMEZONE INITIALIZATION !<f
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         for (int i=0; i<middleGameZone.getChildCount(); i++) {
             LinearLayout verticalLL = (LinearLayout) middleGameZone.getChildAt(i);
@@ -573,7 +599,92 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onShowCard(Card card, Player player) {
+        int relativePosition = getRelativePositionByPlayer(player);
 
+        int nbPlayer = playersAmount;
+
+        FrameLayout cardLayout = getCardLayoutByRelativePosition(nbPlayer, relativePosition);
+
+        String suit = card.getSuit().toString();
+        String value = card.valueToString();
+
+        playCardInGameZone(value, suit, cardLayout);
+    }
+
+    protected int getRelativePositionByPlayer(Player player) {
+        //int myPosition = gm.players;
+        int myPosition = 2;
+        //int playerPosition = player.getPosition();
+        int playerPosition = 3;
+        int relativePosition = playerPosition - myPosition;
+
+        return relativePosition;
+    }
+
+    /**
+     *
+     * @param value
+     * @param suit
+     * @param playedCardLayout
+     */
+    protected void playCardInGameZone(String value, String suit, FrameLayout playedCardLayout) {
+
+        //ImageView cardBackgroundIV = createCardBackground();
+        ImageView cardColorIV = createCardColor(suit);
+        TextView cardValueUpTV = new TextView(getApplicationContext());
+        TextView cardValueDownTV = new TextView(getApplicationContext());
+        //We create the 2 textViews, one for the value up and one for the one down
+        if (suit != "t") {
+            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
+            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
+        } else if (suit == "t") {
+            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
+            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
+        }
+
+        //playedCardLayout.addView(cardBackgroundIV);
+        playedCardLayout.addView(cardColorIV);
+        playedCardLayout.addView(cardValueUpTV);
+        playedCardLayout.addView(cardValueDownTV);
+    }
+
+
+    protected FrameLayout getCardLayoutByRelativePosition(int nbPlayer, int pos) {
+        FrameLayout cardLayout = new FrameLayout(getApplicationContext());
+        LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
+        /*
+        switch (nbPlayer) {
+            case 3 :
+                break;
+            case 4 :*/
+
+                //if the player is on my left
+                if (pos == -1 || pos == 3) {
+                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(0);
+                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+                }
+                //if he is in front of me
+                else if (pos == -2 || pos == 2) {
+                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
+                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(0);
+                }
+                //if he is on my right
+                else if (pos == 1 || pos == -3) {
+                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(2);
+                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+                }
+                //if it's me
+                else if (pos == 0) {
+                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
+                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+                }
+                /*
+                break;
+            case 5 :
+                break;
+        }
+        */
+        return cardLayout;
     }
 }
 
