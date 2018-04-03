@@ -40,11 +40,15 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -69,7 +73,7 @@ public class ApiManagerService extends Service {
     private GoogleSignInAccount userAccount;
     private com.google.android.gms.games.Player googlePlayer;
     private RealTimeMultiplayerClient rtmc = null;
-    private String playerId;
+    private String playerId="-1";
     private RoomConfig currentRoomConfig = null;
     private Room mCurrentRoom = null; //the room we belong to. Null otherwise
     private ArrayList<String> mBoundComponents = new ArrayList<String>();
@@ -735,46 +739,6 @@ public class ApiManagerService extends Service {
         }
     };
 
-    /**
-     * Callbacks to handle reception of messages.
-     */
-
-    private OnRealTimeMessageReceivedListener mMessageReceivedHandler =
-            new OnRealTimeMessageReceivedListener() {
-                @Override
-                public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
-                    byte[] buf = realTimeMessage.getMessageData();
-                    String sender = realTimeMessage.getSenderParticipantId();
-                    Log.d(TAG, "Message received: " + buf.toString());
-
-                    ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-                    ObjectInput in = null;
-                    Object o=null;
-                    try {
-                        in = new ObjectInputStream(bis);
-                        o = in.readObject();
-                    } catch (IOException | ClassNotFoundException e) {
-                        try {
-                            if (in != null) {
-                                in.close();
-                            }
-                        } catch (IOException ex) {
-                            // ignore close exception
-                        }
-                    }
-                    if (o instanceof Card) {
-                        Card c = (Card) o;
-                        Log.i("DECODAGE", c.getValue() + " ");
-                        Intent intent = new Intent();
-                        intent.putExtra("card", c);
-                        //TODO : répérer les joueurs par leur id pour éviter les conflits de noms ?
-                        intent.putExtra("player", mCurrentRoom.getParticipant(sender).getDisplayName());
-                        localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
-                    }
-
-                    //TODO : on fait quoi ?
-                }
-            };
 
     public void getInvitePlayersIntent(){
         // launch the player selection screen
@@ -842,15 +806,23 @@ public class ApiManagerService extends Service {
      */
     public void announce(Announces announce) {}
 
-
-    public ArrayList<String[]> getPlayersInRoom(){
+    /**
+     * getter for the general infos of the players in the room
+     * structure : for each player, a HashMap contains the keys :
+     * username, status, participantId,
+     * @return the array of the HashMaps
+     */
+    public ArrayList<HashMap<String, String>> getPlayersInRoomInfos(){
+        ArrayList<HashMap<String,String>> ret = new ArrayList<>();
         if (mCurrentRoom == null || mCurrentRoom.getStatus() != Room.ROOM_STATUS_ACTIVE){
             //for testing purpose only
-            ArrayList<String[]> ret = new ArrayList<>();
-            ret.add(new String[]{"joueur1", "1"});
-            ret.add(new String[]{"joueur2", "1"});
-            ret.add(new String[]{"joueur3", "1"});
-            ret.add(new String[]{"joueur4", "1"});
+            for (int i=0 ; i<4 ; i++) {
+                HashMap hm = new HashMap();
+                hm.put("username", "joueur" + i);
+                hm.put("status", "1");
+                hm.put("participantId", "" + i);
+                ret.add(hm);
+            }
             return ret;
 
             //TODO : return null in the final version
@@ -859,16 +831,26 @@ public class ApiManagerService extends Service {
         else{
             Log.i(CONTAG, "getPlayersInRoom" + mCurrentRoom + " " + mCurrentRoom.getStatus());
             ArrayList<String> ids = mCurrentRoom.getParticipantIds();
-            ArrayList<String[]> ret = new ArrayList<>(ids.size());
             for (int i=0 ; i < ids.size() ; i++){
-                Log.d("debug",ids.size() + " " + i);
                 Participant p = mCurrentRoom.getParticipant(ids.get(i));
                 String[] couple = {p.getDisplayName(), p.getStatus() + ""};
-                Log.d("debug",couple.toString());
-                ret.add(couple);
+                HashMap hm = new HashMap();
+                hm.put("username", p.getDisplayName());
+                hm.put("status", p.getStatus() + "");
+                hm.put("participantId", "" + p.getParticipantId());
+                ret.add(hm);
             }
             return ret;
         }
+    }
+
+    public int getMyParticipantId(){
+        //TODO: supprimer ça quand on sera plus en tests
+        if (mCurrentRoom == null) {
+            return 0;
+        }
+        return Integer.parseInt(mCurrentRoom.getParticipantId(playerId));
+
     }
 
     public String[] getActivePlayersInRoom(){
@@ -899,7 +881,7 @@ public class ApiManagerService extends Service {
         }
     }
 
-    public void logState(){
+    public void logState() {
         if (mCurrentRoom != null) {
             Log.i(CONTAG, "room: " + mCurrentRoom);
             Log.i(CONTAG, "status: " + mCurrentRoom.getStatus());
@@ -907,20 +889,32 @@ public class ApiManagerService extends Service {
             for (Participant p : participants) {
                 Log.i(CONTAG, p.isConnectedToRoom() + " " + p.getStatus() + " " + p.getDisplayName());
             }
-        }
-        else{
+        } else {
             Log.i(CONTAG, "in no room right now");
         }
 
     }
 
-    public void sendCard(Card card){
-
+    /**
+     * take a serializable object, convert it to byte array and send it realiably on the network to everyone in the room
+     * @param object : the object to send.Has to be parcelable
+     */
+    public void sendObjectToAll(Serializable object){
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(object);
+            out.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        sendToAllReliably(bos.toByteArray());
     }
 
     //////////methods taken from the tutorial.
     // send a message to all participants except us using the sendReliableMessage method
-    void sendToAllReliably(byte[] message) {
+    private void sendToAllReliably(byte[] message) {
         if(mCurrentRoom == null){
             return;
         }
@@ -958,6 +952,48 @@ public class ApiManagerService extends Service {
                         pendingMessageSet.remove(tokenId);
                         Log.i("message", "sentCallBack.onRealTimeMessageSent");
                     }
+                }
+            };
+
+    /**
+     * Callbacks to handle reception of messages.
+     */
+    private OnRealTimeMessageReceivedListener mMessageReceivedHandler =
+            new OnRealTimeMessageReceivedListener() {
+                @Override
+                public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
+                    byte[] buf = realTimeMessage.getMessageData();
+                    String sender = realTimeMessage.getSenderParticipantId();
+                    Log.d(TAG, "Message received: " + buf.toString());
+
+                    ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+                    ObjectInput in = null;
+                    Object o=null;
+                    try {
+                        in = new ObjectInputStream(bis);
+                        o = in.readObject();
+                    } catch (IOException | ClassNotFoundException e) {
+                        try {
+                            if (in != null) {
+                                in.close();
+                            }
+                        } catch (IOException ex) {
+                            Log.e("error", "ApiManagerService : IOException in onRealTimeMessageReceived");
+
+                        }
+                    }
+
+                    //add the decode routine for each type of object we could receive !
+                    if (o instanceof Card) {
+                        Card c = (Card) o;
+                        Log.i("DECODAGE", c.getValue() + " ");
+                        Intent intent = new Intent();
+                        intent.putExtra("card", c);
+                        //TODO : répérer les joueurs par leur id pour éviter les conflits de noms ?
+                        intent.putExtra("participantId", mCurrentRoom.getParticipantId(sender));
+                        localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
+                    }
+
                 }
             };
 

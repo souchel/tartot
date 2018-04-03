@@ -195,6 +195,7 @@ public class GameActivity extends AppCompatActivity {
         //TODO : get all info of the game to render the UI
     }
 
+    /*
     private void setPlayersTextview(){
         if(!mGameServiceBound){
             Log.e("GameActivityError", "not bound to GameService");
@@ -208,6 +209,7 @@ public class GameActivity extends AppCompatActivity {
         }
         et.setText(s);
     }
+    */
 
     public void setPlayersTextview(String text){
         if(!mGameServiceBound){

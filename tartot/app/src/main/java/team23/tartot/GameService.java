@@ -23,6 +23,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -120,19 +121,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private void notifyFullState(){
 
     }
-    public String[] getUsernames() {
-        if(!mBoundToNetwork){
-            Log.e("GameServiceError", "not bound to ApiManagerService");
-            return new String[]{" "};
-        }
-        //{ [String username ; int status], ... }
-        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
-        String[] usernames = new String[namesAndStatus.size()];
-        for (int i=0; i < namesAndStatus.size() ; i++){
-            usernames[i] = namesAndStatus.get(i)[0];
-        }
-        return usernames;
-    }
 
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
@@ -176,10 +164,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             switch (code){
                 case CARD_RECEIVED:
                     Card c = (Card) intent.getSerializableExtra("card");
-                    String senderUsername = intent.getStringExtra("player");
-                    Log.i("senderusername",senderUsername);
+                    String senderId = intent.getStringExtra("participantId");
+                    Log.i("senderId",senderId+"");
                     Intent j = new Intent();
-                    j.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderUsername);
+                    j.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
                     localBroadcast(BroadcastCode.EXAMPLE, j);
                     break;
 
@@ -195,39 +183,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //we do some treatment to update the state of the game (play a card, update score etc)
 
         //then we send info to the others players in the room by calling the ApiManagerService
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream out = null;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(new Card(Suit.SPADE, 5));
-            out.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        mApiManagerService.sendToAllReliably(bos.toByteArray());
-
-        //////test
-        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInput in = null;
-        Object o=null;
-        try {
-            in = new ObjectInputStream(bis);
-            o = in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        if (o instanceof Card) {
-            Log.i("DECODAGE", ((Card) o).getValue() + " ");
-        }
-
-        Log.i("DECODAGE",o.toString());
-        ////test
+        mApiManagerService.sendObjectToAll(new Card(Suit.SPADE, 5));
     }
 
 
@@ -250,6 +206,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private boolean[] saidBid = new boolean[4];
     //position of the local player
     private int position;
+    private int mMyParticipantId;
+
     //position of the next player to act
     private int playerTurn;
     //nb of round already over
@@ -257,13 +215,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private Deck attackDeck ;
     private Deck defenseDeck ;
 
+
+    //deprecated je pense
     public void initialize(String[] usernames) {
         deck = new Deck();
         players = new Player[usernames.length];
         for (int i = 0 ; i < usernames.length; i++)
         {
 
-            players[i] = new Player(usernames[i],i);
+            players[i] = new Player(usernames[i],i, i);
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
@@ -276,14 +236,21 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         defenseDeck = new Deck();
     }
 
+
     public void initialize() {
         //{ [String username ; int status], ... }
-        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
+        ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
         deck = new Deck();
-        players = new Player[namesAndStatus.size()];
-        for (int i = 0 ; i < namesAndStatus.size(); i++)
+        players = new Player[rawPlayersInfos.size()];
+        mMyParticipantId = mApiManagerService.getMyParticipantId();
+        for (int i = 0 ; i < rawPlayersInfos.size(); i++)
         {
-            players[i] = new Player(namesAndStatus.get(i)[0],i);
+            HashMap<String, String> rawInfos = rawPlayersInfos.get(i);
+            players[i] = new Player(rawInfos.get("username"), i, Integer.parseInt(rawInfos.get("participantId")));
+            //initialize the local player position
+            if(Integer.parseInt(rawInfos.get("participantId")) == mMyParticipantId){
+                position = i;
+            }
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
@@ -292,7 +259,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         stats = new Points(players);
         bid = null;
         bid = bid.PASS;
-        this.position = position;
+    }
+
+    public Player getSelfPlayer(){
+        return players[position];
     }
 
     public void startGame() {

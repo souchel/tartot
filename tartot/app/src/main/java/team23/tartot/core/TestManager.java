@@ -11,11 +11,11 @@ public class TestManager {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
 		GameService gameManager = new GameService();
 		gameManager.initialize(usernames);
-		Player laure = new Player("Laure",4);
-		Player paul = new Player("Paul",2);
-		Player hugo = new Player("Hugo",0);
-		Player gui = new Player("Gui",1);
-		Player blu = new Player("blu",3);
+		Player laure = new Player("Laure",4,4);
+		Player paul = new Player("Paul",2,2);
+		Player hugo = new Player("Hugo",0,0);
+		Player gui = new Player("Gui",1,1);
+		Player blu = new Player("blu",3,3);
 		Card excuse = new Card(Suit.TRUMP, 22);
 		Card atout = new Card(Suit.TRUMP, 10);
 		Card normal = new Card(Suit.DIAMOND, 10);
