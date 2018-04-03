@@ -206,7 +206,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private boolean[] saidBid = new boolean[4];
     //position of the local player
     private int position;
-    private int mMyParticipantId;
+    private String mMyParticipantId;
 
     //position of the next player to act
     private int playerTurn;
@@ -223,7 +223,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         for (int i = 0 ; i < usernames.length; i++)
         {
 
-            players[i] = new Player(usernames[i],i, i);
+            players[i] = new Player(usernames[i],i, ""+i);
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
@@ -246,9 +246,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         for (int i = 0 ; i < rawPlayersInfos.size(); i++)
         {
             HashMap<String, String> rawInfos = rawPlayersInfos.get(i);
-            players[i] = new Player(rawInfos.get("username"), i, Integer.parseInt(rawInfos.get("participantId")));
+            players[i] = new Player(rawInfos.get("username"), i, "participantId");
             //initialize the local player position
-            if(Integer.parseInt(rawInfos.get("participantId")) == mMyParticipantId){
+            if(rawInfos.get("participantId").equals(mMyParticipantId)){
                 position = i;
             }
             gotAnnounces[i] = false;

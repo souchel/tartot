@@ -37,7 +37,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		for (int i = 0 ; i < usernames.length; i++)
 		{
 
-			players[i] = new Player(usernames[i],i,i);
+			players[i] = new Player(usernames[i],i,""+i);
 			gotAnnounces[i] = false;
 			saidBid[i] = false;
 		}

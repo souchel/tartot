@@ -844,12 +844,12 @@ public class ApiManagerService extends Service {
         }
     }
 
-    public int getMyParticipantId(){
+    public String getMyParticipantId(){
         //TODO: supprimer ça quand on sera plus en tests
         if (mCurrentRoom == null) {
-            return 0;
+            return "0";
         }
-        return Integer.parseInt(mCurrentRoom.getParticipantId(playerId));
+        return mCurrentRoom.getParticipantId(playerId);
 
     }
 
@@ -963,7 +963,7 @@ public class ApiManagerService extends Service {
                 @Override
                 public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
                     byte[] buf = realTimeMessage.getMessageData();
-                    String sender = realTimeMessage.getSenderParticipantId();
+                    String senderId = realTimeMessage.getSenderParticipantId();
                     Log.d(TAG, "Message received: " + buf.toString());
 
                     ByteArrayInputStream bis = new ByteArrayInputStream(buf);
@@ -989,8 +989,8 @@ public class ApiManagerService extends Service {
                         Log.i("DECODAGE", c.getValue() + " ");
                         Intent intent = new Intent();
                         intent.putExtra("card", c);
-                        //TODO : répérer les joueurs par leur id pour éviter les conflits de noms ?
-                        intent.putExtra("participantId", mCurrentRoom.getParticipantId(sender));
+                        intent.putExtra("participantId", senderId);
+                        Log.i("CARD_RECEIVED", mCurrentRoom.getParticipantId(senderId) + "");
                         localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
                     }
 
