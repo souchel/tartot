@@ -59,8 +59,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public int onStartCommand(Intent intent, int flags, int startId){
 
         //check if the game service is running
-        boolean running = isServiceRunning(GameService.class);
-        Log.i("debug", "menu activity, service running ? " + running);
+        boolean running = isServiceRunning(ApiManagerService.class);
+        Log.i("debug", "GameService, APIManagerService running ? " + running);
         if(running == false){
             Log.e("GameServiceError", "le service réseau ne tourne pas");
             stopSelf();
@@ -90,7 +90,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
             initialize();
-            notifyFullState();
+            localBroadcast(BroadcastCode.READY_TO_START);
         }
 
 
@@ -115,12 +115,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
-    /**
-     * send a local broadcast to GameActivity with state of the game (players, positions, points, cards, ...)
-     */
-    private void notifyFullState(){
-
-    }
 
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities

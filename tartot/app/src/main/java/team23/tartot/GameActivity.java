@@ -58,6 +58,7 @@ public class GameActivity extends AppCompatActivity {
     protected Bid chosenBid = Bid.PASS;
     private GameService mGameService;
     private boolean mGameServiceBound = false;
+    private boolean mGameServiceReady = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,6 +127,16 @@ public class GameActivity extends AppCompatActivity {
         bindService(intent, mGameConnection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.i("debug", "GameActivity onStop");
+        //deconnexion propre
+        //TODO : gérer ça et la reprise dans le GameService
+        unbindService(mGameConnection);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(broadcastReceiver);
+    }
+
     private void startGameService(){
         boolean running = isServiceRunning(GameService.class);
         Log.d("debug", "game activity, service running ? " + running);
@@ -155,6 +166,13 @@ public class GameActivity extends AppCompatActivity {
                 case EXAMPLE:
                     setPlayersTextview(intent.getStringExtra("text"));
                     break;
+                case READY_TO_START:
+                    mGameServiceReady = true;
+                    //TODO: Hugo, à partir de ce moment, tu peux faire tous les appels que tu veux à mGameService
+                    //par exemple :
+                    //initializeUI();
+                    //ou bien
+                    //Player p = mGameService.getSelfPlayer();
             }
 
         }
