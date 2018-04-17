@@ -15,7 +15,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -51,8 +59,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public int onStartCommand(Intent intent, int flags, int startId){
 
         //check if the game service is running
-        boolean running = isServiceRunning(GameService.class);
-        Log.i("debug", "menu activity, service running ? " + running);
+        boolean running = isServiceRunning(ApiManagerService.class);
+        Log.i("debug", "GameService, APIManagerService running ? " + running);
         if(running == false){
             Log.e("GameServiceError", "le service réseau ne tourne pas");
             stopSelf();
@@ -82,7 +90,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
             initialize();
-            notifyFullState();
+            localBroadcast(BroadcastCode.READY_TO_START);
         }
 
 
@@ -95,36 +103,18 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     //used to push actions to the GameActivity (on events coming from the ApiManagerService for example)
     private void localBroadcast(BroadcastCode value){
         Intent intent = new Intent();
-        intent.setAction("apiManagerService");
+        intent.setAction("GameService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     private void localBroadcast(BroadcastCode value, Intent intent) {
-        intent.setAction("apiManagerService");
+        Log.d("GameService", "localBroadcast " + value.toString());
+        intent.setAction("GameService");
         intent.putExtra("value", value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
-    /**
-     * send a local broadcast to GameActivity with state of the game (players, positions, points, cards, ...)
-     */
-    private void notifyFullState(){
-
-    }
-    public String[] getUsernames() {
-        if(!mBoundToNetwork){
-            Log.e("GameServiceError", "not bound to ApiManagerService");
-            return new String[]{" "};
-        }
-        //{ [String username ; int status], ... }
-        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
-        String[] usernames = new String[namesAndStatus.size()];
-        for (int i=0; i < namesAndStatus.size() ; i++){
-            usernames[i] = namesAndStatus.get(i)[0];
-        }
-        return usernames;
-    }
 
     /**
      * Class used for the client Binder.  The Binder is used to create a connection between the service and the activities
@@ -165,6 +155,17 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            switch (code){
+                case CARD_RECEIVED:
+                    Card c = (Card) intent.getSerializableExtra("card");
+                    String senderId = intent.getStringExtra("participantId");
+                    Log.i("senderId",senderId+"");
+                    Intent j = new Intent();
+                    j.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
+                    localBroadcast(BroadcastCode.EXAMPLE, j);
+                    break;
+
+            }
         }
     };
 
@@ -178,6 +179,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //then we send info to the others players in the room by calling the ApiManagerService
 
         //mApiManagerService.sendToAllReliably();
+
+        mApiManagerService.sendObjectToAll(new Card(Suit.SPADE, 5));
+
     }
 
 
@@ -200,6 +204,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private boolean[] saidBid = new boolean[4];
     //position of the local player
     private int position;
+    private String mMyParticipantId;
+
     //position of the next player to act
     private int playerTurn;
     //nb of round already over
@@ -207,13 +213,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private Deck attackDeck ;
     private Deck defenseDeck ;
 
+
+    //deprecated je pense
     public void initialize(String[] usernames) {
         deck = new Deck();
         players = new Player[usernames.length];
         for (int i = 0 ; i < usernames.length; i++)
         {
 
-            players[i] = new Player(usernames[i],i);
+            players[i] = new Player(usernames[i],i, ""+i);
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
@@ -226,14 +234,21 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         defenseDeck = new Deck();
     }
 
+
     public void initialize() {
         //{ [String username ; int status], ... }
-        ArrayList<String[]> namesAndStatus = mApiManagerService.getPlayersInRoom();
+        ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
         deck = new Deck();
-        players = new Player[namesAndStatus.size()];
-        for (int i = 0 ; i < namesAndStatus.size(); i++)
+        players = new Player[rawPlayersInfos.size()];
+        mMyParticipantId = mApiManagerService.getMyParticipantId();
+        for (int i = 0 ; i < rawPlayersInfos.size(); i++)
         {
-            players[i] = new Player(namesAndStatus.get(i)[0],i);
+            HashMap<String, String> rawInfos = rawPlayersInfos.get(i);
+            players[i] = new Player(rawInfos.get("username"), i, "participantId");
+            //initialize the local player position
+            if(rawInfos.get("participantId").equals(mMyParticipantId)){
+                position = i;
+            }
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
@@ -242,7 +257,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         stats = new Points(players);
         bid = null;
         bid = bid.PASS;
-        this.position = position;
+    }
+
+    public Player getSelfPlayer(){
+        return players[position];
     }
 
     public void startGame() {

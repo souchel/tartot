@@ -1,6 +1,8 @@
 package team23.tartot.core;
 
-public enum Suit {
+import java.io.Serializable;
+
+public enum Suit implements Serializable{
 	TRUMP("t"),
 	SPADE("s"), 
 	HEART("h"), 
@@ -18,4 +20,5 @@ public enum Suit {
 	{
 		return s;
 	}
+
 }

@@ -5,11 +5,11 @@ public enum BroadcastCode {
 
     //broadcasts for the GameService->GameActivity
     STATE_UPDATE, //when the state changed and the UI has to update some information (players online, state of players, ...)
-
+    READY_TO_START,
 
 
     //broadcasts for the ApiManagerService->GameService
-
+    CARD_RECEIVED,
 
     //broadcasts from the ApiManagerService
     MANUAL_LOG, //when the automatic connection does not work. We ask the player to manually connect to his account
@@ -23,6 +23,9 @@ public enum BroadcastCode {
     INVITATION_RECEIVED,
     INVITATION_REMOVED,
     SHOW_PLAYER_PICKER,
+
+    //test
+    EXAMPLE,
 
     ;
 

@@ -9,10 +9,12 @@ public class Player {
 	private Deck hand;
 	private Deck deck;
 	private int position;
+	private String mParticipantId;
 	
-	public Player(String username, int position)
+	public Player(String username, int position, String participantId)
 	{
 		this.username = username;
+		this.mParticipantId = participantId;
 		//quand les players sont crees ils n ont pas encore d equipe d ou ils sont dans l equipe none
 		team = Team.NONE;
 		deck = new Deck();

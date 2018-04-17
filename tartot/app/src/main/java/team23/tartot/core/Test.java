@@ -12,7 +12,7 @@ public class Test {
 		System.out.println("cette carte a pour valeur : "+ card.pointValue());
 		System.out.println("");
 		System.out.println("Un joueur est cree");
-		Player laure = new Player("Laure", 0);
+		Player laure = new Player("Laure", 0,""+0);
 		System.out.println("son username est : "+laure.getUsername()+" et son equipe est : "+laure.getTeam());
 		System.out.println("");
 		System.out.println("");

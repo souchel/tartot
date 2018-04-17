@@ -37,7 +37,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		for (int i = 0 ; i < usernames.length; i++)
 		{
 
-			players[i] = new Player(usernames[i],i);
+			players[i] = new Player(usernames[i],i,""+i);
 			gotAnnounces[i] = false;
 			saidBid[i] = false;
 		}
@@ -49,7 +49,8 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		attackDeck = new Deck();
 		defenseDeck = new Deck();
 	}
-	
+
+	/*
 	public GameManager(String[] usernames, int position) {
 		deck = new Deck();
 		players = new Player[usernames.length];
@@ -66,6 +67,7 @@ public class GameManager implements iNetworkToCore, callbackGameManager{
 		bid = bid.PASS;
 		this.position = position;
 	}
+	*/
 	
 	public void startGame() {
 		playerTurn = indexDealer;

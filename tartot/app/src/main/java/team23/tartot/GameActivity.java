@@ -54,6 +54,7 @@ public class GameActivity extends AppCompatActivity {
     protected Bid chosenBid = Bid.PASS;
     private GameService mGameService;
     private boolean mGameServiceBound = false;
+    private boolean mGameServiceReady = false;
 
     //the amount of players in the room to initialize GameBoard, PlayerPositioning....
     int playersAmount = 4;
@@ -121,7 +122,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         //register the broadcast receiver
-        IntentFilter intentFilter = new IntentFilter("gameService");
+        IntentFilter intentFilter = new IntentFilter("GameService");
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
 
         // Bind to GameService
@@ -129,6 +130,16 @@ public class GameActivity extends AppCompatActivity {
         intent.putExtra("origin", "game");
         Log.i("debug", "act bindService");
         bindService(intent, mGameConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.i("debug", "GameActivity onStop");
+        //deconnexion propre
+        //TODO : gérer ça et la reprise dans le GameService
+        unbindService(mGameConnection);
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(broadcastReceiver);
     }
 
     private void startGameService(){
@@ -155,6 +166,19 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            Log.i("GameActivityBroadcast", code.toString());
+            switch(code){
+                case EXAMPLE:
+                    setPlayersTextview(intent.getStringExtra("text"));
+                    break;
+                case READY_TO_START:
+                    mGameServiceReady = true;
+                    //TODO: Hugo, à partir de ce moment, tu peux faire tous les appels que tu veux à mGameService
+                    //par exemple :
+                    //initializeUI();
+                    //ou bien
+                    //Player p = mGameService.getSelfPlayer();
+            }
 
         }
 
@@ -172,12 +196,13 @@ public class GameActivity extends AppCompatActivity {
             mGameServiceBound = true;
             onConnectedToGameService();
 
-            // Example button to exlain sending mecanism
+            // Example button to explain sending mecanism
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     //TODO : test button to send data
+                    mGameService.exampleMessage();
                 }
             });
         }
@@ -193,6 +218,7 @@ public class GameActivity extends AppCompatActivity {
         //TODO : get all info of the game to render the UI
     }
 
+    /*
     private void setPlayersTextview(){
         if(!mGameServiceBound){
             Log.e("GameActivityError", "not bound to GameService");
@@ -205,6 +231,16 @@ public class GameActivity extends AppCompatActivity {
             s += p + "\n";
         }
         et.setText(s);
+    }
+    */
+
+    public void setPlayersTextview(String text){
+        if(!mGameServiceBound){
+            Log.e("GameActivityError", "not bound to GameService");
+            return;
+        }
+        EditText et = findViewById(R.id.connectedPlayers);
+        et.setText(text);
     }
 
     //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER

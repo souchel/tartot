@@ -1,6 +1,12 @@
 package team23.tartot.core;
 
-public class Card {
+import android.os.Parcelable;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+
+public class Card implements Serializable{
 	private Suit suit;
 	// la valeur de la carte 11 = valet etc si la carte n est pas un atout
 	//le 22  d atout correspond a l excuse
@@ -12,6 +18,7 @@ public class Card {
 		suit = s;
 		value = v;
 	}
+
 	public double pointValue()
 	{
 		//Attention si la carte n existe pas ex 15 de trefle la valeur est debile
