@@ -44,12 +44,8 @@ public class GameActivity extends AppCompatActivity {
     final private static int TEXT_SIZE_TRUMP = 10;
     final private static int NUMBER_OF_CARDS = 18;
 
-    //GameManager gm = new GameManager();
-    int playersAmount = 4; //should be initialized with GameManager.players.size()
-
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
     FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
-
 
 
     protected Deck deck = new Deck();
@@ -59,6 +55,11 @@ public class GameActivity extends AppCompatActivity {
     private GameService mGameService;
     private boolean mGameServiceBound = false;
     private boolean mGameServiceReady = false;
+
+    //the amount of players in the room to initialize GameBoard, PlayerPositioning....
+    int playersAmount = 4;
+    //int playersAmount = mGameService.getPlayers().length;
+    //Player myPlayer = mGameService.getSelfPlayer();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +84,11 @@ public class GameActivity extends AppCompatActivity {
                     hand.add(deck.getCardList().get(i));
                 }
 
+                cleanDeck();
+
                 addCardsToDeck(hand);
+
+
 
                 ArrayList<Bid> possibleBids = new ArrayList<>();
                 //possibleBids.add(Bid.SMALL);
@@ -354,7 +359,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     /**
-     * public method to trigger when the cards are distributed.All the Cards in the player's hand are graphically created:
+     * public method to trigger when the cards are distributed. All the Cards in the player's hand are graphically created:
      * in a FrameLayout, that will be add in one of the horizontal LinearLayout, we add one ImageView (for color and background),
      * one TextView (for the value) and one Button (to make the card clickable)
      * @param hand an ArrayList of Cards.
@@ -383,7 +388,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void addCardToLayout(final Card card, FrameLayout fl, boolean unclickable) {
+    public void addCardToLayout(final Card card, final FrameLayout fl, boolean unclickable) {
         final FrameLayout cardFL = fl;
         final String value = card.valueToString();
         final String suit = card.getSuit().toString();
@@ -418,13 +423,13 @@ public class GameActivity extends AppCompatActivity {
                     TextView testTV = findViewById(R.id.textViewTest);
                     testTV.setText(value+" de "+ suit);
 
-                    //we recuperate the FrameLayout with the method /!\ should be changed dynamically for V0.2, but pos is always 0 because it's the card played by him
-                    FrameLayout cardFL = getCardLayoutByRelativePosition(4, 0);
+                    //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
+                    FrameLayout cardFL = getCardLayoutByRelativePosition(0);
 
                     playCardInGameZone(value, suit, cardFL);
 
-
                     //TODO REMOVE THE CARD FROM THE PLAYER'S HAND
+                    deleteCard(fl);
                     //LinearLayout ll = (LinearLayout) cardFL.getParent();
                     //ll.removeViewAt(3); //TODO FIND THE GOOD VIEW INDEX
                 }
@@ -440,8 +445,6 @@ public class GameActivity extends AppCompatActivity {
 
         //we set Layout Parameters
         cardFL.setLayoutParams(normalLayoutParams);
-
-
     }
 
     /**
@@ -550,7 +553,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onTurnEnded () {
-        //TODO CLEAN THE MIDDLEGAMEZONE DEPENDING ON THE GAMEZONE INITIALIZATION !<f
+        //TODO CLEAN THE MIDDLEGAMEZONE DEPENDING ON THE GAMEZONE INITIALIZATION !
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         for (int i=0; i<middleGameZone.getChildCount(); i++) {
             LinearLayout verticalLL = (LinearLayout) middleGameZone.getChildAt(i);
@@ -559,24 +562,6 @@ public class GameActivity extends AppCompatActivity {
                 cardFrame.removeAllViews();
             }
         }
-    }
-
-    protected int findVerticalPositionByPlayer(Player player, int playersAmount) {
-        if (playersAmount == 3) {
-
-        } else if (playersAmount == 4 )  {
-
-        } else if (playersAmount == 5) {
-
-        } else {
-            return 0;
-        }
-        return 1;
-    }
-
-
-    protected int findHorizontalPositionByPlayer (Player player) {
-        return 0;
     }
 
     /**
@@ -636,9 +621,7 @@ public class GameActivity extends AppCompatActivity {
     public void onShowCard(Card card, Player player) {
         int relativePosition = getRelativePositionByPlayer(player);
 
-        int nbPlayer = playersAmount;
-
-        FrameLayout cardLayout = getCardLayoutByRelativePosition(nbPlayer, relativePosition);
+        FrameLayout cardLayout = getCardLayoutByRelativePosition(relativePosition);
 
         String suit = card.getSuit().toString();
         String value = card.valueToString();
@@ -657,10 +640,10 @@ public class GameActivity extends AppCompatActivity {
     }
 
     /**
-     *
-     * @param value
-     * @param suit
-     * @param playedCardLayout
+     * protected method triggered when a Card is played: directly by us when the card is Clicked (undoable in the future) and triggered by gGameService when someone else play
+     * @param value String which corresponds to the value of the Card played
+     * @param suit String which corresponds to the color of the Card played
+     * @param playedCardLayout  FrameLayout where the Player can play his Card: found with getCardLayoutByRelativePosition(
      */
     protected void playCardInGameZone(String value, String suit, FrameLayout playedCardLayout) {
 
@@ -684,42 +667,50 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    protected FrameLayout getCardLayoutByRelativePosition(int nbPlayer, int pos) {
+    protected FrameLayout getCardLayoutByRelativePosition(int pos) {
         FrameLayout cardLayout = new FrameLayout(getApplicationContext());
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
-        /*
-        switch (nbPlayer) {
-            case 3 :
-                break;
-            case 4 :*/
-
-                //if the player is on my left
-                if (pos == -1 || pos == 3) {
-                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(0);
-                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
-                }
-                //if he is in front of me
-                else if (pos == -2 || pos == 2) {
-                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
-                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(0);
-                }
-                //if he is on my right
-                else if (pos == 1 || pos == -3) {
-                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(2);
-                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
-                }
-                //if it's me
-                else if (pos == 0) {
-                    LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
-                    cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
-                }
-                /*
-                break;
-            case 5 :
-                break;
+        if (playersAmount == 4) {
+            //if the player is on my left
+            if (pos == -1 || pos == 3) {
+                LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(0);
+                cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+            }
+            //if he is in front of me
+            else if (pos == -2 || pos == 2) {
+                LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
+                cardLayout = (FrameLayout) subLinearLayout.getChildAt(0);
+            }
+            //if he is on my right
+            else if (pos == 1 || pos == -3) {
+                LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(2);
+                cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+            }
+            //if it's me
+            else if (pos == 0) {
+                LinearLayout subLinearLayout = (LinearLayout) middleGameZone.getChildAt(1);
+                cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
+            }
+        } else if (playersAmount == 3) {
+            Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
+        } else if (playersAmount == 5) {
+            Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
         }
-        */
+
+
         return cardLayout;
+    }
+
+    public void deleteCard(FrameLayout fl) {
+        fl.removeAllViews();
+    }
+
+    protected void cleanDeck() {
+        LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
+        LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
+
+        cardsUpLayout.removeAllViews();
+        cardsDownLayout.removeAllViews();
     }
 }
 
