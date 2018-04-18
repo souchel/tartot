@@ -1,11 +1,12 @@
 package team23.tartot.core;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Deck {
+public class Deck implements Serializable {
 	private Team team;
 	protected ArrayList<Card> cardList = new ArrayList<>();
 	

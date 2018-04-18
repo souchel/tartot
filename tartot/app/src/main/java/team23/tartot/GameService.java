@@ -156,15 +156,59 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
             switch (code){
+                case FULL_DECK_RECEIVED:
+                    Deck deck = (Deck) intent.getSerializableExtra("deck");
+                    onDeckReceived(deck);
+                    //TODO deplace localbroadcast?
+                    Intent j1 = new Intent();
+                    j1.putExtra("text", "deck should be distributed");
+                    localBroadcast(BroadcastCode.EXAMPLE, j1);
+                    break;
+                case DECK_RECEIVED:
+                    ArrayList<Card> h = (ArrayList<Card>) intent.getSerializableExtra("hand");
+                    Player p = (Player) intent.getSerializableExtra("player"); //TODO replace by username
+                    onCardsDelt(h, p);
+                    //TODO deplace localbroadcast?
+                    Intent j2 = new Intent();
+                    j2.putExtra("text", "player: " + p.getUsername() + "should have his cards now");
+                    localBroadcast(BroadcastCode.EXAMPLE, j2);
+                    break;
+                case BID_RECEIVED:
+                    Bid b = (Bid) intent.getSerializableExtra("bid");
+                    onBid(b);
+                    //TODO deplace localbroadcast?
+                    Intent j3 = new Intent();
+                    j3.putExtra("text", "bid has been received");
+                    localBroadcast(BroadcastCode.EXAMPLE, j3);
+                    break;
+                case DOG_RECEIVED:
+                    ArrayList<Card> dog = (ArrayList<Card>) intent.getSerializableExtra("dog");
+                    onDog(dog);
+                    //TODO deplace localbroadcast?
+                    Intent j4 = new Intent();
+                    j4.putExtra("text", "dog has been received");
+                    localBroadcast(BroadcastCode.EXAMPLE, j4);
+                    break;
+                case ANNOUNCE_RECEIVED:
+                    ArrayList<Announces> a = (ArrayList<Announces>) intent.getSerializableExtra("announces");
+                    Player p2 = (Player) intent.getSerializableExtra("player");
+                    onAnnounce(p2, a);
+                    //TODO deplace localbroadcast?
+                    Intent j5 = new Intent();
+                    j5.putExtra("text", "announces has been received for player " + p2.getUsername());
+                    localBroadcast(BroadcastCode.EXAMPLE, j5);
+                    break;
                 case CARD_RECEIVED:
                     Card c = (Card) intent.getSerializableExtra("card");
+                    Player p3 = (Player) intent.getSerializableExtra("player");
                     String senderId = intent.getStringExtra("participantId");
+                    onPlayCard(p3, c);
                     Log.i("senderId",senderId+"");
-                    Intent j = new Intent();
-                    j.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
-                    localBroadcast(BroadcastCode.EXAMPLE, j);
+                    //TODO Deplace Localbroadcast in the right method?
+                    Intent j6 = new Intent();
+                    j6.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
+                    localBroadcast(BroadcastCode.EXAMPLE, j6);
                     break;
-
             }
         }
     };
@@ -210,7 +254,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private Deck defenseDeck ;
 
 
-    //deprecated je pense
+    //deprecated i think
     public void initialize(String[] usernames) {
         deck = new Deck();
         players = new Player[usernames.length];
@@ -405,6 +449,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             {
                 chien.addCard(card);
             }
+            //TODO send dog
             startAnnounce();
         }
         else
@@ -496,7 +541,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void checkFoldComplet() {
         if (onGoingFold.getCardList().size() == 4) {
             if (players[0].getHand().getCardList().size() == 0) {
-                //TODO start point phase (and prepareNextFold???)
+                prepareNextFold();
+                startPoints();
             } else {
                 prepareNextFold();
                 startNextFold();
@@ -519,6 +565,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             }
         }
         Player winingPlayer = onGoingFold.getWiningPlayer();
+        //TODO for 4 player only
         if (winingPlayer.getPosition() == bid.getPlayerPosition()) {
             for (Card card : onGoingFold.getCardList()) {
                 attackDeck.addCard(card);
@@ -572,7 +619,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     {
         return stats ;
     }
-    public void pointsPhase()
+    public void startPoints()
     {
         double pointsAttack = attackDeck.countPoints();
         int attackOudlerNumber = attackDeck.countOudlers();
@@ -907,9 +954,21 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             askBid(bid);
         }
     }
+    @Override
     public void onDeckReceived(Deck deck) {
         this.deck = deck;
         //TODO r�cup les positions de coupe
         distribute(null);
+    }
+    @Override
+    public void onDog(ArrayList<Card> cards){
+        if (bid.getMultiplicant() == 6){
+            for (Card card : cards){
+                defenseDeck.addCard(card);
+            }
+        } else for (Card card : cards){
+            attackDeck.addCard(card);
+        }
+        startAnnounce();
     }
 }

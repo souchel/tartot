@@ -55,6 +55,7 @@ import java.util.List;
 import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
+import team23.tartot.core.Deck;
 import team23.tartot.core.iPlayer;
 
 import static android.content.ContentValues.TAG;
@@ -984,6 +985,29 @@ public class ApiManagerService extends Service {
                     }
 
                     //add the decode routine for each type of object we could receive !
+                    if (o instanceof Deck){
+                        Deck d = (Deck) o;
+                        Log.i("text", "full deck");
+                        Intent intent = new Intent();
+                        intent.putExtra("deck", d);
+                        localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
+                    }
+                    if (o instanceof ArrayList){
+                        ArrayList list = (ArrayList) o;
+                        if (list.get(0) instanceof Card){
+                            ArrayList<Card> h = (ArrayList<Card>) o;
+                            Log.i("text", "send hand");
+                            Intent intent = new Intent();
+                            intent.putExtra("hand", h);
+                        }
+                    }
+                    if (o instanceof Bid){
+                        Bid b = (Bid) o;
+                        Log.i("TEXT", "bid");
+                        Intent intent = new Intent();
+                        intent.putExtra("bid", b);
+                        localBroadcast(BroadcastCode.BID_RECEIVED, intent);
+                    }
                     if (o instanceof Card) {
                         Card c = (Card) o;
                         Log.i("DECODAGE", c.getValue() + " ");

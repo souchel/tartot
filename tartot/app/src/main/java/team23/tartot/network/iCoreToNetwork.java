@@ -1,4 +1,5 @@
 package team23.tartot.network;
+import java.util.ArrayList;
 import java.util.List;
 
 import team23.tartot.core.*;
@@ -80,4 +81,6 @@ public interface iCoreToNetwork {
 
     //to send the deck to another player after cutting it
     public void sendDeck(Player player);
+
+    public void sendDog(ArrayList<Card> cards);
 }

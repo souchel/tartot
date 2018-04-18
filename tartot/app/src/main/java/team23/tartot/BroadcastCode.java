@@ -9,7 +9,13 @@ public enum BroadcastCode {
 
 
     //broadcasts for the ApiManagerService->GameService
+    FULL_DECK_RECEIVED,
+    DECK_RECEIVED,
+    BID_RECEIVED,
+    DOG_RECEIVED,
+    ANNOUNCE_RECEIVED,
     CARD_RECEIVED,
+
 
     //broadcasts from the ApiManagerService
     MANUAL_LOG, //when the automatic connection does not work. We ask the player to manually connect to his account
