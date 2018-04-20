@@ -37,6 +37,11 @@ import team23.tartot.core.Points;
 import team23.tartot.core.Suit;
 import team23.tartot.core.Team;
 import team23.tartot.core.callbackGameManager;
+import team23.tartot.core.iAnnounces;
+import team23.tartot.core.iCard;
+import team23.tartot.core.iDeck;
+import team23.tartot.core.iDog;
+import team23.tartot.core.iFullDeck;
 import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
@@ -157,16 +162,22 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
             switch (code){
                 case FULL_DECK_RECEIVED:
-                    Deck deck = (Deck) intent.getSerializableExtra("deck");
-                    onDeckReceived(deck);
+                    iFullDeck ifd = (iFullDeck) intent.getSerializableExtra("fulldeck");
+                    Deck fullDeck = ifd.getDeck();
+                    Player pfd = ifd.getPlayer();
+                    //we trigger only if the local player is the dealer (he will distribute)
+                    if (pfd.getPosition() == indexDealer){
+                        onDeckReceived(fullDeck);
+                    }
                     //TODO deplace localbroadcast?
                     Intent j1 = new Intent();
-                    j1.putExtra("text", "deck should be distributed");
+                    j1.putExtra("text", "fulldeck should be distributed");
                     localBroadcast(BroadcastCode.EXAMPLE, j1);
                     break;
                 case DECK_RECEIVED:
-                    ArrayList<Card> h = (ArrayList<Card>) intent.getSerializableExtra("hand");
-                    Player p = (Player) intent.getSerializableExtra("player"); //TODO replace by username
+                    iDeck id = (iDeck) intent.getSerializableExtra("hand");
+                    ArrayList<Card> h = id.getDeck();
+                    Player p = id.getPlayer(); //TODO replace by username
                     onCardsDelt(h, p);
                     //TODO deplace localbroadcast?
                     Intent j2 = new Intent();
@@ -182,7 +193,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     localBroadcast(BroadcastCode.EXAMPLE, j3);
                     break;
                 case DOG_RECEIVED:
-                    ArrayList<Card> dog = (ArrayList<Card>) intent.getSerializableExtra("dog");
+                    iDog idog = (iDog) intent.getSerializableExtra("dog");
+                    ArrayList<Card> dog = idog.getDog();
                     onDog(dog);
                     //TODO deplace localbroadcast?
                     Intent j4 = new Intent();
@@ -190,8 +202,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     localBroadcast(BroadcastCode.EXAMPLE, j4);
                     break;
                 case ANNOUNCE_RECEIVED:
-                    ArrayList<Announces> a = (ArrayList<Announces>) intent.getSerializableExtra("announces");
-                    Player p2 = (Player) intent.getSerializableExtra("player");
+                    iAnnounces ia = (iAnnounces) intent.getSerializableExtra("announces");
+                    ArrayList<Announces> a = ia.getAnnounces();
+                    Player p2 = ia.getPlayer();
                     onAnnounce(p2, a);
                     //TODO deplace localbroadcast?
                     Intent j5 = new Intent();
@@ -199,8 +212,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     localBroadcast(BroadcastCode.EXAMPLE, j5);
                     break;
                 case CARD_RECEIVED:
-                    Card c = (Card) intent.getSerializableExtra("card");
-                    Player p3 = (Player) intent.getSerializableExtra("player");
+                    iCard ic = (iCard) intent.getSerializableExtra("card");
+                    Player p3 = ic.getPlayer();
+                    Card c = ic.getCard();
                     String senderId = intent.getStringExtra("participantId");
                     onPlayCard(p3, c);
                     Log.i("senderId",senderId+"");
@@ -678,6 +692,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         if (position == indexDealer) {
             //TODO call the right methode in the activities so that the player chooses where to
             //cut the deck
+            //send the full deck to next dealer
 
 
         }
@@ -925,6 +940,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     @Override
     public void onPlayCard(Player player, Card card) {
+        //TODO warning ERREUR onGoingFold a 4 emplacements de cartes de base, mais checkfoldcomplete considère qu'on en ajoute à chaque fois qu'on joue une carte!!!
         onGoingFold.addCard(card, player);
         checkFoldComplet();
     }
@@ -935,6 +951,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 player.setHand(cards);
             }
         }
+        //TODO lancer startBid ssi tous les joueurs ont leur cartes pour éviter les bugs
         startBid();
     }
     @Override

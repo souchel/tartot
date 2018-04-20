@@ -56,6 +56,11 @@ import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
+import team23.tartot.core.iAnnounces;
+import team23.tartot.core.iCard;
+import team23.tartot.core.iDeck;
+import team23.tartot.core.iDog;
+import team23.tartot.core.iFullDeck;
 import team23.tartot.core.iPlayer;
 
 import static android.content.ContentValues.TAG;
@@ -985,21 +990,19 @@ public class ApiManagerService extends Service {
                     }
 
                     //add the decode routine for each type of object we could receive !
-                    if (o instanceof Deck){
-                        Deck d = (Deck) o;
+                    if (o instanceof iFullDeck){
+                        iFullDeck ifd = (iFullDeck) o;
                         Log.i("text", "full deck");
                         Intent intent = new Intent();
-                        intent.putExtra("deck", d);
+                        intent.putExtra("fulldeck", ifd);
                         localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
                     }
-                    if (o instanceof ArrayList){
-                        ArrayList list = (ArrayList) o;
-                        if (list.get(0) instanceof Card){
-                            ArrayList<Card> h = (ArrayList<Card>) o;
-                            Log.i("text", "send hand");
-                            Intent intent = new Intent();
-                            intent.putExtra("hand", h);
-                        }
+                    if (o instanceof iDeck){
+                        iDeck id = (iDeck) o;
+                        Log.i("text", "hand");
+                        Intent intent = new Intent();
+                        intent.putExtra("hand", id);
+                        localBroadcast(BroadcastCode.DECK_RECEIVED, intent);
                     }
                     if (o instanceof Bid){
                         Bid b = (Bid) o;
@@ -1008,9 +1011,23 @@ public class ApiManagerService extends Service {
                         intent.putExtra("bid", b);
                         localBroadcast(BroadcastCode.BID_RECEIVED, intent);
                     }
-                    if (o instanceof Card) {
-                        Card c = (Card) o;
-                        Log.i("DECODAGE", c.getValue() + " ");
+                    if (o instanceof iDog){
+                        iDog idog = (iDog) o;
+                        Log.i("TEXT", "dog");
+                        Intent intent = new Intent();
+                        intent.putExtra("dog", idog);
+                        localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
+                    }
+                    if (o instanceof iAnnounces){
+                        iAnnounces a = (iAnnounces) o;
+                        Log.i("text","announces received");
+                        Intent intent = new Intent();
+                        intent.putExtra("announces", a);
+                        localBroadcast(BroadcastCode.ANNOUNCE_RECEIVED, intent);
+                    }
+                    if (o instanceof iCard) {
+                        iCard c = (iCard) o;
+                        Log.i("DECODAGE", c.getCard().getValue() + " ");
                         Intent intent = new Intent();
                         intent.putExtra("card", c);
                         intent.putExtra("participantId", senderId);
