@@ -4,23 +4,23 @@ import java.io.Serializable;
 
 public class iFullDeck implements Serializable {
     private Deck deck;
-    private Player player;
+    private String player;
 
-    public iFullDeck(Deck d, Player p){
+    public iFullDeck(Deck d, String username){
         deck = d;
-        player = p;
+        player = username;
     }
 
     public void setDeck(Deck d){
         deck = d;
     }
-    public void setPlayer(Player p){
-        player = p;
+    public void setPlayer(String username){
+        player = username;
     }
     public Deck getDeck(){
         return deck;
     }
-    public Player getPlayer(){
+    public String getPlayer(){
         return player;
     }
 

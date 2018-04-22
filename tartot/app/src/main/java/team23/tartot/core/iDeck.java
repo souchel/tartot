@@ -5,23 +5,23 @@ import java.util.ArrayList;
 
 public class iDeck implements Serializable {
     private ArrayList<Card> deck;
-    private Player player;
+    private String player;
 
-    public iDeck(ArrayList<Card> d, Player p){
+    public iDeck(ArrayList<Card> d, String username){
         deck = d;
-        player = p;
+        player = username;
     }
 
     public void setDeck(ArrayList<Card> d){
         deck = d;
     }
-    public void setPlayer(Player p){
-        player = p;
+    public void setPlayer(String username){
+        player = username;
     }
     public ArrayList<Card> getDeck(){
         return deck;
     }
-    public Player getPlayer(){
+    public String getPlayer(){
         return player;
     }
 }

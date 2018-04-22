@@ -164,9 +164,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case FULL_DECK_RECEIVED:
                     iFullDeck ifd = (iFullDeck) intent.getSerializableExtra("fulldeck");
                     Deck fullDeck = ifd.getDeck();
-                    Player pfd = ifd.getPlayer();
+                    String pfd = ifd.getPlayer();
                     //we trigger only if the local player is the dealer (he will distribute)
-                    if (pfd.getPosition() == indexDealer){
+                    if (getPlayerWithUsername(pfd).getPosition() == indexDealer){
                         onDeckReceived(fullDeck);
                     }
                     //TODO deplace localbroadcast?
@@ -177,11 +177,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case DECK_RECEIVED:
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
-                    Player p = id.getPlayer(); //TODO replace by username
+                    String p = id.getPlayer(); //TODO replace by username
                     onCardsDelt(h, p);
                     //TODO deplace localbroadcast?
                     Intent j2 = new Intent();
-                    j2.putExtra("text", "player: " + p.getUsername() + "should have his cards now");
+                    j2.putExtra("text", "player: " + p + "should have his cards now");
                     localBroadcast(BroadcastCode.EXAMPLE, j2);
                     break;
                 case BID_RECEIVED:
@@ -204,16 +204,16 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case ANNOUNCE_RECEIVED:
                     iAnnounces ia = (iAnnounces) intent.getSerializableExtra("announces");
                     ArrayList<Announces> a = ia.getAnnounces();
-                    Player p2 = ia.getPlayer();
+                    String p2 = ia.getPlayer();
                     onAnnounce(p2, a);
                     //TODO deplace localbroadcast?
                     Intent j5 = new Intent();
-                    j5.putExtra("text", "announces has been received for player " + p2.getUsername());
+                    j5.putExtra("text", "announces has been received for player " + p2);
                     localBroadcast(BroadcastCode.EXAMPLE, j5);
                     break;
                 case CARD_RECEIVED:
                     iCard ic = (iCard) intent.getSerializableExtra("card");
-                    Player p3 = ic.getPlayer();
+                    String p3 = ic.getPlayer();
                     Card c = ic.getCard();
                     String senderId = intent.getStringExtra("participantId");
                     onPlayCard(p3, c);
@@ -384,7 +384,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //sending cards to player via network
         for (Player player : players) {
             //TODO
-            //dealCards(player.getHand().getCardList(), player); //� importer quand on sera sur android studio
+            //dealCards(player.getHand().getCardList(), username); //� importer quand on sera sur android studio
         }
         startBid();
     }
@@ -514,7 +514,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         {
             playersAnnounces.add(announce);
         }
-        //TODO announce(List<Announces> announce, Player player);
+        //TODO announce(List<Announces> announce, String username);
         checkAnnounceProgress();
     }
     private void checkAnnounceProgress() {
@@ -706,7 +706,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         setNextDealer();
         for (Player player : players) {
             if (player.getPosition() == position) {
-                //sendDeck(player);
+                //TODO sendDeck(username);
             }
         }
     }
@@ -928,6 +928,18 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     {
         return deck ;
     }
+    public String getUsernameWithPlayer(Player p){
+        return p.getUsername();
+    }
+    public Player getPlayerWithUsername(String username){
+        for (Player player : players){
+            if (player.getUsername() == username){
+                return player;
+            }
+        }
+        //TODO heu je suis obliger de mettre ça mais c'est sensé ne jamais arriver...
+        return players[0];
+    }
 
 
 
@@ -939,13 +951,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         // TODO Auto-generated method stub
     }
     @Override
-    public void onPlayCard(Player player, Card card) {
+    public void onPlayCard(String username, Card card) {
         //TODO warning ERREUR onGoingFold a 4 emplacements de cartes de base, mais checkfoldcomplete considère qu'on en ajoute à chaque fois qu'on joue une carte!!!
+        Player player = getPlayerWithUsername(username);
         onGoingFold.addCard(card, player);
         checkFoldComplet();
     }
     @Override
-    public void onCardsDelt(ArrayList<Card> cards, Player concernedPlayer) {
+    public void onCardsDelt(ArrayList<Card> cards, String username) {
+        Player concernedPlayer = getPlayerWithUsername(username);
         for (Player player : players) {
             if (player == concernedPlayer) {
                 player.setHand(cards);
@@ -955,7 +969,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         startBid();
     }
     @Override
-    public void onAnnounce(Player player, ArrayList<Announces> announces) {
+    public void onAnnounce(String username, ArrayList<Announces> announces) {
+        Player player = getPlayerWithUsername(username);
         for (int i = 0 ; i < announces.size(); i++) {
             if (checkAnnouncesBegining(announces, player)) { //TODO v�rifier que tous ces check sont utils ils devraient �tre fait dans l'activit� normalement
                 playersAnnounces.add(announces.get(i));

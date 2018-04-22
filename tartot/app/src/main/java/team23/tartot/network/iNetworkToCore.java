@@ -26,11 +26,11 @@ public interface iNetworkToCore {
      * @param player
      * @param card
      */
-    public void onPlayCard(Player player, Card card);
+    public void onPlayCard(String username, Card card);
 
-    public void onCardsDelt(ArrayList<Card> cards, Player player);
+    public void onCardsDelt(ArrayList<Card> cards, String username);
 
-    public void onAnnounce(Player player, ArrayList<Announces> announces);
+    public void onAnnounce(String username, ArrayList<Announces> announces);
 
     public void onBid(Bid bid);
 

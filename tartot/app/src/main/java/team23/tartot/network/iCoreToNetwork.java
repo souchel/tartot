@@ -59,10 +59,10 @@ public interface iCoreToNetwork {
      * deal the cards to the other players.
      * Raise an exception if the player is not in game.
      * No other verification is done.
-     * @param destination: the player we send the cards to
+     * @param username: the player we send the cards to
      * @param cards: the cards delt
      */
-    public void dealCards(Player destination, Card[] cards);
+    public void dealCards(String username, Card[] cards);
 
     /**
      * notify other players the card we chosed to play
@@ -74,13 +74,13 @@ public interface iCoreToNetwork {
      * Inform other players of an announce. Raise an exception if we are not in game
      * @param announce: the announce to broadcast
      */
-    public void announce(List<Announces> announce, Player player);
+    public void announce(List<Announces> announce, String username);
 
     //inform other players of a bid
     public void bid(Bid bid);
 
     //to send the deck to another player after cutting it
-    public void sendDeck(Player player);
+    public void sendDeck(String username);
 
     public void sendDog(ArrayList<Card> cards);
 }

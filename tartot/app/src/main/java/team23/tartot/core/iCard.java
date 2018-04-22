@@ -4,23 +4,23 @@ import java.io.Serializable;
 
 public class iCard implements Serializable {
     private Card card;
-    private Player player;
+    private String player;
 
-    public iCard(Card c, Player p){
+    public iCard(Card c, String username){
         card = c;
-        player = p;
+        player = username;
     }
 
     public void setCard(Card c){
         card = c;
     }
-    public void setPlayer(Player p){
-        player = p;
+    public void setPlayer(String username){
+        player = username;
     }
     public Card getCard(){
         return card;
     }
-    public Player getPlayer(){
+    public String getPlayer(){
         return player;
     }
 }
