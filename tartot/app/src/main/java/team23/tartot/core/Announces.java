@@ -5,8 +5,10 @@ public enum Announces {
 	DOUBLE_HANDFUL,
 	TRIPLE_HANDFUL,
 	MISERY,
+	//we suppose defense won't slam for now...
 	SLAM,
-	PETIT_AU_BOUT;
+	PETIT_AU_BOUT,
+	LOST_PETIT_AU_BOUT;
 	
 	private Player owner ;
 	

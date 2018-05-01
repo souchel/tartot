@@ -178,7 +178,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
                     String p = id.getPlayer();
-                    onCardsDelt(h, p);
+                    onCardsDealt(h, p);
                     //TODO deplace localbroadcast?
                     Intent j2 = new Intent();
                     j2.putExtra("text", "player: " + p + "should have his cards now");
@@ -270,6 +270,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private int nbDone = 0;
     private Deck attackDeck ;
     private Deck defenseDeck ;
+    private Team petitInitialTeam;
 
 
     //deprecated i think
@@ -289,6 +290,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         bid = null;
         attackDeck = new Deck();
         defenseDeck = new Deck();
+        petitInitialTeam = null;
     }
 
 
@@ -313,6 +315,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         chien = new Deck();
         stats = new Points(players);
         bid = null;
+        petitInitialTeam = null;
     }
 
     public Player getSelfPlayer(){
@@ -439,6 +442,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                             player.getHand().addCard(card);
                         }
                     } else player.setTeam(Team.DEFENSE);
+                    if (checkPetit(player.getHand().getCardList())){
+                        petitInitialTeam = player.getTeam();
+                    }
                 }
                 //TODO demander au joueur de faire son ecart via l activite correspondante
                 //ecarter(cards);
@@ -638,6 +644,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     {
         double pointsAttack = attackDeck.countPoints();
         int attackOudlerNumber = attackDeck.countOudlers();
+        checkAnnouncesEnd();
         //on suppose que bid contient le bid gagnant et pas juste le bid local
         stats.updatePointsAndBid(bid, attackOudlerNumber, playersAnnounces, pointsAttack);
         prepareNextRound();
@@ -662,6 +669,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         nbDone += 1;
         playerTurn = indexDealer;
         nextPlayer();
+        petitInitialTeam = null;
     }
     public void cutTheDeck(int position)
     {
@@ -827,37 +835,42 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                             }
                     }
                     break;
-                case SLAM:
-                    break;
-                case PETIT_AU_BOUT:
-                    break;
             }
         }
         return res;
     }
     //TODO inutil, à gérer dans la partie comptage de points?
-    public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
-        boolean res = true;
-        for (Announces announce : announces) {
-            switch (announce) {
-                case MISERY:
-                    break;
-                case SIMPLE_HANDFUL:
-                    break;
-                case DOUBLE_HANDFUL:
-                    break;
-                case TRIPLE_HANDFUL:
-                    break;
-                case SLAM:
-                    //TODO
-                    break;
-                case PETIT_AU_BOUT:
-                    //v�rifie juste que le petit a bien �t� mis au bout, pas que le pli est gagn�
-                    boolean petit = false;
-                    //TODO if (Card player.getDeck().getCardList().get(//TODO r�cup�rer lindice)) {
-                    ;
-                    //}
-                    break;
+    public void checkAnnouncesEnd() {
+        int lengthDefDeck = defenseDeck.getCardList().size();
+        //TODO all method for 4 players
+        if (lengthDefDeck == 0 || lengthDefDeck == 6){
+            playersAnnounces.add(Announces.SLAM);
+        }
+        ArrayList<Card> attackLastFold = new ArrayList<Card>();
+        for (int i = -4; i < 0 ; i++){
+            attackLastFold.add(attackDeck.getCardList().get(i));
+        }
+        if (checkPetit(attackLastFold)){
+            if (petitInitialTeam == Team.ATTACK){
+                playersAnnounces.add(Announces.PETIT_AU_BOUT);
+            } else playersAnnounces.add(Announces.LOST_PETIT_AU_BOUT);
+        }
+        ArrayList<Card> defenseLastFold = new ArrayList<Card>();
+        for (int i = -4; i < 0 ; i++){
+            defenseLastFold.add(defenseDeck.getCardList().get(i));
+        }
+        if (checkPetit(defenseLastFold)){
+            if (petitInitialTeam == Team.DEFENSE){
+                playersAnnounces.add(Announces.PETIT_AU_BOUT);
+            } else playersAnnounces.add(Announces.LOST_PETIT_AU_BOUT);
+        }
+    }
+    //method to check if the petit is in a deck
+    public Boolean checkPetit(ArrayList<Card> d){
+        Boolean res = false;
+        for (Card card : d){
+            if (card.getSuit() == Suit.TRUMP && card.getValue() == 1){
+                res = true;
             }
         }
         return res;
@@ -973,7 +986,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         checkFoldComplet();
     }
     @Override
-    public void onCardsDelt(ArrayList<Card> cards, String username) {
+    public void onCardsDealt(ArrayList<Card> cards, String username) {
         Player concernedPlayer = getPlayerWithUsername(username);
         for (Player player : players) {
             if (player == concernedPlayer) {
