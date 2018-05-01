@@ -270,7 +270,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private int nbDone = 0;
     private Deck attackDeck ;
     private Deck defenseDeck ;
-    private Team petitInitialTeam;
 
 
     //deprecated i think
@@ -290,7 +289,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         bid = null;
         attackDeck = new Deck();
         defenseDeck = new Deck();
-        petitInitialTeam = null;
     }
 
 
@@ -315,7 +313,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         chien = new Deck();
         stats = new Points(players);
         bid = null;
-        petitInitialTeam = null;
     }
 
     public Player getSelfPlayer(){
@@ -442,9 +439,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                             player.getHand().addCard(card);
                         }
                     } else player.setTeam(Team.DEFENSE);
-                    if (checkPetit(player.getHand().getCardList())){
-                        petitInitialTeam = player.getTeam();
-                    }
                 }
                 //TODO demander au joueur de faire son ecart via l activite correspondante
                 //ecarter(cards);
@@ -640,6 +634,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     {
         return stats ;
     }
+    //TODO update for end announces
     public void startPoints()
     {
         double pointsAttack = attackDeck.countPoints();
@@ -669,7 +664,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         nbDone += 1;
         playerTurn = indexDealer;
         nextPlayer();
-        petitInitialTeam = null;
     }
     public void cutTheDeck(int position)
     {
@@ -839,30 +833,37 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return res;
     }
-    //TODO inutil, à gérer dans la partie comptage de points?
     public void checkAnnouncesEnd() {
-        int lengthDefDeck = defenseDeck.getCardList().size();
         //TODO all method for 4 players
+        int lengthDefDeck = defenseDeck.getCardList().size();
         if (lengthDefDeck == 0 || lengthDefDeck == 6){
-            playersAnnounces.add(Announces.SLAM);
+            Announces announceToAdd = Announces.SLAM;
+            announceToAdd.setTeam(Team.ATTACK);
+            playersAnnounces.add(announceToAdd);
+        }
+        int lengthAttDeck = attackDeck.getCardList().size();
+        if (lengthAttDeck == 0 || lengthAttDeck == 6){
+            Announces announceToAdd = Announces.SLAM;
+            announceToAdd.setTeam(Team.DEFENSE);
+            playersAnnounces.add(announceToAdd);
         }
         ArrayList<Card> attackLastFold = new ArrayList<Card>();
         for (int i = -4; i < 0 ; i++){
             attackLastFold.add(attackDeck.getCardList().get(i));
         }
         if (checkPetit(attackLastFold)){
-            if (petitInitialTeam == Team.ATTACK){
-                playersAnnounces.add(Announces.PETIT_AU_BOUT);
-            } else playersAnnounces.add(Announces.LOST_PETIT_AU_BOUT);
+            Announces announceToAdd = Announces.PETIT_AU_BOUT;
+            announceToAdd.setTeam(Team.ATTACK);
+            playersAnnounces.add(announceToAdd);
         }
         ArrayList<Card> defenseLastFold = new ArrayList<Card>();
         for (int i = -4; i < 0 ; i++){
             defenseLastFold.add(defenseDeck.getCardList().get(i));
         }
         if (checkPetit(defenseLastFold)){
-            if (petitInitialTeam == Team.DEFENSE){
-                playersAnnounces.add(Announces.PETIT_AU_BOUT);
-            } else playersAnnounces.add(Announces.LOST_PETIT_AU_BOUT);
+            Announces announceToAdd = Announces.PETIT_AU_BOUT;
+            announceToAdd.setTeam(Team.DEFENSE);
+            playersAnnounces.add(announceToAdd);
         }
     }
     //method to check if the petit is in a deck
@@ -980,7 +981,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     @Override
     public void onPlayCard(String username, Card card) {
-        //TODO warning ERREUR onGoingFold a 4 emplacements de cartes de base, mais checkfoldcomplete considère qu'on en ajoute à chaque fois qu'on joue une carte!!!
+        //TODO warning onGoingFold a 4 emplacements de cartes de base, mais checkfoldcomplete considère qu'on en ajoute à chaque fois qu'on joue une carte!!!
         Player player = getPlayerWithUsername(username);
         onGoingFold.addCard(card, player);
         checkFoldComplet();
@@ -1004,7 +1005,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 playersAnnounces.add(announces.get(i));
             }
         }
-        //TODO do something to make the activity show others annouces
+        //TODO do something to make the activity show others announces
         gotAnnounces[player.getPosition()] = true;
         checkAnnounceProgress();
     }
@@ -1022,7 +1023,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     @Override
     public void onDeckReceived(Deck deck) {
         this.deck = deck;
-        //TODO r�cup les positions de coupe
+        //TODO récup les positions de coupe
         distribute(null);
     }
     @Override

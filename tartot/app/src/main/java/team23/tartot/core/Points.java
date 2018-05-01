@@ -88,7 +88,7 @@ public class Points {
 	}
 	public void updatePointsSlam(double[] pointsGame, Announces announce)
 	{
-		if (announce.getOwner().getTeam() == Team.DEFENSE)
+		if (announce.getTeam() == Team.DEFENSE)
 		{
 			for(int i = 0 ; i < players.length ; i++)
 			{
@@ -104,7 +104,7 @@ public class Points {
 			{
 				if (players[i].getTeam() == Team.ATTACK)
 				{
-					pointsGame[i]+= 1200 ;
+					pointsGame[i]+= 600 ;
 
 				}
 				else
@@ -119,7 +119,7 @@ public class Points {
 	public void updatePointsPetitAuBout(double[] pointsGame, Announces annonce, Bid bid)
 	{
 		
-		if (annonce.getOwner().getTeam() == Team.ATTACK) {
+		if (annonce.getTeam() == Team.ATTACK) {
 			for(int i = 0 ; i < players.length ; i++)
 			{
 				if (players[i].getTeam() == Team.ATTACK)

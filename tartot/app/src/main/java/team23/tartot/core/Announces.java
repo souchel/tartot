@@ -7,10 +7,10 @@ public enum Announces {
 	MISERY,
 	//we suppose defense won't slam for now...
 	SLAM,
-	PETIT_AU_BOUT,
-	LOST_PETIT_AU_BOUT;
+	PETIT_AU_BOUT;
 	
 	private Player owner ;
+	private Team team;
 	
 	public Player getOwner()
 	{
@@ -21,4 +21,8 @@ public enum Announces {
 	{
 		this.owner = owner ;
 	}
+
+	public Team getTeam(){ return team; }
+
+	public void setTeam(Team t) { team = t; }
 }
