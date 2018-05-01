@@ -7,7 +7,8 @@ import java.util.List;
 import team23.tartot.GameService;
 
 public class TestManager {
-	public static void main(String[] args) throws IOException {
+	public Bid b;
+	public void main(String[] args) throws IOException {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
 		GameService gameManager = new GameService();
 		gameManager.initialize(usernames);
@@ -76,5 +77,8 @@ public class TestManager {
 		blu.getHand().addCard(new Card(Suit.TRUMP, 18));
 		System.out.println("double annonc�e et aquise :"+gameManager.checkAnnouncesBegining(Arrays.asList(Announces.DOUBLE_HANDFUL), blu));
 
+		System.out.println(this.b);
+		b = null;
+		System.out.println(b);
 	}
 }

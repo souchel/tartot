@@ -177,7 +177,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case DECK_RECEIVED:
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
-                    String p = id.getPlayer(); //TODO replace by username
+                    String p = id.getPlayer();
                     onCardsDelt(h, p);
                     //TODO deplace localbroadcast?
                     Intent j2 = new Intent();
@@ -287,7 +287,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         chien = new Deck();
         stats = new Points(players);
         bid = null;
-        bid = bid.PASS;
         attackDeck = new Deck();
         defenseDeck = new Deck();
     }
@@ -314,7 +313,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         chien = new Deck();
         stats = new Points(players);
         bid = null;
-        bid = bid.PASS;
     }
 
     public Player getSelfPlayer(){
@@ -383,8 +381,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         //sending cards to player via network
         for (Player player : players) {
-            //TODO
-            //dealCards(player.getHand().getCardList(), username); //� importer quand on sera sur android studio
+            sendDeck(player.getHand().getCardList(), player.getUsername());
         }
         startBid();
     }
@@ -412,7 +409,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
     //bid phase
-    //TODO faire l'�cart
     private void startBid() {
         if (position == playerTurn) {
             askBid(bid);
@@ -420,15 +416,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     @Override
     public void askBid(Bid bid) {
-        if (bid == null)
-        {
-            //TODO on appelle la methode dans activite qui fait choisir le bide au joueur local
-        }
-        else
-        {
-            this.bid = bid ;
-        }
-        //TODO bid(bid to send to others);
+        //TODO on appelle la methode dans activite qui fait choisir le bide au joueur local, attention il faut check la bid
+        sendBid(bid);
         checkBidProgress();
     }
     private void checkBidProgress() {
@@ -439,7 +428,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             }
         }
         if (check) {
-            //TODO vérifier que la condition marche
             if (bid == bid.PASS){
                 prepareNextRound();
                 //TODO faire compter la pass dans les stats
@@ -453,6 +441,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     } else player.setTeam(Team.DEFENSE);
                 }
                 //TODO demander au joueur de faire son ecart via l activite correspondante
+                //ecarter(cards);
             }
         }
     }
@@ -467,7 +456,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             {
                 chien.addCard(card);
             }
-            //TODO send dog
+            sendDog(chien.getCardList());
             startAnnounce();
         }
         else
@@ -505,16 +494,20 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
     //announce phase
     private void startAnnounce() {
-        //on appelle l'activit� qui g�re �a
+        //TODO on appelle l'activité qui gére ça: ArrayList<Announces> announces = ......
+        //TODO c'est l'activité qui gère quelles annonces sont possibles? on devrait plutôt le faire dans le service non?
+        //TODO askAnnounce(announces)
     }
     @Override
-    //m�thode appel�e quand le choix d'annonce est fait
-    public void askAnnounce(Announces announce) {
-        if (announce != null)
+    //méthode appelée quand le choix d'annonce est fait
+    public void askAnnounce(ArrayList<Announces> announces) {
+        if (announces != null)
         {
-            playersAnnounces.add(announce);
+            for (Announces announce : announces){
+                playersAnnounces.add(announce);
+            }
         }
-        //TODO announce(List<Announces> announce, String username);
+        sendAnnounces(announces);
         checkAnnounceProgress();
     }
     private void checkAnnounceProgress() {
@@ -536,12 +529,13 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         onGoingFold = new OnGoingFold();
         if (position == playerTurn) {
             //TODO appeler l activite qui fait choisir la carte a mettre au joueur
-
-        } //else wait onPlayCard
+            //sendCard(c);
+        }
     }
 
     @Override
-    public void startNectFoldCalledBack(Card card)
+    //TODO no need callback method anymore
+    public void startNextFoldCalledBack(Card card)
     {
         if (checkCard(card, players[position]))
         {
@@ -552,6 +546,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         else
         {
             //TODO reappeler l activite
+            //sendCard(c);
         }
     }
 
@@ -598,11 +593,12 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void continuFold() {
         if (position == playerTurn) {
             //TODO appeler l activite qui fait choisir
-
-        } //else wait onPlayCard
+            //sendCard(c);
+        }
     }
 
     @Override
+    //TODO no need callback method anymore
     public void continuFoldCalledBack(Card card)
     {
         if (checkCard(card, players[position]))
@@ -614,6 +610,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         else
         {
             //TODO appeler l activite de nouveau
+            //sendCard(c);
         }
     }
 
@@ -650,11 +647,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
     //prepare next round methods
     public void reinitializeForNextRound() {
-        //le deck se r�initialise pas mais ce partage par des m�thodes network
+        //le deck se réinitialise pas mais ce partage par des méthodes network
         chien = new Deck();
-        //TODO utilité de bid = null ? (à voire aussi dans les constructeurs)
         bid = null;
-        bid = bid.PASS;
         playersAnnounces = null;
         gotAnnounces = new boolean[4];
         saidBid = new boolean[4];
@@ -706,7 +701,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         setNextDealer();
         for (Player player : players) {
             if (player.getPosition() == position) {
-                //TODO sendDeck(username);
+                sendFullDeck(player.getUsername());
             }
         }
     }
@@ -715,7 +710,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     //check rules section
 
     //return if the card can be played, unless false
-    //TODO pas test�
     public boolean checkCard(Card card, Player player) {
         Card winingCard = onGoingFold.getWiningCard();
         Suit askedSuit = onGoingFold.getSuit();
@@ -841,7 +835,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return res;
     }
-    //TODO inutil, � g�rer dans la partie comptage de points?
+    //TODO inutil, à gérer dans la partie comptage de points?
     public boolean checkAnnouncesEnd(List<Announces> announces, Player player) {
         boolean res = true;
         for (Announces announce : announces) {
@@ -855,6 +849,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case TRIPLE_HANDFUL:
                     break;
                 case SLAM:
+                    //TODO
                     break;
                 case PETIT_AU_BOUT:
                     //v�rifie juste que le petit a bien �t� mis au bout, pas que le pli est gagn�
@@ -901,7 +896,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //utility TODO put them in a class to herit?
     private boolean alreadyInArray(int[] array, int number)
     //return true if number is already in the array of int called array and false if not
     {
@@ -937,7 +931,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 return player;
             }
         }
-        //TODO heu je suis obliger de mettre ça mais c'est sensé ne jamais arriver...
+        //TODO heu je suis obligé de mettre ça mais c'est sensé ne jamais arriver...
         return players[0];
     }
 
@@ -945,7 +939,28 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //TODO implements methods
+    //sending methods
+    public void sendFullDeck(String username){
+        mApiManagerService.sendObjectToAll(new iFullDeck(deck, username));
+    }
+    public void sendDeck(ArrayList<Card> d, String username){
+        mApiManagerService.sendObjectToAll(new iDeck(d, username));
+    }
+    public void sendBid(Bid b){
+        mApiManagerService.sendObjectToAll(b);
+    }
+    public void sendDog(ArrayList<Card> dog){
+        mApiManagerService.sendObjectToAll(dog);
+    }
+    public void sendAnnounces(ArrayList<Announces> announces){
+        mApiManagerService.sendObjectToAll(new iAnnounces(announces, players[position].getUsername()));
+    }
+    public void sendCard(Card c){
+        mApiManagerService.sendObjectToAll(new iCard(c, players[position].getUsername()));
+    }
+
+
+    //receiving methods
     @Override
     public void onInvitationReceived() {
         // TODO Auto-generated method stub
@@ -976,6 +991,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 playersAnnounces.add(announces.get(i));
             }
         }
+        //TODO do something to make the activity show others annouces
         gotAnnounces[player.getPosition()] = true;
         checkAnnounceProgress();
     }
