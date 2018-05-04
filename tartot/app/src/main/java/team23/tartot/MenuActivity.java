@@ -244,6 +244,8 @@ public class MenuActivity extends AppCompatActivity {
         goToGameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToGameIntent = new Intent(MenuActivity.this, GameActivity.class);
+                int playersAmount = 4;
+                goToGameIntent.putExtra("playersAmount", playersAmount);
                 startActivity(goToGameIntent);
             }
         });
@@ -433,6 +435,8 @@ public class MenuActivity extends AppCompatActivity {
         //TODO : implement parcelable so that we can pass it to the next activity !
         //we pass the mApiManagerService object to the gameActivity to keep the connection
         //goToGameIntent.putExtra("apiManager", apiManager);
+        int playersAmount = mApiManagerService.getActivePlayersInRoom().length;
+        goToGameIntent.putExtra("playersAmount", playersAmount);
         startActivity(goToGameIntent);
     }
 

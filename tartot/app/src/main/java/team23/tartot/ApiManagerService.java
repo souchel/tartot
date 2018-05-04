@@ -965,77 +965,77 @@ public class ApiManagerService extends Service {
      * Callbacks to handle reception of messages.
      */
     private OnRealTimeMessageReceivedListener mMessageReceivedHandler =
-            new OnRealTimeMessageReceivedListener() {
-                @Override
-                public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
-                    byte[] buf = realTimeMessage.getMessageData();
-                    String senderId = realTimeMessage.getSenderParticipantId();
-                    Log.d(TAG, "Message received: " + buf.toString());
+        new OnRealTimeMessageReceivedListener() {
+            @Override
+            public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
+                byte[] buf = realTimeMessage.getMessageData();
+                String senderId = realTimeMessage.getSenderParticipantId();
+                Log.d(TAG, "Message received: " + buf.toString());
 
-                    ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-                    ObjectInput in = null;
-                    Object o=null;
+                ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+                ObjectInput in = null;
+                Object o=null;
+                try {
+                    in = new ObjectInputStream(bis);
+                    o = in.readObject();
+                } catch (IOException | ClassNotFoundException e) {
                     try {
-                        in = new ObjectInputStream(bis);
-                        o = in.readObject();
-                    } catch (IOException | ClassNotFoundException e) {
-                        try {
-                            if (in != null) {
-                                in.close();
-                            }
-                        } catch (IOException ex) {
-                            Log.e("error", "ApiManagerService : IOException in onRealTimeMessageReceived");
-
+                        if (in != null) {
+                            in.close();
                         }
-                    }
+                    } catch (IOException ex) {
+                        Log.e("error", "ApiManagerService : IOException in onRealTimeMessageReceived");
 
-                    //add the decode routine for each type of object we could receive !
-                    if (o instanceof iFullDeck){
-                        iFullDeck ifd = (iFullDeck) o;
-                        Log.i("text", "full deck");
-                        Intent intent = new Intent();
-                        intent.putExtra("fulldeck", ifd);
-                        localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
                     }
-                    if (o instanceof iDeck){
-                        iDeck id = (iDeck) o;
-                        Log.i("text", "hand");
-                        Intent intent = new Intent();
-                        intent.putExtra("hand", id);
-                        localBroadcast(BroadcastCode.DECK_RECEIVED, intent);
-                    }
-                    if (o instanceof Bid){
-                        Bid b = (Bid) o;
-                        Log.i("TEXT", "bid");
-                        Intent intent = new Intent();
-                        intent.putExtra("bid", b);
-                        localBroadcast(BroadcastCode.BID_RECEIVED, intent);
-                    }
-                    if (o instanceof iDog){
-                        iDog idog = (iDog) o;
-                        Log.i("TEXT", "dog");
-                        Intent intent = new Intent();
-                        intent.putExtra("dog", idog);
-                        localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
-                    }
-                    if (o instanceof iAnnounces){
-                        iAnnounces a = (iAnnounces) o;
-                        Log.i("text","announces received");
-                        Intent intent = new Intent();
-                        intent.putExtra("announces", a);
-                        localBroadcast(BroadcastCode.ANNOUNCE_RECEIVED, intent);
-                    }
-                    if (o instanceof iCard) {
-                        iCard c = (iCard) o;
-                        Log.i("DECODAGE", c.getCard().getValue() + " ");
-                        Intent intent = new Intent();
-                        intent.putExtra("card", c);
-                        intent.putExtra("participantId", senderId);
-                        Log.i("CARD_RECEIVED", mCurrentRoom.getParticipantId(senderId) + "");
-                        localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
-                    }
-
                 }
-            };
+
+                //add the decode routine for each type of object we could receive !
+                if (o instanceof iFullDeck){
+                    iFullDeck ifd = (iFullDeck) o;
+                    Log.i("text", "full deck");
+                    Intent intent = new Intent();
+                    intent.putExtra("fulldeck", ifd);
+                    localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
+                }
+                if (o instanceof iDeck){
+                    iDeck id = (iDeck) o;
+                    Log.i("text", "hand");
+                    Intent intent = new Intent();
+                    intent.putExtra("hand", id);
+                    localBroadcast(BroadcastCode.DECK_RECEIVED, intent);
+                }
+                if (o instanceof Bid){
+                    Bid b = (Bid) o;
+                    Log.i("TEXT", "bid");
+                    Intent intent = new Intent();
+                    intent.putExtra("bid", b);
+                    localBroadcast(BroadcastCode.BID_RECEIVED, intent);
+                }
+                if (o instanceof iDog){
+                    iDog idog = (iDog) o;
+                    Log.i("TEXT", "dog");
+                    Intent intent = new Intent();
+                    intent.putExtra("dog", idog);
+                    localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
+                }
+                if (o instanceof iAnnounces){
+                    iAnnounces a = (iAnnounces) o;
+                    Log.i("text","announces received");
+                    Intent intent = new Intent();
+                    intent.putExtra("announces", a);
+                    localBroadcast(BroadcastCode.ANNOUNCE_RECEIVED, intent);
+                }
+                if (o instanceof iCard) {
+                    iCard c = (iCard) o;
+                    Log.i("DECODAGE", c.getCard().getValue() + " ");
+                    Intent intent = new Intent();
+                    intent.putExtra("card", c);
+                    intent.putExtra("participantId", senderId);
+                    Log.i("CARD_RECEIVED", mCurrentRoom.getParticipantId(senderId) + "");
+                    localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
+                }
+
+            }
+        };
 
 }

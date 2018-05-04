@@ -22,7 +22,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -33,7 +32,6 @@ import java.util.zip.GZIPInputStream;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
-import team23.tartot.core.GameManager;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
 
@@ -57,20 +55,24 @@ public class GameActivity extends AppCompatActivity {
     private boolean mGameServiceReady = false;
 
     //the amount of players in the room to initialize GameBoard, PlayerPositioning....
-    int playersAmount = 4;
-    //int playersAmount = mGameService.getPlayers().length;
-    //Player myPlayer = mGameService.getSelfPlayer();
+    Player myPlayer = new Player("unitialized");
+    Player[] playersList = {myPlayer};
+    int playersAmount = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        //hide action bar
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
-        initializeDeck(); //initialize the whole deck of 78 Cards
+        //we recuperate the amount of players that was connected in the MenuActivity (via ApiManagerService.getActivePlayersInRoom)
+        Intent intentFromMenu = getIntent();
+        playersAmount = intentFromMenu.getIntExtra("playersAmount", 4);
+
+        initializeDeck(); //initialize the whole deck of 78 Cards JUST FOR TESTS !
         initializeGameBoard(playersAmount); //initialize the centered zone where, where the cards played will be shown and the places where the player wil be. There is a ConstraintLayout in the xml and x FrameLayout will be created to place the played cards correctly in front of each player.
-        initializePlayersPlacement();
         initializeBidsLayout();
 
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
@@ -173,11 +175,14 @@ public class GameActivity extends AppCompatActivity {
                     break;
                 case READY_TO_START:
                     mGameServiceReady = true;
-                    //TODO: Hugo, à partir de ce moment, tu peux faire tous les appels que tu veux à mGameService
+                    playersList = mGameService.getPlayers();
+                    myPlayer = mGameService.getSelfPlayer();
+                    playersAmount = playersList.length;
+
+                    initializePlayersPlacement();
                     //par exemple :
                     //initializeUI();
                     //ou bien
-                    //Player p = mGameService.getSelfPlayer();
             }
 
         }
@@ -243,7 +248,7 @@ public class GameActivity extends AppCompatActivity {
         et.setText(text);
     }
 
-    //FOR TEST ONLY, WE SHOULD USE A GAMEMANAGER
+    //FOR TEST ONLY !!!
     public void initializeDeck() {
         for (Suit suit : Suit.values()) {
             int bound ;
@@ -260,14 +265,17 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * method called in the onCreate() of this Activity
+     */
     protected void initializePlayersPlacement() {
-        //TODO PLACE CORRECTLY PEOPLE.
+        //TODO PLACE CORRECTLY PEOPLE (WITH playersList and PlayersAmount)
     }
 
 
     /**
-     * method called at the creation of the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
-     * @param playersAmount an int that corresponds to GameManager.players.size()
+     * method called in the onCreate() to create the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
+     * @param playersAmount an int that corresponds to the number of ppl in the room
      */
     protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
@@ -331,12 +339,12 @@ public class GameActivity extends AppCompatActivity {
         middleGameZone.addView(leftLL);
         middleGameZone.addView(middleLL);
         middleGameZone.addView(rightLL);
-
-
-
     }
 
 
+    /**
+     * method called in the onCreate() of this Activity
+     */
     protected void initializeBidsLayout() {
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         bidsLayout.setVisibility(View.GONE);
@@ -359,12 +367,13 @@ public class GameActivity extends AppCompatActivity {
 
 
     /**
-     * public method to trigger when the cards are distributed. All the Cards in the player's hand are graphically created:
+     * public method SHOULD BE CALLED IN THE ONCREATE() OF THIS ACTIVITY to trigger when the cards are distributed. All the Cards in the player's hand are graphically created:
      * in a FrameLayout, that will be add in one of the horizontal LinearLayout, we add one ImageView (for color and background),
      * one TextView (for the value) and one Button (to make the card clickable)
      * @param hand an ArrayList of Cards.
      */
     public void addCardsToDeck (ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
+        //TODO GAMESERVICE : on a besoin de la main de notre joueur
         LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
         LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
         cardsDownLayout.setPadding(0,0,0,-CARD_HEIGHT/2);
@@ -388,7 +397,13 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void addCardToLayout(final Card card, final FrameLayout fl, boolean unclickable) {
+    /**
+     * protected method to visually add a (un)clickable Card in a certain FrameLayout
+     * @param card
+     * @param fl
+     * @param unclickable
+     */
+    protected void addCardToLayout(final Card card, final FrameLayout fl, boolean unclickable) {
         final FrameLayout cardFL = fl;
         final String value = card.valueToString();
         final String suit = card.getSuit().toString();
@@ -570,6 +585,7 @@ public class GameActivity extends AppCompatActivity {
      * @return the Bid chosen
      */
     public void onBidAsked(ArrayList<Bid> possibleBids) {
+        //TODO GAMESERVICE : on a besoin de la liste des bids qui n'ont pas été pris
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         bidsLayout.setVisibility(View.VISIBLE);
         for (int i =0; i<bidsLayout.getChildCount(); i++) {
@@ -615,6 +631,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     public Bid getChosenBid() {
+        //TODO GAMESERVICE : return chosenBid
         return this.chosenBid;
     }
 

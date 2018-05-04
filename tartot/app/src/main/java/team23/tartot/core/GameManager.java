@@ -9,7 +9,7 @@ import team23.tartot.network.iNetworkToCore;
 //multiplicateurs 1, 2, 4, 6
 
 
-public class GameManager implements iNetworkToCore, callbackGameManager{
+abstract public class GameManager implements iNetworkToCore, callbackGameManager{
 	private Player[] players;
 	private Points stats ;
 	int points;
