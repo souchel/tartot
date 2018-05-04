@@ -635,7 +635,13 @@ public class GameActivity extends AppCompatActivity {
         return this.chosenBid;
     }
 
+    /**
+     * Method called when any players have the right to play a card
+     * @param card the Card to play
+     * @param player the Player which plays
+     */
     public void onShowCard(Card card, Player player) {
+        //TODO GAMESERVICE : need a Card and a Player
         int relativePosition = getRelativePositionByPlayer(player);
 
         FrameLayout cardLayout = getCardLayoutByRelativePosition(relativePosition);
