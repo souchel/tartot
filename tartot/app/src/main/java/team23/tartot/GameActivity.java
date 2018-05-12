@@ -34,6 +34,7 @@ import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
+import team23.tartot.core.iBids;
 
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
@@ -183,6 +184,15 @@ public class GameActivity extends AppCompatActivity {
                     //par exemple :
                     //initializeUI();
                     //ou bien
+                case ASK_BID:
+                    iBids ibids = (iBids) intent.getSerializableExtra("bids");
+                    ArrayList<Bid> bids = ibids.getBids();
+                    onBidAsked(bids);
+                    break;
+                case ADD_TO_HAND:
+                    ArrayList<Card> cards = (ArrayList<Card>) intent.getSerializableExtra("hand");
+                    addCardsToDeck(cards);
+                    break;
             }
 
         }
@@ -373,7 +383,7 @@ public class GameActivity extends AppCompatActivity {
      * @param hand an ArrayList of Cards.
      */
     public void addCardsToDeck (ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
-        //TODO GAMESERVICE : on a besoin de la main de notre joueur
+        //TODO GAMESERVICE: need add dog to?
         LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
         LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
         cardsDownLayout.setPadding(0,0,0,-CARD_HEIGHT/2);
@@ -585,7 +595,6 @@ public class GameActivity extends AppCompatActivity {
      * @return the Bid chosen
      */
     public void onBidAsked(ArrayList<Bid> possibleBids) {
-        //TODO GAMESERVICE : on a besoin de la liste des bids qui n'ont pas été pris
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         bidsLayout.setVisibility(View.VISIBLE);
         for (int i =0; i<bidsLayout.getChildCount(); i++) {
@@ -629,9 +638,9 @@ public class GameActivity extends AppCompatActivity {
         return bidButton;
     }
 
-
+    //TODO put this at the right place, what do you send me exactly when someone pass?
     public Bid getChosenBid() {
-        //TODO GAMESERVICE : return chosenBid
+        mGameService.BidChosen(this.chosenBid);
         return this.chosenBid;
     }
 

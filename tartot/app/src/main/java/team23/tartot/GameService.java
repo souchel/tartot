@@ -38,6 +38,7 @@ import team23.tartot.core.Suit;
 import team23.tartot.core.Team;
 import team23.tartot.core.callbackGameManager;
 import team23.tartot.core.iAnnounces;
+import team23.tartot.core.iBids;
 import team23.tartot.core.iCard;
 import team23.tartot.core.iDeck;
 import team23.tartot.core.iDog;
@@ -161,6 +162,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
             switch (code){
+                //TODO utility of localBroadcast here?
+                //TODO ECART_RECEIVED need to be added
                 case FULL_DECK_RECEIVED:
                     iFullDeck ifd = (iFullDeck) intent.getSerializableExtra("fulldeck");
                     Deck fullDeck = ifd.getDeck();
@@ -169,7 +172,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     if (getPlayerWithUsername(pfd).getPosition() == indexDealer){
                         onDeckReceived(fullDeck);
                     }
-                    //TODO deplace localbroadcast?
                     Intent j1 = new Intent();
                     j1.putExtra("text", "fulldeck should be distributed");
                     localBroadcast(BroadcastCode.EXAMPLE, j1);
@@ -179,7 +181,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     ArrayList<Card> h = id.getDeck();
                     String p = id.getPlayer();
                     onCardsDealt(h, p);
-                    //TODO deplace localbroadcast?
                     Intent j2 = new Intent();
                     j2.putExtra("text", "player: " + p + "should have his cards now");
                     localBroadcast(BroadcastCode.EXAMPLE, j2);
@@ -187,7 +188,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case BID_RECEIVED:
                     Bid b = (Bid) intent.getSerializableExtra("bid");
                     onBid(b);
-                    //TODO deplace localbroadcast?
                     Intent j3 = new Intent();
                     j3.putExtra("text", "bid has been received");
                     localBroadcast(BroadcastCode.EXAMPLE, j3);
@@ -196,7 +196,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iDog idog = (iDog) intent.getSerializableExtra("dog");
                     ArrayList<Card> dog = idog.getDog();
                     onDog(dog);
-                    //TODO deplace localbroadcast?
                     Intent j4 = new Intent();
                     j4.putExtra("text", "dog has been received");
                     localBroadcast(BroadcastCode.EXAMPLE, j4);
@@ -206,7 +205,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     ArrayList<Announces> a = ia.getAnnounces();
                     String p2 = ia.getPlayer();
                     onAnnounce(p2, a);
-                    //TODO deplace localbroadcast?
                     Intent j5 = new Intent();
                     j5.putExtra("text", "announces has been received for player " + p2);
                     localBroadcast(BroadcastCode.EXAMPLE, j5);
@@ -218,7 +216,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     String senderId = intent.getStringExtra("participantId");
                     onPlayCard(p3, c);
                     Log.i("senderId",senderId+"");
-                    //TODO Deplace Localbroadcast in the right method?
                     Intent j6 = new Intent();
                     j6.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
                     localBroadcast(BroadcastCode.EXAMPLE, j6);
@@ -416,8 +413,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     @Override
     public void askBid(Bid bid) {
-        //TODO on appelle la methode dans activite qui fait choisir le bide au joueur local, attention il faut check la bid
-        sendBid(bid);
+        Intent possibleBids = new Intent();
+        ArrayList<Bid> bids = getPossibleBids();
+        possibleBids.putExtra("bids", new iBids(bids));
+        localBroadcast(BroadcastCode.ASK_BID, possibleBids);
+    }
+    public void BidChosen(Bid b){
+        //TODO bid.PASS ? voir comment hugo le gère, il faudra ou non changer la bid en cours
+        sendBid(b);
         checkBidProgress();
     }
     private void checkBidProgress() {
@@ -440,6 +443,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                         }
                     } else player.setTeam(Team.DEFENSE);
                 }
+                //TODO montrer le chien dans l'activity???
                 //TODO demander au joueur de faire son ecart via l activite correspondante
                 //ecarter(cards);
             }
@@ -456,7 +460,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             {
                 chien.addCard(card);
             }
-            sendDog(chien.getCardList());
+            //TODO change to sendEcart sendDog(chien.getCardList());
             startAnnounce();
         }
         else
@@ -598,7 +602,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
 
     @Override
-    //TODO no need callback method anymore
+    //TODO no need callback method anymore?
     public void continuFoldCalledBack(Card card)
     {
         if (checkCard(card, players[position]))
@@ -634,7 +638,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     {
         return stats ;
     }
-    //TODO update for end announces
     public void startPoints()
     {
         double pointsAttack = attackDeck.countPoints();
@@ -835,18 +838,21 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     public void checkAnnouncesEnd() {
         //TODO all method for 4 players
+        //check if attack made a slam
         int lengthDefDeck = defenseDeck.getCardList().size();
         if (lengthDefDeck == 0 || lengthDefDeck == 6){
             Announces announceToAdd = Announces.SLAM;
             announceToAdd.setTeam(Team.ATTACK);
             playersAnnounces.add(announceToAdd);
         }
+        //check if defense made a slam
         int lengthAttDeck = attackDeck.getCardList().size();
         if (lengthAttDeck == 0 || lengthAttDeck == 6){
             Announces announceToAdd = Announces.SLAM;
             announceToAdd.setTeam(Team.DEFENSE);
             playersAnnounces.add(announceToAdd);
         }
+        //check if the attack get the petit au bout
         ArrayList<Card> attackLastFold = new ArrayList<Card>();
         for (int i = -4; i < 0 ; i++){
             attackLastFold.add(attackDeck.getCardList().get(i));
@@ -856,6 +862,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             announceToAdd.setTeam(Team.ATTACK);
             playersAnnounces.add(announceToAdd);
         }
+        //check if the defense get the petit au bout
         ArrayList<Card> defenseLastFold = new ArrayList<Card>();
         for (int i = -4; i < 0 ; i++){
             defenseLastFold.add(defenseDeck.getCardList().get(i));
@@ -875,6 +882,16 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             }
         }
         return res;
+    }
+    //get the possible bid to say during the bid phase
+    public ArrayList<Bid> getPossibleBids(){
+        ArrayList<Bid> bids = new ArrayList<Bid>();
+        for (Bid b : Bid.values()){
+            if (checkBid(b)){
+                bids.add(b);
+            }
+        }
+        return bids;
     }
     //default (if bid null?) return false
     public boolean checkBid(Bid bid) {
@@ -954,6 +971,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
     //sending methods
+    //TODO useful? only one line each time
     public void sendFullDeck(String username){
         mApiManagerService.sendObjectToAll(new iFullDeck(deck, username));
     }
@@ -994,6 +1012,12 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 player.setHand(cards);
             }
         }
+        if (concernedPlayer.getPosition() == position){
+            Intent hand = new Intent();
+            ArrayList<Card> h = players[position].getHand().getCardList();
+            hand.putExtra("hand", h);
+            localBroadcast(BroadcastCode.ADD_TO_HAND, hand);
+        }
         //TODO lancer startBid ssi tous les joueurs ont leur cartes pour éviter les bugs
         startBid();
     }
@@ -1001,7 +1025,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void onAnnounce(String username, ArrayList<Announces> announces) {
         Player player = getPlayerWithUsername(username);
         for (int i = 0 ; i < announces.size(); i++) {
-            if (checkAnnouncesBegining(announces, player)) { //TODO v�rifier que tous ces check sont utils ils devraient �tre fait dans l'activit� normalement
+            if (checkAnnouncesBegining(announces, player)) { //TODO vérifier que tous ces check sont utils ils devraient être fait dans l'activité normalement
                 playersAnnounces.add(announces.get(i));
             }
         }
@@ -1023,9 +1047,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     @Override
     public void onDeckReceived(Deck deck) {
         this.deck = deck;
-        //TODO récup les positions de coupe
         distribute(null);
     }
+    /*TODO onEcart and onDog, we will need both, we have only onDog for now and it is used for the ecart 0.o
     @Override
     public void onDog(ArrayList<Card> cards){
         if (bid.getMultiplicant() == 6){
@@ -1036,5 +1060,5 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             attackDeck.addCard(card);
         }
         startAnnounce();
-    }
+    }*/
 }
