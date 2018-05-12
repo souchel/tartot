@@ -6,6 +6,8 @@ public enum BroadcastCode {
     //broadcasts for the GameService->GameActivity
     STATE_UPDATE, //when the state changed and the UI has to update some information (players online, state of players, ...)
     READY_TO_START,
+    ASK_BID,
+    ADD_TO_HAND,
 
 
     //broadcasts for the ApiManagerService->GameService
@@ -13,6 +15,7 @@ public enum BroadcastCode {
     DECK_RECEIVED,
     BID_RECEIVED,
     DOG_RECEIVED,
+    ECART_RECEIVED,
     ANNOUNCE_RECEIVED,
     CARD_RECEIVED,
 
