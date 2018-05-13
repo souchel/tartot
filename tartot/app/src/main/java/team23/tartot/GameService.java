@@ -1049,7 +1049,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         this.deck = deck;
         distribute(null);
     }
-    /*TODO onEcart and onDog, we will need both, we have only onDog for now and it is used for the ecart 0.o
+    //TODO onEcart and onDog, we will need both, we have only onDog for now and it is used for the ecart 0.o
     @Override
     public void onDog(ArrayList<Card> cards){
         if (bid.getMultiplicant() == 6){
@@ -1060,5 +1060,5 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             attackDeck.addCard(card);
         }
         startAnnounce();
-    }*/
+    }
 }

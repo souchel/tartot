@@ -186,8 +186,11 @@ public class GameActivity extends AppCompatActivity {
                     //ou bien
                 case ASK_BID:
                     iBids ibids = (iBids) intent.getSerializableExtra("bids");
-                    ArrayList<Bid> bids = ibids.getBids();
-                    onBidAsked(bids);
+                    if (ibids != null) {
+                        ArrayList<Bid> bids = ibids.getBids();
+                        onBidAsked(bids);
+                    }
+
                     break;
                 case ADD_TO_HAND:
                     ArrayList<Card> cards = (ArrayList<Card>) intent.getSerializableExtra("hand");
@@ -744,6 +747,8 @@ public class GameActivity extends AppCompatActivity {
         cardsUpLayout.removeAllViews();
         cardsDownLayout.removeAllViews();
     }
+
+
 }
 
 
