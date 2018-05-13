@@ -236,21 +236,6 @@ public class GameActivity extends AppCompatActivity {
         //TODO : get all info of the game to render the UI
     }
 
-    /*
-    private void setPlayersTextview(){
-        if(!mGameServiceBound){
-            Log.e("GameActivityError", "not bound to GameService");
-            return;
-        }
-        String[] usernames = mGameService.getUsernames();
-        EditText et = findViewById(R.id.connectedPlayers);
-        String s = "";
-        for (String p : usernames){
-            s += p + "\n";
-        }
-        et.setText(s);
-    }
-    */
 
     public void setPlayersTextview(String text){
         if(!mGameServiceBound){
@@ -282,7 +267,21 @@ public class GameActivity extends AppCompatActivity {
      * method called in the onCreate() of this Activity
      */
     protected void initializePlayersPlacement() {
-        //TODO PLACE CORRECTLY PEOPLE (WITH playersList and PlayersAmount)
+        Log.i("initPlayers", String.valueOf(playersList.length));
+        if (playersAmount == 2) {
+            TextView tvTop = findViewById(R.id.tvPlayerTop);
+            tvTop.setText(myPlayer.getUsername());
+            TextView tvBottom = findViewById(R.id.tvPlayerBottom);
+            String othername = "bite";
+            for (int j=0; j<playersList.length; j++ ) {
+                if (playersList[j].getUsername() != myPlayer.getUsername()) {
+                    othername = playersList[j].getUsername();
+                }
+            }
+            tvBottom.setText(othername);
+        } //else if (playersAmount == 4) {
+
+        //}
     }
 
 
