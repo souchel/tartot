@@ -268,20 +268,37 @@ public class GameActivity extends AppCompatActivity {
      */
     protected void initializePlayersPlacement() {
         Log.i("initPlayers", String.valueOf(playersList.length));
+
+        TextView tvBottom = findViewById(R.id.tvPlayerBottom);
+        TextView tvTop = findViewById(R.id.tvPlayerTop);
+        TextView tvLeft = findViewById(R.id.tvPlayerLeft);
+        TextView tvRight = findViewById(R.id.tvPlayerRight);
+
+        int myPosition = myPlayer.getPosition();
+        tvBottom.setText(myPlayer.getUsername());
+
+
         if (playersAmount == 2) {
-            TextView tvTop = findViewById(R.id.tvPlayerTop);
-            tvTop.setText(myPlayer.getUsername());
-            TextView tvBottom = findViewById(R.id.tvPlayerBottom);
-            String othername = "bite";
+            String othername = "";
             for (int j=0; j<playersList.length; j++ ) {
                 if (playersList[j].getUsername() != myPlayer.getUsername()) {
                     othername = playersList[j].getUsername();
                 }
             }
-            tvBottom.setText(othername);
-        } //else if (playersAmount == 4) {
-
-        //}
+            tvTop.setText(othername);
+        } else if (playersAmount == 4) {
+            for (int i = 0; i < playersAmount; i++) {
+                Player player = playersList[i];
+                int relativePos = getRelativePositionByPlayer(player);
+                if (relativePos == -1 || relativePos == 3) {
+                    tvLeft.setText(player.getUsername());
+                } if (relativePos == 1 || relativePos == -3) {
+                    tvRight.setText(player.getUsername());
+                } if (relativePos == 2 || relativePos == -2) {
+                    tvTop.setText(player.getUsername());
+                }
+            }
+        }
     }
 
 
@@ -663,11 +680,15 @@ public class GameActivity extends AppCompatActivity {
         playCardInGameZone(value, suit, cardLayout);
     }
 
+    /**
+     * protected method to get the relative position of a player
+     * @param player the player
+     * @return
+     */
     protected int getRelativePositionByPlayer(Player player) {
-        //int myPosition = gm.players;
-        int myPosition = 2;
-        //int playerPosition = player.getPosition();
-        int playerPosition = 3;
+        int myPosition = myPlayer.getPosition();
+
+        int playerPosition = player.getPosition();
         int relativePosition = playerPosition - myPosition;
 
         return relativePosition;
