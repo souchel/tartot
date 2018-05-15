@@ -29,6 +29,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
+import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
@@ -70,7 +71,9 @@ public class GameActivity extends AppCompatActivity {
 
         //we recuperate the amount of players that was connected in the MenuActivity (via ApiManagerService.getActivePlayersInRoom)
         Intent intentFromMenu = getIntent();
-        playersAmount = intentFromMenu.getIntExtra("playersAmount", 4);
+        Log.i("playersAmount", "playersAmountOnCreateBeforeIntent : "+String.valueOf(playersAmount));
+        playersAmount = intentFromMenu.getIntExtra("playersAmount", 2);
+        Log.i("playersAmount", "playersAmountOnCreateAfterIntent : "+String.valueOf(playersAmount));
 
         initializeDeck(); //initialize the whole deck of 78 Cards JUST FOR TESTS !
         initializeGameBoard(playersAmount); //initialize the centered zone where, where the cards played will be shown and the places where the player wil be. There is a ConstraintLayout in the xml and x FrameLayout will be created to place the played cards correctly in front of each player.
@@ -91,14 +94,14 @@ public class GameActivity extends AppCompatActivity {
 
                 addCardsToDeck(hand);
 
-
-
                 ArrayList<Bid> possibleBids = new ArrayList<>();
                 //possibleBids.add(Bid.SMALL);
                 possibleBids.add(Bid.GUARD);
                 possibleBids.add(Bid.GUARD_WITHOUT);
                 possibleBids.add(Bid.GUARD_AGAINST);
                 onBidAsked(possibleBids);
+                onAnnounces(myPlayer, Announces.MISERY);
+
             }
         });
 
@@ -123,6 +126,15 @@ public class GameActivity extends AppCompatActivity {
         if(running == false){
             startGameService();
         }
+        /*
+        else {
+            Player p1 = new Player("p1", 0, "23");
+            Player p2 = new Player("p2", 1, "mamère");
+            myPlayer = p1;
+            playersAmount = 2;
+            playersList = new Player[] {p1, p2};
+
+        }*/
 
         //register the broadcast receiver
         IntentFilter intentFilter = new IntentFilter("GameService");
@@ -133,6 +145,8 @@ public class GameActivity extends AppCompatActivity {
         intent.putExtra("origin", "game");
         Log.i("debug", "act bindService");
         bindService(intent, mGameConnection, Context.BIND_AUTO_CREATE);
+
+        Log.i("playersAmount", "playersAmountOnStartAfterGameService : "+String.valueOf(playersAmount));
     }
 
     @Override
@@ -179,6 +193,9 @@ public class GameActivity extends AppCompatActivity {
                     playersList = mGameService.getPlayers();
                     myPlayer = mGameService.getSelfPlayer();
                     playersAmount = playersList.length;
+
+
+                    Log.i("playersAmount", "playersAmountBroadcastReceiver : "+String.valueOf(playersAmount));
 
                     initializePlayersPlacement();
                     //par exemple :
@@ -236,21 +253,6 @@ public class GameActivity extends AppCompatActivity {
         //TODO : get all info of the game to render the UI
     }
 
-    /*
-    private void setPlayersTextview(){
-        if(!mGameServiceBound){
-            Log.e("GameActivityError", "not bound to GameService");
-            return;
-        }
-        String[] usernames = mGameService.getUsernames();
-        EditText et = findViewById(R.id.connectedPlayers);
-        String s = "";
-        for (String p : usernames){
-            s += p + "\n";
-        }
-        et.setText(s);
-    }
-    */
 
     public void setPlayersTextview(String text){
         if(!mGameServiceBound){
@@ -282,9 +284,45 @@ public class GameActivity extends AppCompatActivity {
      * method called in the onCreate() of this Activity
      */
     protected void initializePlayersPlacement() {
-        //TODO PLACE CORRECTLY PEOPLE (WITH playersList and PlayersAmount)
+        Log.i("playersAmount", "playersAmountinit : "+String.valueOf(playersAmount));
+
+        for (int i = 0; i < playersAmount; i++) {
+            Player player = playersList[i];
+
+            int relativePos = getRelativePositionByPlayer(player);
+            TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
+            playerTV.setText(player.getUsername());
+
+
+        }
     }
 
+    /**
+     * protected method used to find the linearLayout, which represents the player on the GameActvitity by 2 TextView, with its username and one for its announces
+     * @param playersAmount the amount of players around the "table"
+     * @param relativePosition the relative position of the player found by getRelativePosstionByPlayer
+     * @return
+     */
+    protected LinearLayout findPlayerLayoutByRelativePosition(int playersAmount, int relativePosition) {
+        if (playersAmount == 2) {
+            if (relativePosition == -1 || relativePosition ==1 ){
+                return findViewById(R.id.llPlayerTop);
+            } else if (relativePosition == 0) {
+                return findViewById(R.id.llPlayerBottom);
+            }
+        } else if (playersAmount == 4) {
+            if (relativePosition == -1 || relativePosition == 3) {
+                return findViewById(R.id.llPlayerLeft);
+            } else if (relativePosition == 1 || relativePosition == -3) {
+                return findViewById(R.id.llPlayerRight);
+            } else if (relativePosition == 2 || relativePosition == -2) {
+                return findViewById(R.id.llPlayerTop);
+            } else if (relativePosition == 0) {
+                return findViewById(R.id.llPlayerBottom);
+            }
+        }
+        return findViewById(R.id.llPlayerBottom);
+    }
 
     /**
      * method called in the onCreate() to create the layout to manage the graphical components (LinearLayouts and FrameLayouts) in the game zone
@@ -664,11 +702,15 @@ public class GameActivity extends AppCompatActivity {
         playCardInGameZone(value, suit, cardLayout);
     }
 
+    /**
+     * protected method to get the relative position of a player
+     * @param player the player
+     * @return
+     */
     protected int getRelativePositionByPlayer(Player player) {
-        //int myPosition = gm.players;
-        int myPosition = 2;
-        //int playerPosition = player.getPosition();
-        int playerPosition = 3;
+        int myPosition = myPlayer.getPosition();
+
+        int playerPosition = player.getPosition();
         int relativePosition = playerPosition - myPosition;
 
         return relativePosition;
@@ -748,7 +790,11 @@ public class GameActivity extends AppCompatActivity {
         cardsDownLayout.removeAllViews();
     }
 
-
+    public void onAnnounces(Player player, Announces announce) {
+        int relativePos = getRelativePositionByPlayer(player);
+        TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
+        playerTV.setText(announce.toString(getApplicationContext()));
+    }
 }
 
 

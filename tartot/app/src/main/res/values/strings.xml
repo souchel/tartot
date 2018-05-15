@@ -51,5 +51,14 @@
     <string name="guard_without">Guard Without</string>
     <string name="guard_against">Guard Against</string>
 
+    <!-- Strings related to Announces -->
+
+    <string name="simple_handful">simple handful</string>
+    <string name="double_handful">double handful</string>
+    <string name="triple_handful">triple handful</string>
+    <string name="misery">misery</string>
+    <string name="slam">slam</string>
+    <string name="petit_au_bout">petit au bout</string>
+
 
 </resources>

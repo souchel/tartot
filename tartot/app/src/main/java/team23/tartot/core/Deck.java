@@ -11,7 +11,10 @@ public class Deck implements Serializable {
 	protected ArrayList<Card> cardList = new ArrayList<>();
 	
 	public Deck() {
-		
+	}
+
+	public Deck(ArrayList<Card> cards) {
+		this.cardList = cards;
 	}
 	
 	public double countPoints() {
