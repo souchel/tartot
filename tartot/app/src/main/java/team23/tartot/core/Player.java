@@ -10,7 +10,7 @@ public class Player {
 	private Deck deck;
 	private int position;
 	private String mParticipantId;
-	
+
 	public Player(String username, int position, String participantId)
 	{
 		this.username = username;
@@ -62,11 +62,11 @@ public class Player {
 	public int getPosition() {
 		return position;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	//methods to check existing card in deck (or count trump at the end)
 	public boolean haveSuit(Suit suit) {
 		for (Card card : hand.getCardList()) {

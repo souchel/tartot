@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">tartot</string>
+    <string name="title_activity_first_log">Tartot</string>
+
+
+    <!-- Strings related to MenuActivity -->
+    <string name="text_view_first_log">Bienvenue sur Tartot, quel est votre pseudo ?</string>
+    <string name="edit_text_first_log">Entrer un pseudo (pseudo ggogle par défaut)</string>
+    <string name="button_first_log">Accéder au menu</string>
+    <string name="text_view_google_log_in">Vous devez être connecté à votre compte google</string>
+    <string name="button_google_log_in">se connecter avec Google !</string>
+
+    <!-- Strings related to MainMenuActivity -->
+    <string name="text_view_title_main_menu">Avec Tartot, au tarot t\'y joueras tard ou tôt !</string>
+    <string name="text_view_welcome_main_menu">Bienvenue </string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Mot de passe (optionnel)</string>
+    <string name="action_sign_in">Connection ou création de compte</string>
+    <string name="action_sign_in_short">Connection</string>
+    <string name="error_invalid_email">Cette adresse email est invalide</string>
+    <string name="error_invalid_password">Ce mot de passe est trop court</string>
+    <string name="error_incorrect_password">Ce mot de passe est incorrect</string>
+    <string name="error_field_required">Ce champ doit être rempli</string>
+    <string name="permission_rationale">"Vous devez authoriser l'accés aux contacts pour terminer la connection à votre addresse email."</string>
+    <string name="signin_other_error">Erreur inconnue survenue pendant la connection.</string>
+    <string name="app_id">491051549235</string>
+    <string name="action_go_to_lobby">Accéder au lobby</string>
+    <string name="invite_players">Inviter des joueurs</string>
+    <string name="auto_match">auto match players</string>
+    <string name="button_label_invitation_inbox">Invitations</string>
+    <string name="displayWaitingRoom">Afficher la salle d'attente</string>
+    <string name="player_number_tv">Nombre de joueurs en automatching</string>
+    <string-array name="player_number">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <!-- Strings related to invitations -->
+    <string name="accept_popup_invite">Accepter !</string>
+    <string name="inv_popup_text">Vous avez reçu une invitation !</string>
+    <string name="is_inviting_you">vous invite</string>
+
+    <!-- Strings related to Bid -->
+    <string name="pass">Passe</string>
+    <string name="small">Petite</string>
+    <string name="guard">Garde</string>
+    <string name="guard_without">Garde sans</string>
+    <string name="guard_against">Garde contre</string>
+
+
+</resources>

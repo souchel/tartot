@@ -4,10 +4,10 @@
 
 
     <!-- Strings related to MenuActivity -->
-    <string name="text_view_first_log">Bienvenue dans Tartot, quel est ton pseudo ?</string>
-    <string name="edit_text_first_log">Entrer un pseudo (votre pseudo Google par défaut)</string>
-    <string name="button_first_log">Accéder au menu</string>
-    <string name="text_view_google_log_in">Pour jouer, vous devez vous connecter avec votre compte Google</string>
+    <string name="text_view_first_log">Welcome to Tartot, what is your username?</string>
+    <string name="edit_text_first_log">Enter a username (your default google username)</string>
+    <string name="button_first_log">Open menu</string>
+    <string name="text_view_google_log_in">You need to be connected to your google account to play</string>
     <string name="button_google_log_in">se connecter avec Google !</string>
 
     <!-- Strings related to MainMenuActivity -->
