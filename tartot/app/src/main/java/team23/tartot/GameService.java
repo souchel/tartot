@@ -42,6 +42,7 @@ import team23.tartot.core.iBids;
 import team23.tartot.core.iCard;
 import team23.tartot.core.iDeck;
 import team23.tartot.core.iDog;
+import team23.tartot.core.iEcart;
 import team23.tartot.core.iFullDeck;
 import team23.tartot.network.iNetworkToCore;
 
@@ -199,6 +200,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     Intent j4 = new Intent();
                     j4.putExtra("text", "dog has been received");
                     localBroadcast(BroadcastCode.EXAMPLE, j4);
+                    break;
+                case ECART_RECEIVED:
+                    iEcart iecart = (iEcart) intent.getSerializableExtra("ecart");
+                    ArrayList<Card> ecart = iecart.getEcart();
+                    onEcart(ecart);
+                    Intent j0 = new Intent();
+                    j0.putExtra("text", "ecart has been received");
+                    localBroadcast(BroadcastCode.EXAMPLE, j0);
                     break;
                 case ANNOUNCE_RECEIVED:
                     iAnnounces ia = (iAnnounces) intent.getSerializableExtra("announces");
@@ -379,6 +388,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //sending cards to player via network
         for (Player player : players) {
             sendDeck(player.getHand().getCardList(), player.getUsername());
+            sendDog(chien.getCardList());
         }
         startBid();
     }
@@ -460,7 +470,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             {
                 chien.addCard(card);
             }
-            //TODO change to sendEcart sendDog(chien.getCardList());
+            sendEcart(chien.getCardList());
             startAnnounce();
         }
         else
@@ -691,6 +701,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         reinitializeForNextRound();
         if (position == indexDealer) {
             //TODO call the right methode in the activities so that the player chooses where to
+            onReceivedPosition(35);
             //cut the deck
             //send the full deck to next dealer
 
@@ -984,6 +995,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void sendDog(ArrayList<Card> dog){
         mApiManagerService.sendObjectToAll(dog);
     }
+    public void sendEcart(ArrayList<Card> ecart){
+        mApiManagerService.sendObjectToAll(ecart);
+    }
     public void sendAnnounces(ArrayList<Announces> announces){
         mApiManagerService.sendObjectToAll(new iAnnounces(announces, players[position].getUsername()));
     }
@@ -1049,9 +1063,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         this.deck = deck;
         distribute(null);
     }
-    //TODO onEcart and onDog, we will need both, we have only onDog for now and it is used for the ecart 0.o
     @Override
     public void onDog(ArrayList<Card> cards){
+        this.chien = new Deck(cards);
+    }
+    public void onEcart(ArrayList<Card> cards){
         if (bid.getMultiplicant() == 6){
             for (Card card : cards){
                 defenseDeck.addCard(card);

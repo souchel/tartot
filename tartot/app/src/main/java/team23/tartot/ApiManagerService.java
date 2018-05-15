@@ -60,6 +60,7 @@ import team23.tartot.core.iAnnounces;
 import team23.tartot.core.iCard;
 import team23.tartot.core.iDeck;
 import team23.tartot.core.iDog;
+import team23.tartot.core.iEcart;
 import team23.tartot.core.iFullDeck;
 import team23.tartot.core.iPlayer;
 
@@ -1017,6 +1018,13 @@ public class ApiManagerService extends Service {
                     Intent intent = new Intent();
                     intent.putExtra("dog", idog);
                     localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
+                }
+                if (o instanceof iEcart){
+                    iEcart iecart = (iEcart) o;
+                    Log.i("TEXT", "ecart");
+                    Intent intent = new Intent();
+                    intent.putExtra("ecart", iecart);
+                    localBroadcast(BroadcastCode.ECART_RECEIVED, intent);
                 }
                 if (o instanceof iAnnounces){
                     iAnnounces a = (iAnnounces) o;
