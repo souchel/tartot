@@ -106,6 +106,16 @@ public class MenuActivity extends AppCompatActivity {
         Log.i("debug","MenuActivity onCreate");
         setContentView(R.layout.activity_first_log);
 
+        findViewById(R.id.test_button_without_login).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goToGameIntent = new Intent(MenuActivity.this, GameActivity.class);
+                int playersAmount = 4;
+                goToGameIntent.putExtra("playersAmount", playersAmount);
+                startActivity(goToGameIntent);
+            }
+        });
+
     }
 
     @Override

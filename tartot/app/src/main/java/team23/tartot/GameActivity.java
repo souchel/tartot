@@ -17,6 +17,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -40,8 +41,8 @@ import team23.tartot.core.iBids;
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
     final private static int CARD_HEIGHT = 160;
-    final private static int TEXT_SIZE_NORMAL = 16;
-    final private static int TEXT_SIZE_TRUMP = 10;
+    final private static int TEXT_SIZE_NORMAL = 12;
+    final private static int TEXT_SIZE_TRUMP = 8;
     final private static int NUMBER_OF_CARDS = 18;
 
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
@@ -62,6 +63,12 @@ public class GameActivity extends AppCompatActivity {
     int playersAmount = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
@@ -100,7 +107,8 @@ public class GameActivity extends AppCompatActivity {
                 possibleBids.add(Bid.GUARD_WITHOUT);
                 possibleBids.add(Bid.GUARD_AGAINST);
                 onBidAsked(possibleBids);
-                onAnnounces(myPlayer, Announces.MISERY);
+                Announces[] announces = {Announces.MISERY};
+                onAnnounces(myPlayer, announces);
 
             }
         });
@@ -494,10 +502,9 @@ public class GameActivity extends AppCompatActivity {
 
                     playCardInGameZone(value, suit, cardFL);
 
-                    //TODO REMOVE THE CARD FROM THE PLAYER'S HAND
                     deleteCard(fl);
                     //LinearLayout ll = (LinearLayout) cardFL.getParent();
-                    //ll.removeViewAt(3); //TODO FIND THE GOOD VIEW INDEX
+                    //ll.removeViewAt(3);
                 }
             });
         }
@@ -599,13 +606,13 @@ public class GameActivity extends AppCompatActivity {
 
         //we set the good image that corresponds to our suit
         if (suit == "s") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades_big);
         } else if (suit == "h") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts);
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts_big);
         } else if (suit == "d") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds);
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds_big);
         } else if (suit == "c") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs);
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
         } else if (suit == "t") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
         }
@@ -790,10 +797,18 @@ public class GameActivity extends AppCompatActivity {
         cardsDownLayout.removeAllViews();
     }
 
-    public void onAnnounces(Player player, Announces announce) {
+    public void onAnnounces(Player player, Announces[] announces) {
         int relativePos = getRelativePositionByPlayer(player);
         TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
-        playerTV.setText(announce.toString(getApplicationContext()));
+        String announcStr = "";
+        for (int i = 0; i<announces.length; i++) {
+            announcStr = announcStr + announces[i].toString(getApplicationContext());
+            if (!(i == announces.length-1)) {
+                announcStr = announcStr + ", ";
+            }
+
+        }
+        playerTV.setText(announcStr);
     }
 }
 
