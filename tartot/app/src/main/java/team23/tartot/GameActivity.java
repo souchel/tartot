@@ -63,6 +63,7 @@ public class GameActivity extends AppCompatActivity {
     int playersAmount = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
+        //TODO USE THIS 5 LINES (in CardView)
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         final int height = displayMetrics.heightPixels;
@@ -107,7 +108,16 @@ public class GameActivity extends AppCompatActivity {
                 possibleBids.add(Bid.GUARD_WITHOUT);
                 possibleBids.add(Bid.GUARD_AGAINST);
                 onBidAsked(possibleBids);
-                Announces[] announces = {Announces.MISERY};
+
+                /*/
+                ArrayList<Card> dog = new ArrayList<>();
+                dog.add(new Card(Suit.TRUMP, 21));
+                dog.add(new Card(Suit.TRUMP, 1));
+                dog.add(new Card(Suit.TRUMP, 22));
+                onShowDog(dog);
+                /*/
+
+                                Announces[] announces = {Announces.MISERY};
                 onAnnounces(myPlayer, announces);
 
             }
@@ -651,7 +661,7 @@ public class GameActivity extends AppCompatActivity {
 
         for (int k=0; k<playersList.length; k++) {
             TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, getRelativePositionByPlayer(playersList[k])).getChildAt(0);
-            if (playersList[k] == winner) {
+            if ((playersList[k].getUsername() == winner.getUsername()) && (playersList[k].getPosition() == winner.getPosition())) {
                 playerTV.setTypeface(Typeface.DEFAULT_BOLD);
             } else {
                 playerTV.setTypeface(Typeface.DEFAULT);
@@ -668,7 +678,7 @@ public class GameActivity extends AppCompatActivity {
     public void onBidAsked(ArrayList<Bid> possibleBids) {
         //TODO GAMESERVICE
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
-        bidsLayout.setVisibility(View.VISIBLE);
+        //bidsLayout.removeAllViews();
         for (int i =0; i<bidsLayout.getChildCount(); i++) {
             Button bidButton = (Button) bidsLayout.getChildAt(i);
             Bid bid = getBidByButton(bidButton);
@@ -682,6 +692,7 @@ public class GameActivity extends AppCompatActivity {
                 bidButton.setEnabled(false);
             }
         }
+        bidsLayout.setVisibility(View.VISIBLE);
     }
 
     protected Bid getBidByButton(Button button){
@@ -822,24 +833,70 @@ public class GameActivity extends AppCompatActivity {
         cardsDownLayout.removeAllViews();
     }
 
+    /**
+     * method trigerred when someone has a announce
+     * @param player
+     * @param announces array of announces
+     */
     public void onAnnounces(Player player, Announces[] announces) {
         //TODO GAMESERVICE
-        int relativePos = getRelativePositionByPlayer(player);
-        TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
         String announcStr = "";
         for (int i = 0; i<announces.length; i++) {
             announcStr = announcStr + announces[i].toString(getApplicationContext());
             if (!(i == announces.length-1)) {
                 announcStr = announcStr + ", ";
             }
-
         }
-        playerTV.setText(announcStr);
+        addStrToPlayerBATextView(player, announcStr);
     }
+
+    /**
+     * method trigerred when a player has chosen his Bid, uses the same TextView as onAnnounces
+     * @param player
+     * @param bid
+     */
+    public void onBids(Player player, Bid bid) {
+        //TODO GAMESERVICE
+        addStrToPlayerBATextView(player, bid.toString(getApplicationContext()));
+    }
+
+    protected void addStrToPlayerBATextView (Player player, String BidOrAnnouces) {
+        int relativePos = getRelativePositionByPlayer(player);
+        TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
+        playerTV.setText(BidOrAnnouces);
+    }
+
 
     public void onShowDog(ArrayList<Card> dog) {
         //TODO GAMESERVICE
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        bidsLayout.removeAllViews();
+        LinearLayout dogLayout = new LinearLayout(getApplicationContext());
+        dogLayout.setOrientation(LinearLayout.HORIZONTAL);
+        for (int i=0; i<dog.size(); i++) {
+            FrameLayout cardLayout = new FrameLayout(getApplicationContext());
+            playCardInGameZone(dog.get(i).valueToString(), dog.get(i).getSuit().toString(), cardLayout);
+            dogLayout.addView(cardLayout);
+        }
+
+        bidsLayout.addView(dogLayout);
+        bidsLayout.setVisibility(View.VISIBLE);
     }
+
+    /**
+     * public method to trigger after everyone has bided
+     * @param start boolean, if false: it's a pass, else it's not
+     */
+    public void onDoneStart(boolean start) {
+        //TODO GAMESERVICE
+        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        bidsLayout.removeAllViews();
+        if (start == true) {
+            initializeGameBoard(playersAmount);
+        }
+
+    }
+
 }
 
 
