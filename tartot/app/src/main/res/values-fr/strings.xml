@@ -51,5 +51,8 @@
     <string name="guard_without">Garde sans</string>
     <string name="guard_against">Garde contre</string>
 
+    <!-- Strings related to playerLayout -->
+    <string name="taker">P </string>
+    <string name="king">R </string>
 
 </resources>

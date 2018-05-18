@@ -449,7 +449,7 @@ public class GameActivity extends AppCompatActivity {
     public void addCardsToDeck (Player player, ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
         //TODO GAMESERVICE: need add dog to?
 
-        if (player == myPlayer) {
+        if (player.getUsername() == myPlayer.getUsername() && player.getPosition() == myPlayer.getPosition()) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
             cardsDownLayout.setPadding(0, 0, 0, -CARD_HEIGHT / 2);
@@ -860,13 +860,21 @@ public class GameActivity extends AppCompatActivity {
         addStrToPlayerBATextView(player, bid.toString(getApplicationContext()));
     }
 
+    /**
+     * protected method used by onAnnounes and onBids to add a String into the second TextView of the playerLayout
+     * @param player
+     * @param BidOrAnnouces
+     */
     protected void addStrToPlayerBATextView (Player player, String BidOrAnnouces) {
         int relativePos = getRelativePositionByPlayer(player);
         TextView playerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
         playerTV.setText(BidOrAnnouces);
     }
 
-
+    /**
+     * public method trigerred to show the dog
+     * @param dog an ArrayList of (3 or 6) Cards
+     */
     public void onShowDog(ArrayList<Card> dog) {
         //TODO GAMESERVICE
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
@@ -884,18 +892,45 @@ public class GameActivity extends AppCompatActivity {
     }
 
     /**
-     * public method to trigger after everyone has bided
+     * public method to trigger after everyone has bided, will initialize the GameBoard, clear bidsLayout, clear the bids
      * @param start boolean, if false: it's a pass, else it's not
+     * @param taker the player who will attack (if start == false: taker == Null)
+     * @param bid the bid which has been taken (if start == false: bid == Null)
      */
-    public void onDoneStart(boolean start) {
+    public void onDoneStart(boolean start, Player taker, Bid bid) {
         //TODO GAMESERVICE
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         bidsLayout.removeAllViews();
+        for (int i =0; i<playersAmount; i++) {
+            Player p = playersList[i];
+            int relativePos = getRelativePositionByPlayer(p);
+            TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(1);
+            takerTV.setText("");
+        }
         if (start == true) {
             initializeGameBoard(playersAmount);
+            int relativePos = getRelativePositionByPlayer(taker);
+            TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
+            takerTV.setText(R.string.taker +taker.getUsername());
         }
+    }
+
+    /**
+     * public method triggered to highlight who is the dealer
+     * @param dealer the player who is the dealer
+     */
+    public void onNewDealer(Player dealer) {
+        //TODO GAMESERVICE
+        int relativePos = getRelativePositionByPlayer(dealer);
+        TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
+        takerTV.setText(dealer.getUsername()+ " D");
 
     }
+
+
+
+
+
 
 }
 
