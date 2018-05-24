@@ -40,10 +40,11 @@ import team23.tartot.core.iBids;
 
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
-    final private static int CARD_HEIGHT = 160;
+    final private static int CARD_HEIGHT = 180;
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
     final private static int NUMBER_OF_CARDS = 18;
+    int screenMetrixRatio = 1;
 
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
     FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
@@ -60,15 +61,19 @@ public class GameActivity extends AppCompatActivity {
     //the amount of players in the room to initialize GameBoard, PlayerPositioning....
     Player myPlayer = new Player("unitialized");
     Player[] playersList = {myPlayer};
-    int playersAmount = 3;
+    int playersAmount = 4;
 
     protected void onCreate(Bundle savedInstanceState) {
         //TODO USE THIS 5 LINES (in CardView)
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        final int height = displayMetrics.heightPixels;
+        int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
         Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
+        screenMetrixRatio = height / 720;
+        Log.i("showMetrix", String.valueOf(screenMetrixRatio));
+        normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH*screenMetrixRatio, CARD_HEIGHT*screenMetrixRatio);
+        halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH*screenMetrixRatio,CARD_HEIGHT*screenMetrixRatio/2);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
@@ -80,7 +85,7 @@ public class GameActivity extends AppCompatActivity {
         //we recuperate the amount of players that was connected in the MenuActivity (via ApiManagerService.getActivePlayersInRoom)
         Intent intentFromMenu = getIntent();
         Log.i("playersAmount", "playersAmountOnCreateBeforeIntent : "+String.valueOf(playersAmount));
-        playersAmount = intentFromMenu.getIntExtra("playersAmount", 2);
+        playersAmount = intentFromMenu.getIntExtra("playersAmount", 4);
         Log.i("playersAmount", "playersAmountOnCreateAfterIntent : "+String.valueOf(playersAmount));
 
         initializeDeck(); //initialize the whole deck of 78 Cards JUST FOR TESTS !
@@ -348,6 +353,8 @@ public class GameActivity extends AppCompatActivity {
      */
     protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
+        LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
+        cardsUpLayout.setMinimumHeight(CARD_HEIGHT*screenMetrixRatio / 2);
         //TODO CHANGE THIS SHIT, CREATE THE FRAMELAYOUT WITH A FOR AND THEN, PLACE IT ONE BY ONE IN A GRIDLAYOUT ?
 
         /*
@@ -368,8 +375,31 @@ public class GameActivity extends AppCompatActivity {
                 }
 
         }*/
+        if (playersAmount == 2) {
+            LinearLayout leftLL = new LinearLayout(getApplicationContext());
+            leftLL.setOrientation(LinearLayout.VERTICAL);
 
-        if (playersAmount == 4) {
+            LinearLayout middleLL = new LinearLayout(getApplicationContext());
+            middleLL.setOrientation(LinearLayout.VERTICAL);
+            FrameLayout cardUp = new FrameLayout(getApplicationContext());
+            //cardUp.setPadding(0,0,0,8);
+            cardUp.setLayoutParams(normalLayoutParams);
+            cardUp.setBackgroundColor(getResources().getColor(R.color.highlight));
+            FrameLayout cardDown = new FrameLayout(getApplicationContext());
+            cardDown.setLayoutParams(normalLayoutParams);
+            cardDown.setBackgroundColor(getResources().getColor(R.color.highlight));
+            //cardDown.setPadding(0,8,0,0);
+            middleLL.addView(cardUp);
+            middleLL.addView(cardDown);
+
+            LinearLayout rightLL = new LinearLayout(getApplicationContext());
+            rightLL.setOrientation(LinearLayout.VERTICAL);
+
+            middleGameZone.addView(leftLL);
+            middleGameZone.addView(middleLL);
+            middleGameZone.addView(rightLL);
+        }
+        else if (playersAmount == 4) {
 
 
             //we create 3 vertical LinearLayout, 1 for the card left, 1 for the cards up and down and 1 for the card right
@@ -452,7 +482,7 @@ public class GameActivity extends AppCompatActivity {
         if (player.getUsername() == myPlayer.getUsername() && player.getPosition() == myPlayer.getPosition()) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
-            cardsDownLayout.setPadding(0, 0, 0, -CARD_HEIGHT / 2);
+            cardsDownLayout.setPadding(0, 0, 0, -CARD_HEIGHT *screenMetrixRatio / 2);
 
             for (int j = 0; j < hand.size(); j++) {
                 Card currentCard = hand.get(j);
@@ -926,12 +956,6 @@ public class GameActivity extends AppCompatActivity {
         takerTV.setText(dealer.getUsername()+ " D");
 
     }
-
-
-
-
-
-
 }
 
 

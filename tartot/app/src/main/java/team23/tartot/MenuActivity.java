@@ -254,7 +254,7 @@ public class MenuActivity extends AppCompatActivity {
         goToGameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent goToGameIntent = new Intent(MenuActivity.this, GameActivity.class);
-                int playersAmount = 2;
+                int playersAmount = 4;
                 goToGameIntent.putExtra("playersAmount", playersAmount);
                 startActivity(goToGameIntent);
             }

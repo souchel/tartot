@@ -74,7 +74,7 @@
         <LinearLayout
             android:id="@+id/cards_up_layout"
             android:layout_width="wrap_content"
-            android:layout_height="100px"
+            android:layout_height="50dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
