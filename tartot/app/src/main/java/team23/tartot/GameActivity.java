@@ -43,8 +43,10 @@ public class GameActivity extends AppCompatActivity {
     final private static int CARD_HEIGHT = 180;
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
-    final private static int NUMBER_OF_CARDS = 18;
-    int screenMetrixRatio = 1;
+    final private static int NUMBER_OF_CARDS = 17;
+    final private static int BID_BUTTON_HEIGHT = 77;
+    final private static int BID_BUTTON_WIDTH = 530;
+    float screenMetrixRatio = 1f;
 
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
     FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
@@ -70,10 +72,10 @@ public class GameActivity extends AppCompatActivity {
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
         Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
-        screenMetrixRatio = height / 720;
+        screenMetrixRatio = (float) height / 720;
         Log.i("showMetrix", String.valueOf(screenMetrixRatio));
-        normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH*screenMetrixRatio, CARD_HEIGHT*screenMetrixRatio);
-        halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH*screenMetrixRatio,CARD_HEIGHT*screenMetrixRatio/2);
+        normalLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
+        halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
@@ -355,7 +357,7 @@ public class GameActivity extends AppCompatActivity {
     protected void initializeGameBoard(int playersAmount) {
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
-        cardsUpLayout.setMinimumHeight(CARD_HEIGHT*screenMetrixRatio / 2);
+        cardsUpLayout.setMinimumHeight(Math.round(Math.round(CARD_HEIGHT*screenMetrixRatio) / 2));
         //TODO CHANGE THIS SHIT, CREATE THE FRAMELAYOUT WITH A FOR AND THEN, PLACE IT ONE BY ONE IN A GRIDLAYOUT ?
 
         /*
@@ -483,7 +485,7 @@ public class GameActivity extends AppCompatActivity {
         if (player.getUsername() == myPlayer.getUsername() && player.getPosition() == myPlayer.getPosition()) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
-            cardsDownLayout.setPadding(0, 0, 0, -CARD_HEIGHT *screenMetrixRatio / 2);
+            cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(CARD_HEIGHT *screenMetrixRatio) / 2));
 
             for (int j = 0; j < hand.size(); j++) {
                 Card currentCard = hand.get(j);
@@ -530,10 +532,10 @@ public class GameActivity extends AppCompatActivity {
         //TextView cardValueDownTV = new TextView(getApplicationContext());
         //We create the 2 textViews, one for the value up and one for the one down
         if (suit != "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
+            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_NORMAL));
             //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
         } else if (suit == "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
+            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_TRUMP));
             //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
         }
         //We create a button for the action
@@ -748,7 +750,7 @@ public class GameActivity extends AppCompatActivity {
     protected Button createButtonForBidLayout(Bid bid) {
         Button bidButton = new Button(getApplicationContext());
         bidButton.setText(bid.toString(getApplicationContext()));
-        bidButton.setLayoutParams(new FrameLayout.LayoutParams(530,77));
+        bidButton.setLayoutParams(new FrameLayout.LayoutParams(Math.round(BID_BUTTON_WIDTH*screenMetrixRatio), Math.round(BID_BUTTON_HEIGHT*screenMetrixRatio)));
         return bidButton;
     }
 
