@@ -122,7 +122,7 @@ public class GameActivity extends AppCompatActivity {
                 onShowDog(dog);
                 /*/
 
-                                Announces[] announces = {Announces.MISERY};
+                Announces[] announces = {Announces.MISERY};
                 onAnnounces(myPlayer, announces);
 
             }
@@ -131,7 +131,7 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.show_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Player p = new Player("hugo");
+                Player p = myPlayer;
                 Card c = new Card(Suit.DIAMOND, 12);
                 Log.i("showC", c.toString());
                 onShowCard(c,p);
@@ -309,6 +309,7 @@ public class GameActivity extends AppCompatActivity {
     protected void initializePlayersPlacement() {
         Log.i("playersAmount", "playersAmountinit : "+String.valueOf(playersAmount));
 
+        //on parcourt tous les joueurs et on ajoute leur pseudo dans le TextView correspondant (llPlayerLeft.getChildAt(0) par exemple)
         for (int i = 0; i < playersAmount; i++) {
             Player player = playersList[i];
 
@@ -328,7 +329,7 @@ public class GameActivity extends AppCompatActivity {
      */
     protected LinearLayout findPlayerLayoutByRelativePosition(int playersAmount, int relativePosition) {
         if (playersAmount == 2) {
-            if (relativePosition == -1 || relativePosition ==1 ){
+            if (relativePosition == -1 || relativePosition == 1 ){
                 return findViewById(R.id.llPlayerTop);
             } else if (relativePosition == 0) {
                 return findViewById(R.id.llPlayerBottom);
@@ -546,11 +547,11 @@ public class GameActivity extends AppCompatActivity {
                     testTV.setText(value+" de "+ suit);
 
                     //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
-                    FrameLayout cardFL = getCardLayoutByRelativePosition(0);
+                    //WE DON'T DO THAT HERE AND WE HAVE TO WAIT FOR THE GO (OR NO GO) OF THE SERVICE
+                    //FrameLayout cardFL = getCardLayoutByRelativePosition(0);
+                    //playCardInGameZone(value, suit, cardFL);
+                    //deleteCard(fl);
 
-                    playCardInGameZone(value, suit, cardFL);
-
-                    deleteCard(fl);
                     //LinearLayout ll = (LinearLayout) cardFL.getParent();
                     //ll.removeViewAt(3);
                 }
@@ -851,9 +852,24 @@ public class GameActivity extends AppCompatActivity {
         return cardLayout;
     }
 
-    public void deleteCard(FrameLayout fl) {
-        fl.removeAllViews();
+    /**
+     * protected method to find the index in the layout by the Card (we search only in cards_up_layout or cards_down_layout
+     * @param card
+     * @return
+     */
+    protected int findFLIndexInDeckByCard(Card card, LinearLayout cards_layout) {
+        for (int i=0; i<cards_layout.getChildCount(); i++) {
+
+        }
+        return 0;
     }
+
+    public void deleteCardFromDeck(Card card) {
+        LinearLayout up = findViewById(R.id.cards_up_layout);
+        int cardFL = findFLIndexInDeckByCard(card, up);
+    }
+
+
 
     protected void cleanDeck() {
         LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
@@ -941,20 +957,20 @@ public class GameActivity extends AppCompatActivity {
             initializeGameBoard(playersAmount);
             int relativePos = getRelativePositionByPlayer(taker);
             TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
-            takerTV.setText(R.string.taker +taker.getUsername());
+            takerTV.setText(R.string.taker + " " + taker.getUsername());
         }
     }
 
     /**
-     * public method triggered to highlight who is the dealer
+     * public method triggered to highlight who is the new dealer (will clear the last one) onNewDealer() should be called before onDoneStart()
      * @param dealer the player who is the dealer
      */
     public void onNewDealer(Player dealer) {
         //TODO GAMESERVICE
+        initializeGameBoard(playersAmount);
         int relativePos = getRelativePositionByPlayer(dealer);
         TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
         takerTV.setText(dealer.getUsername()+ " D");
-
     }
 }
 
