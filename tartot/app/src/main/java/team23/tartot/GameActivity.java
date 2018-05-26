@@ -48,6 +48,7 @@ public class GameActivity extends AppCompatActivity {
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
 
+    boolean putOnEcart = false;
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
     FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
 
@@ -108,6 +109,7 @@ public class GameActivity extends AppCompatActivity {
                 cleanDeck();
 
                 addCardsToDeck(myPlayer, hand);
+                //setPutOnEcart(true);
 
                 ArrayList<Bid> possibleBids = new ArrayList<>();
                 //possibleBids.add(Bid.SMALL);
@@ -510,7 +512,7 @@ public class GameActivity extends AppCompatActivity {
     /**
      * protected method to visually add a (un)clickable Card in a certain FrameLayout
      * @param card
-     * @param fl
+     * @param fl the FrameLayout containing 3 childes: 0 = ImageView colorIV, 1 = TextView valueTV, 2 = Button button
      * @param unclickable
      */
     protected void addCardToLayout(final Card card, final FrameLayout fl, boolean unclickable) {
@@ -548,14 +550,24 @@ public class GameActivity extends AppCompatActivity {
                     TextView testTV = findViewById(R.id.textViewTest);
                     testTV.setText(value+" de "+ suit);
 
-                    //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
-                    //WE DON'T DO THAT HERE AND WE HAVE TO WAIT FOR THE GO (OR NO GO) OF THE SERVICE
-                    //FrameLayout cardFL = getCardLayoutByRelativePosition(0);
-                    //playCardInGameZone(value, suit, cardFL);
-                    //deleteCard(fl);
+                    //Si les cartes sont à jouer dans l'écart
+                    // /!\ pour la V1, on ne peut cliquer qu'une fois sur une carte pour la mettre dans l'écart. Si on s'est trompé c'est dans le cul
+                    if (putOnEcart) {
+                        LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+                        FrameLayout cardLayout = new FrameLayout(getApplicationContext());
+                        playCardInGameZone(value, suit, cardLayout);
+                        dogAndEcartLayout.addView(cardLayout);
 
-                    //LinearLayout ll = (LinearLayout) cardFL.getParent();
-                    //ll.removeViewAt(3);
+                        deleteCardFromDeck(card, myPlayer);
+                    } else {
+                        //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
+                        //FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
+                        FrameLayout cardFL = getCardLayoutByRelativePosition(0);
+                        playCardInGameZone(value, suit, cardFL);
+
+                        deleteCardFromDeck(card, myPlayer);
+                    }
+
                 }
             });
         }
@@ -655,23 +667,34 @@ public class GameActivity extends AppCompatActivity {
         //we initialize the Bitmap with the image of spades
         Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
 
+        CharSequence contentDescription[] = new String[1];
+
+
         //we set the good image that corresponds to our suit
         if (suit == "s") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades_big);
+            contentDescription[0] = "s";
         } else if (suit == "h") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts_big);
+            contentDescription[0] = "h";
         } else if (suit == "d") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds_big);
+            contentDescription[0] = "d";
         } else if (suit == "c") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
+            contentDescription[0] = "c";
         } else if (suit == "t") {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
+            contentDescription[0] = "t";
         }
 
         //we resize the Bitmap with the private class and we add it to the ImageView
         Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
         ImageView cardColorIV = new ImageView(getApplicationContext());
         cardColorIV.setImageBitmap(cardColorResizedBP);
+
+        //we set the contentDescription, that will be used to find back the card (for deletion)
+        cardColorIV.setContentDescription(contentDescription[0]);
 
         return cardColorIV;
     }
@@ -747,6 +770,11 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * protected method to create a button with his text and his LayoutParams (height and width)
+     * @param bid
+     * @return
+     */
     protected Button createButtonForBidLayout(Bid bid) {
         Button bidButton = new Button(getApplicationContext());
         bidButton.setText(bid.toString(getApplicationContext()));
@@ -860,15 +888,47 @@ public class GameActivity extends AppCompatActivity {
      * @return
      */
     protected int findFLIndexInDeckByCard(Card card, LinearLayout cards_layout) {
+        int cardIndex = -1;
         for (int i=0; i<cards_layout.getChildCount(); i++) {
+            //we recuperate the FrameLayout of the Card
+            FrameLayout cardFL = (FrameLayout) cards_layout.getChildAt(i);
 
+            //we recuperate the color of the card from the contentDescription of the colorIV
+            ImageView colorIV = (ImageView) cardFL.getChildAt(0);
+            String color = colorIV.getContentDescription().toString();
+
+            //we recuperate the value from the valueTV
+            TextView valueTV = (TextView) cardFL.getChildAt(1);
+            String value = valueTV.getText().toString();
+
+            if ((card.getSuit().toString() == color) && (card.valueToString() == value)) {
+                Log.i("deletecard", "trouvé à la position : " + String.valueOf(i));
+                cardIndex = i;
+            }
         }
-        return 0;
+
+        return cardIndex;
     }
 
-    public void deleteCardFromDeck(Card card) {
-        LinearLayout up = findViewById(R.id.cards_up_layout);
-        int cardFL = findFLIndexInDeckByCard(card, up);
+    /**
+     * public method to delete a Card from the deck of a player
+     * @param card
+     * @param player
+     */
+    public void deleteCardFromDeck(Card card, Player player) {
+        if (player == myPlayer) {
+            LinearLayout up = findViewById(R.id.cards_up_layout);
+            int cardFLIndex = findFLIndexInDeckByCard(card, up);
+            if (cardFLIndex != -1) {
+                up.removeViewAt(cardFLIndex);
+            } else {
+                LinearLayout down = findViewById(R.id.cards_down_layout);
+                cardFLIndex = findFLIndexInDeckByCard(card, down);
+                if (cardFLIndex != -1) {
+                    down.removeViewAt(cardFLIndex);
+                }
+            }
+        }
     }
 
 
@@ -925,18 +985,25 @@ public class GameActivity extends AppCompatActivity {
      */
     public void onShowDog(ArrayList<Card> dog) {
         //TODO GAMESERVICE
-        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
-        bidsLayout.removeAllViews();
-        LinearLayout dogLayout = new LinearLayout(getApplicationContext());
-        dogLayout.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+        dogAndEcartLayout.removeAllViews();
+
         for (int i=0; i<dog.size(); i++) {
             FrameLayout cardLayout = new FrameLayout(getApplicationContext());
             playCardInGameZone(dog.get(i).valueToString(), dog.get(i).getSuit().toString(), cardLayout);
-            dogLayout.addView(cardLayout);
+            dogAndEcartLayout.addView(cardLayout);
         }
 
-        bidsLayout.addView(dogLayout);
-        bidsLayout.setVisibility(View.VISIBLE);
+        dogAndEcartLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * public method to hide the dog or the ecart layout
+     */
+    public void onHideDogOrEcart() {
+        //TODO GAMESERVICE
+        LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+        dogAndEcartLayout.setVisibility(View.GONE);
     }
 
     /**
@@ -947,8 +1014,8 @@ public class GameActivity extends AppCompatActivity {
      */
     public void onDoneStart(boolean start, Player taker, Bid bid) {
         //TODO GAMESERVICE
-        LinearLayout bidsLayout = findViewById(R.id.bids_layout);
-        bidsLayout.removeAllViews();
+        //LinearLayout bidsLayout = findViewById(R.id.bids_layout);
+        //bidsLayout.removeAllViews();
         for (int i =0; i<playersAmount; i++) {
             Player p = playersList[i];
             int relativePos = getRelativePositionByPlayer(p);
@@ -973,6 +1040,18 @@ public class GameActivity extends AppCompatActivity {
         int relativePos = getRelativePositionByPlayer(dealer);
         TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
         takerTV.setText(dealer.getUsername()+ " D");
+    }
+
+    /**
+     * public method to trigerred when the taker is asked to make his ecart
+     * @param makeEcart true if the cards has to be added into the ecart, false if the card when clicked has to shown in the gameBoard
+     */
+    public void setPutOnEcart(boolean makeEcart) {
+        //TODO GAMESERVICE
+        putOnEcart = makeEcart;
+        LinearLayout ecartLayout = findViewById(R.id.dog_and_ecart_layout);
+        ecartLayout.removeAllViews();
+        ecartLayout.setVisibility(View.VISIBLE);
     }
 }
 
