@@ -49,6 +49,7 @@ public class GameActivity extends AppCompatActivity {
     float screenMetrixRatio = 1f;
 
     boolean putOnEcart = false;
+
     FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
     FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
 
@@ -75,8 +76,9 @@ public class GameActivity extends AppCompatActivity {
         Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
         screenMetrixRatio = (float) height / 720;
         Log.i("showMetrix", String.valueOf(screenMetrixRatio));
-        normalLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
-        halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
+
+        setLayoutParams(normalLayoutParams, Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
+        setLayoutParams(halfLayoutParams, Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
@@ -580,7 +582,49 @@ public class GameActivity extends AppCompatActivity {
         cardFL.addView(cardButton);
 
         //we set Layout Parameters
+        //TODO SET LAYOUT PARAMS DEPENDING ON THE AMOUNT OF CARDS INITIALLY IN THE PLAYERS' HAND
         cardFL.setLayoutParams(normalLayoutParams);
+    }
+
+    /**
+     * specific method for this Activity to create ImageView to display card color with background
+     * @param suit is a String that results for the toString() of the Suit enum and is the initial letter of the suit : s, h, d, c, t
+     * @return the ImageView that corresponds to the color and that will be add to the FrameLayout
+     */
+    protected ImageView createCardColor (String suit) {
+        //we initialize the Bitmap with the image of spades
+        Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
+
+        CharSequence contentDescription[] = new String[1];
+
+
+        //we set the good image that corresponds to our suit
+        if (suit == "s") {
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades_big);
+            contentDescription[0] = "s";
+        } else if (suit == "h") {
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts_big);
+            contentDescription[0] = "h";
+        } else if (suit == "d") {
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds_big);
+            contentDescription[0] = "d";
+        } else if (suit == "c") {
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
+            contentDescription[0] = "c";
+        } else if (suit == "t") {
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
+            contentDescription[0] = "t";
+        }
+
+        //we resize the Bitmap with the private class and we add it to the ImageView
+        Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
+        ImageView cardColorIV = new ImageView(getApplicationContext());
+        cardColorIV.setImageBitmap(cardColorResizedBP);
+
+        //we set the contentDescription, that will be used to find back the card (for deletion)
+        cardColorIV.setContentDescription(contentDescription[0]);
+
+        return cardColorIV;
     }
 
     /**
@@ -657,47 +701,10 @@ public class GameActivity extends AppCompatActivity {
         return cardValueTV;
     }
 
-
-    /**
-     * specific method for this Activity to create ImageView to display card color with background
-     * @param suit is a String that results for the toString() of the Suit enum and is the initial letter of the suit : s, h, d, c, t
-     * @return the ImageView that corresponds to the color and that will be add to the FrameLayout
-     */
-    protected ImageView createCardColor (String suit) {
-        //we initialize the Bitmap with the image of spades
-        Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
-
-        CharSequence contentDescription[] = new String[1];
-
-
-        //we set the good image that corresponds to our suit
-        if (suit == "s") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades_big);
-            contentDescription[0] = "s";
-        } else if (suit == "h") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts_big);
-            contentDescription[0] = "h";
-        } else if (suit == "d") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds_big);
-            contentDescription[0] = "d";
-        } else if (suit == "c") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
-            contentDescription[0] = "c";
-        } else if (suit == "t") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
-            contentDescription[0] = "t";
-        }
-
-        //we resize the Bitmap with the private class and we add it to the ImageView
-        Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
-        ImageView cardColorIV = new ImageView(getApplicationContext());
-        cardColorIV.setImageBitmap(cardColorResizedBP);
-
-        //we set the contentDescription, that will be used to find back the card (for deletion)
-        cardColorIV.setContentDescription(contentDescription[0]);
-
-        return cardColorIV;
+    protected void setLayoutParams(FrameLayout.LayoutParams layoutParams, int width, int height) {
+        layoutParams = new FrameLayout.LayoutParams(width,height);
     }
+
 
     /**
      * public method triggered when the turn is ended to show the winner and to clean the dashboard
