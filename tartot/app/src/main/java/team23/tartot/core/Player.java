@@ -108,4 +108,12 @@ public class Player {
 			}
 		} return total;
 	}
+
+	public boolean isEqual(Player otherPlayer) {
+		if (username == otherPlayer.getUsername() && position == otherPlayer.getPosition()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

@@ -55,4 +55,6 @@
     <string name="taker">P </string>
     <string name="king">R </string>
 
+    <string name="validate_ecart">Valider votre écart</string>
+
 </resources>

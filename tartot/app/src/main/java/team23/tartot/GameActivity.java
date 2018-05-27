@@ -77,8 +77,8 @@ public class GameActivity extends AppCompatActivity {
         screenMetrixRatio = (float) height / 720;
         Log.i("showMetrix", String.valueOf(screenMetrixRatio));
 
-        setLayoutParams(normalLayoutParams, Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
-        setLayoutParams(halfLayoutParams, Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
+        normalLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
+        halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
@@ -111,7 +111,7 @@ public class GameActivity extends AppCompatActivity {
                 cleanDeck();
 
                 addCardsToDeck(myPlayer, hand);
-                //setPutOnEcart(true);
+                setPutOnEcart(true);
 
                 ArrayList<Bid> possibleBids = new ArrayList<>();
                 //possibleBids.add(Bid.SMALL);
@@ -486,7 +486,7 @@ public class GameActivity extends AppCompatActivity {
     public void addCardsToDeck (Player player, ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
         //TODO GAMESERVICE: need add dog to?
 
-        if (player.getUsername() == myPlayer.getUsername() && player.getPosition() == myPlayer.getPosition()) {
+        if (player.isEqual(myPlayer)) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
             cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(CARD_HEIGHT *screenMetrixRatio) / 2));
@@ -499,12 +499,22 @@ public class GameActivity extends AppCompatActivity {
 
                 addCardToLayout(currentCard, cardFL, false);
                 //we add the frameLayout to the horizontal LinearLayout depending on the number of card already displayed
-                if (cardNumber < NUMBER_OF_CARDS / 2) {
+                if (cardNumber <= Math.round(NUMBER_OF_CARDS / 2)) {
+                    Log.i("dogToDeck", "card added up");
                     cardsDownLayout.addView(cardFL);
                 } else if (cardNumber < NUMBER_OF_CARDS) {
+                    Log.i("dogToDeck", "card added down");
                     cardsUpLayout.addView(cardFL);
                 } else {
-
+                    //We have to refresh the layouts to have the correct current count of children
+                    cardsUpLayout = findViewById(R.id.cards_up_layout);
+                    cardsDownLayout = findViewById(R.id.cards_down_layout);
+                    Log.i("dogToDeck", "up: " + String.valueOf(cardsUpLayout.getChildCount()) + " ; down: " + String.valueOf(cardsDownLayout.getChildCount()));
+                    if (cardsDownLayout.getChildCount() - cardsUpLayout.getChildCount() >= 1) {
+                        cardsUpLayout.addView(cardFL);
+                    } else {
+                        cardsDownLayout.addView(cardFL);
+                    }
                 }
                 cardNumber++;
             }
@@ -533,14 +543,14 @@ public class GameActivity extends AppCompatActivity {
 
         //WE DEAL WITH THE VALUE
         TextView cardValueUpTV = new TextView(getApplicationContext());
-        //TextView cardValueDownTV = new TextView(getApplicationContext());
+        TextView cardValueDownTV = new TextView(getApplicationContext());
         //We create the 2 textViews, one for the value up and one for the one down
         if (suit != "t") {
             cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_NORMAL));
-            //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
+            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
         } else if (suit == "t") {
             cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_TRUMP));
-            //cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
+            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
         }
         //We create a button for the action
         Button cardButton = new Button(getApplicationContext());
@@ -556,17 +566,39 @@ public class GameActivity extends AppCompatActivity {
                     // /!\ pour la V1, on ne peut cliquer qu'une fois sur une carte pour la mettre dans l'écart. Si on s'est trompé c'est dans le cul
                     if (putOnEcart) {
                         LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+                        dogAndEcartLayout.setVisibility(View.VISIBLE);
+                        ((Button) dogAndEcartLayout.getChildAt(1)).setVisibility(View.VISIBLE);
                         FrameLayout cardLayout = new FrameLayout(getApplicationContext());
-                        playCardInGameZone(value, suit, cardLayout);
-                        dogAndEcartLayout.addView(cardLayout);
+                        cardLayout.setLayoutParams(normalLayoutParams);
+                        //playCardInGameZone(value, suit, cardLayout);
 
-                        deleteCardFromDeck(card, myPlayer);
+                        //if the Card is in the DogLayout, we add in back to the game
+                        if(cardFL.getParent() == findViewById(R.id.dog_and_ecart_layout)) {
+                            ArrayList<Card> cardList = new ArrayList<>();
+                            cardList.add(card);
+                            Log.i("dogToDeck", "method called in addCardToLayout");
+                            addCardsToDeck(myPlayer, cardList);
+
+                            Log.i("dogToDeck", "end of call in addCardToLayout");
+
+                            int index = findFLIndexInDeckByCard(card, dogAndEcartLayout);
+                            if (index != -1) {
+                                ((LinearLayout) dogAndEcartLayout.getChildAt(0)).removeViewAt(index);
+                            }
+                            //else, we want to add the card in the DogLayout
+                        } else {
+                            addCardToLayout(card, cardLayout, false);
+                            dogAndEcartLayout.addView(cardLayout);
+                            deleteCardFromDeck(card, myPlayer);
+                        }
+
+
+
                     } else {
                         //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
                         //FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
                         FrameLayout cardFL = getCardLayoutByRelativePosition(0);
                         playCardInGameZone(value, suit, cardFL);
-
                         deleteCardFromDeck(card, myPlayer);
                     }
 
@@ -578,7 +610,7 @@ public class GameActivity extends AppCompatActivity {
         //cardFL.addView(cardBackgroundIV); optimization of the cards loading !
         cardFL.addView(cardColorIV);
         cardFL.addView(cardValueUpTV);
-        //cardFL.addView(cardValueDownTV);
+        cardFL.addView(cardValueDownTV);
         cardFL.addView(cardButton);
 
         //we set Layout Parameters
@@ -923,7 +955,7 @@ public class GameActivity extends AppCompatActivity {
      * @param player
      */
     public void deleteCardFromDeck(Card card, Player player) {
-        if (player == myPlayer) {
+        if (player.isEqual(myPlayer)) {
             LinearLayout up = findViewById(R.id.cards_up_layout);
             int cardFLIndex = findFLIndexInDeckByCard(card, up);
             if (cardFLIndex != -1) {
@@ -992,7 +1024,8 @@ public class GameActivity extends AppCompatActivity {
      */
     public void onShowDog(ArrayList<Card> dog) {
         //TODO GAMESERVICE
-        LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+        LinearLayout dAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+        LinearLayout dogAndEcartLayout = (LinearLayout) dAndEcartLayout.getChildAt(0);
         dogAndEcartLayout.removeAllViews();
 
         for (int i=0; i<dog.size(); i++) {
@@ -1001,6 +1034,7 @@ public class GameActivity extends AppCompatActivity {
             dogAndEcartLayout.addView(cardLayout);
         }
 
+        dAndEcartLayout.getChildAt(1).setVisibility(View.GONE);
         dogAndEcartLayout.setVisibility(View.VISIBLE);
     }
 
