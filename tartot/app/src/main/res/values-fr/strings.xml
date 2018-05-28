@@ -56,5 +56,7 @@
     <string name="king">R </string>
 
     <string name="validate_ecart">Valider votre écart</string>
+    <string name="toast_ecart_begin">Il manque </string>
+    <string name="toast_ecart_end"> carte(s) pour valider</string>
 
 </resources>

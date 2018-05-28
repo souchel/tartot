@@ -251,14 +251,11 @@
         android:id="@+id/dog_and_ecart_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_margin="0dp"
         android:background="@color/PopupColor"
         android:orientation="vertical"
         android:padding="8dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -267,17 +264,18 @@
 
         <LinearLayout
             android:id="@+id/card_layout"
-            android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible"></LinearLayout>
 
         <Button
             android:id="@+id/validate_ecart_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/validate_ecart" />
+            android:text="@string/validate_ecart"
+            android:visibility="visible" />
 
     </LinearLayout>
 

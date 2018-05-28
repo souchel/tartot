@@ -65,6 +65,8 @@
         <string name="king">K </string>
 
         <string name="validate_ecart">Validate your ecart</string>
+        <string name="toast_ecart_begin">You should add </string>
+        <string name="toast_ecart_end"> cards more</string>
 
 
 </resources>
