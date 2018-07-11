@@ -114,11 +114,13 @@ public class GameActivity extends AppCompatActivity {
                     hand.add(deck.getCardList().get(i));
                 }
 
+                setPutOnEcart(true);
+
                 cleanDeck();
 
                 addCardsToDeck(myPlayer, hand);
 
-                setPutOnEcart(true);
+
 
                 ArrayList<Bid> possibleBids = new ArrayList<>();
                 //possibleBids.add(Bid.SMALL);
@@ -141,6 +143,7 @@ public class GameActivity extends AppCompatActivity {
             }
         });
 
+        /*/
         findViewById(R.id.show_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -150,7 +153,7 @@ public class GameActivity extends AppCompatActivity {
                 onShowCard(c,p);
                 Log.i("showC", "onShowCard done");
             }
-        });
+        });/*/
     }
 
     public void onStart() {
@@ -569,7 +572,8 @@ public class GameActivity extends AppCompatActivity {
         //ImageView cardBackgroundIV = createCardBackground();
 
         //WE DEAL WITH THE COLOR
-        ImageView cardColorIV = createCardColor(suit);
+        ImageView cardColorIV = createCardColor(suit, value);
+
 
         //WE DEAL WITH THE VALUE
         TextView cardValueUpTV = new TextView(getApplicationContext());
@@ -589,63 +593,62 @@ public class GameActivity extends AppCompatActivity {
             cardButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TextView testTV = findViewById(R.id.textViewTest);
-                    testTV.setText(value+" de "+ suit);
+                /*/
+                TextView testTV = findViewById(R.id.textViewTest);
+                testTV.setText(value+" de "+ suit);
+                /*/
 
-                    //Si les cartes sont à jouer dans l'écart
-                    // /!\ pour la V1, on ne peut cliquer qu'une fois sur une carte pour la mettre dans l'écart. Si on s'est trompé c'est dans le cul
-                    if (putOnEcart) {
+                //Si les cartes sont à jouer dans l'écart
+                // /!\ pour la V1, on ne peut cliquer qu'une fois sur une carte pour la mettre dans l'écart. Si on s'est trompé c'est dans le cul
+                if (putOnEcart) {
+                    LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
 
-                        Log.i("debug", "before findViewById");
-                        LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
+                    dogAndEcartLayout.setVisibility(View.VISIBLE);
 
-                        Log.i("debug", "before setVisisble to dogandecart");
-                        dogAndEcartLayout.setVisibility(View.VISIBLE);
+                    LinearLayout ecartLayout = findViewById(R.id.card_layout);
 
-                        LinearLayout ecartLayout = findViewById(R.id.card_layout);
-                        Log.i("debug", String.valueOf(dogAndEcartLayout.getChildCount()));
+                    //((Button) dogAndEcartLayout.getChildAt(1)).setVisibility(View.VISIBLE);
+                    FrameLayout cardLayout = new FrameLayout(getApplicationContext());
+                    cardLayout.setLayoutParams(normalLayoutParams);
+                    //playCardInGameZone(value, suit, cardLayout);
 
-                        //((Button) dogAndEcartLayout.getChildAt(1)).setVisibility(View.VISIBLE);
-                        FrameLayout cardLayout = new FrameLayout(getApplicationContext());
-                        cardLayout.setLayoutParams(normalLayoutParams);
-                        //playCardInGameZone(value, suit, cardLayout);
+                    //if the Card is in the DogLayout, we add in back to the game
+                    if(cardFL.getParent() == ecartLayout) {
+                        ArrayList<Card> cardList = new ArrayList<>();
+                        cardList.add(card);
+                        Log.i("dogToDeck", "method called in addCardToLayout");
+                        addCardsToDeck(myPlayer, cardList);
 
-                        //if the Card is in the DogLayout, we add in back to the game
-                        if(cardFL.getParent() == ecartLayout) {
-                            ArrayList<Card> cardList = new ArrayList<>();
-                            cardList.add(card);
-                            Log.i("dogToDeck", "method called in addCardToLayout");
-                            addCardsToDeck(myPlayer, cardList);
+                        Log.i("dogToDeck", "end of call in addCardToLayout");
 
-                            Log.i("dogToDeck", "end of call in addCardToLayout");
+                        int index = findFLIndexInDeckByCard(card, ecartLayout);
+                        if (index != -1) {
+                            ecartLayout.removeViewAt(index);
+                        }
 
-                            int index = findFLIndexInDeckByCard(card, ecartLayout);
-                            if (index != -1) {
-                                ecartLayout.removeViewAt(index);
-                            }
+                        ecart.remove(card);
 
-                            ecart.remove(card);
-
-                            //else, we want to add the card in the DogLayout
-                        } else if (ecartLayout.getChildCount() < dogNumber) {
-                            //TODO CHECK IF THE CARD CAN BE ADDED IN THE DOG (ASK SERVICE ?)
+                        //else, we want to add the card in the DogLayout
+                    } else if (ecartLayout.getChildCount() < dogNumber) {
+                        //TODO CHECK IF THE CARD CAN BE ADDED IN THE DOG (ASK SERVICE ?)
+                        if (!(value=="21" || value=="*" || value=="R" || (value == "1" && value == "t"))) {
                             addCardToLayout(card, cardLayout, false);
 
                             ecartLayout.addView(cardLayout);
                             deleteCardFromDeck(card, myPlayer);
                             ecart.add(card);
                         }
-
-                        Log.i("showEcart", ecart.toString());
-
-
-                    } else {
-                        //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
-                        //FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
-                        FrameLayout cardFL = getCardLayoutByRelativePosition(0);
-                        playCardInGameZone(value, suit, cardFL);
-                        deleteCardFromDeck(card, myPlayer);
                     }
+
+
+
+                } else {
+                    //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
+                    //FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
+                    FrameLayout cardFL = getCardLayoutByRelativePosition(0);
+                    playCardInGameZone(value, suit, cardFL);
+                    deleteCardFromDeck(card, myPlayer);
+                }
 
                 }
             });
@@ -656,6 +659,19 @@ public class GameActivity extends AppCompatActivity {
         cardFL.addView(cardColorIV);
         cardFL.addView(cardValueUpTV);
         cardFL.addView(cardValueDownTV);
+        if (value == "R") {
+            ImageView cardKingIV = new ImageView(getApplicationContext());
+            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_king);
+            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
+            cardKingIV.setImageBitmap(kingResizedBP);
+            cardFL.addView(cardKingIV);
+        } else if (value == "D") {
+            ImageView cardKingIV = new ImageView(getApplicationContext());
+            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_queen);
+            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
+            cardKingIV.setImageBitmap(kingResizedBP);
+            cardFL.addView(cardKingIV);
+        }
         cardFL.addView(cardButton);
 
         //we set Layout Parameters
@@ -668,7 +684,7 @@ public class GameActivity extends AppCompatActivity {
      * @param suit is a String that results for the toString() of the Suit enum and is the initial letter of the suit : s, h, d, c, t
      * @return the ImageView that corresponds to the color and that will be add to the FrameLayout
      */
-    protected ImageView createCardColor (String suit) {
+    protected ImageView createCardColor (String suit, String value) {
         //we initialize the Bitmap with the image of spades
         Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
 
@@ -689,7 +705,7 @@ public class GameActivity extends AppCompatActivity {
             cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
             contentDescription[0] = "c";
         } else if (suit == "t") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border);
+            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border_style);
             contentDescription[0] = "t";
         }
 
@@ -700,7 +716,6 @@ public class GameActivity extends AppCompatActivity {
 
         //we set the contentDescription, that will be used to find back the card (for deletion)
         cardColorIV.setContentDescription(contentDescription[0]);
-
         return cardColorIV;
     }
 
@@ -913,7 +928,7 @@ public class GameActivity extends AppCompatActivity {
     protected void playCardInGameZone(String value, String suit, FrameLayout playedCardLayout) {
 
         //ImageView cardBackgroundIV = createCardBackground();
-        ImageView cardColorIV = createCardColor(suit);
+        ImageView cardColorIV = createCardColor(suit, value);
         TextView cardValueUpTV = new TextView(getApplicationContext());
         TextView cardValueDownTV = new TextView(getApplicationContext());
         //We create the 2 textViews, one for the value up and one for the one down
@@ -1043,7 +1058,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     /**
-     * method trigerred when a player has chosen his Bid, uses the same TextView as onAnnounces
+     * method trigerred when a player has chosen his Bid and show the bid chosen under the name of the player uses the same TextView as onAnnounces
      * @param player
      * @param bid
      */
@@ -1138,6 +1153,7 @@ public class GameActivity extends AppCompatActivity {
         LinearLayout ecartLayout = findViewById(R.id.dog_and_ecart_layout);
         ((LinearLayout) ecartLayout.getChildAt(0)).removeAllViews();
         ecartLayout.setVisibility(View.VISIBLE);
+        ((Button) ecartLayout.getChildAt(1)).setVisibility(View.VISIBLE);
     }
 
     /**
