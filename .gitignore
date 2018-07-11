@@ -116,9 +116,9 @@ $RECYCLE.BIN/
 # .idea/uiDesigner.xml
 
 # Gradle:
-# .idea/gradle.xml
-# .idea/libraries
-
+.idea/gradle.xml
+.idea/libraries
+*.gradle
 # Mongo Explorer plugin:
 # .idea/mongoSettings.xml
 
