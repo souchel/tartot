@@ -108,6 +108,7 @@ public class ApiManagerService extends Service {
     public void onCreate() {
         Log.i(API_LC, "onCreate");
         //this.mMyParticipantId = mCurrentRoom.getParticipantId(playerId);
+
         Task<GoogleSignInAccount> task = initialize();
         if (task != null) {
             task.addOnSuccessListener(new OnSuccessListener<GoogleSignInAccount>() {
@@ -171,8 +172,9 @@ public class ApiManagerService extends Service {
 
 
     public Task<GoogleSignInAccount> initialize(){
+        //checks if the player is already signed in
         userAccount = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
-        //try to see if the user is already signed in. If null, he is not signed in.
+        //If null, he is not signed in.
         if (userAccount == null){
             localBroadcast(BroadcastCode.MANUAL_LOG);
 

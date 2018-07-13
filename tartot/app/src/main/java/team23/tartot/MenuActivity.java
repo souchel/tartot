@@ -434,8 +434,14 @@ public class MenuActivity extends AppCompatActivity {
         }
         //if we come back from the manual signin
         else if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            mApiManagerService.onSigninReturn(task);
+            if (resultCode == Activity.RESULT_OK) {
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                String inf = mApiManagerService.onSigninReturn(task);
+                Toast.makeText(getApplicationContext(), inf, Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(getApplicationContext(), ""+resultCode, Toast.LENGTH_SHORT).show();
+                }
         }
     }
 
