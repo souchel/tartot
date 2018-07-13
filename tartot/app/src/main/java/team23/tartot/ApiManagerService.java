@@ -56,6 +56,7 @@ import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
 import team23.tartot.core.Card;
 import team23.tartot.core.Deck;
+import team23.tartot.core.States;
 import team23.tartot.core.iAnnounces;
 import team23.tartot.core.iCard;
 import team23.tartot.core.iDeck;
@@ -94,7 +95,6 @@ public class ApiManagerService extends Service {
 
     private String mMyParticipantId =null;
     private HashSet<Integer> pendingMessageSet = new HashSet<>(); //queue of some messages waiting to be sent
-
 
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
@@ -296,6 +296,12 @@ public class ApiManagerService extends Service {
                         handleException(e, "There was a problem getting the activation hint!");
                     }
                 });
+    }
+
+    public void setState(States s){
+        if (s != States.PRE_START){
+            sendObjectToAll(s);
+        }
     }
 
     //returns if an invitation is pending
@@ -1000,42 +1006,42 @@ public class ApiManagerService extends Service {
                     intent.putExtra("fulldeck", ifd);
                     localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
                 }
-                if (o instanceof iDeck){
+                else if (o instanceof iDeck){
                     iDeck id = (iDeck) o;
                     Log.i("text", "hand");
                     Intent intent = new Intent();
                     intent.putExtra("hand", id);
                     localBroadcast(BroadcastCode.DECK_RECEIVED, intent);
                 }
-                if (o instanceof Bid){
+                else if (o instanceof Bid){
                     Bid b = (Bid) o;
                     Log.i("TEXT", "bid");
                     Intent intent = new Intent();
                     intent.putExtra("bid", b);
                     localBroadcast(BroadcastCode.BID_RECEIVED, intent);
                 }
-                if (o instanceof iDog){
+                else if (o instanceof iDog){
                     iDog idog = (iDog) o;
                     Log.i("TEXT", "dog");
                     Intent intent = new Intent();
                     intent.putExtra("dog", idog);
                     localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
                 }
-                if (o instanceof iEcart){
+                else if (o instanceof iEcart){
                     iEcart iecart = (iEcart) o;
                     Log.i("TEXT", "ecart");
                     Intent intent = new Intent();
                     intent.putExtra("ecart", iecart);
                     localBroadcast(BroadcastCode.ECART_RECEIVED, intent);
                 }
-                if (o instanceof iAnnounces){
+                else if (o instanceof iAnnounces){
                     iAnnounces a = (iAnnounces) o;
                     Log.i("text","announces received");
                     Intent intent = new Intent();
                     intent.putExtra("announces", a);
                     localBroadcast(BroadcastCode.ANNOUNCE_RECEIVED, intent);
                 }
-                if (o instanceof iCard) {
+                else if (o instanceof iCard) {
                     iCard c = (iCard) o;
                     Log.i("DECODAGE", c.getCard().getValue() + " ");
                     Intent intent = new Intent();
@@ -1044,6 +1050,14 @@ public class ApiManagerService extends Service {
                     Log.i("CARD_RECEIVED", mCurrentRoom.getParticipantId(senderId) + "");
                     localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
                 }
+                else if (o instanceof States) {
+                    Log.i("playerState",senderId+" "+(States) o);
+                    Intent intent = new Intent();
+                    intent.putExtra("state", (States) o);
+                    intent.putExtra("participantId", senderId);
+                    localBroadcast(BroadcastCode.PLAYER_STATE_UPDATE, intent);
+                }
+
 
             }
         };

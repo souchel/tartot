@@ -25,7 +25,7 @@ public enum BroadcastCode {
     ECART_RECEIVED,
     ANNOUNCE_RECEIVED,
     CARD_RECEIVED,
-
+    PLAYER_STATE_UPDATE,
 
     //broadcasts from the ApiManagerService
     MANUAL_LOG, //when the automatic connection does not work. We ask the player to manually connect to his account

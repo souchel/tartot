@@ -12,20 +12,12 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import team23.tartot.core.Announces;
@@ -45,7 +37,8 @@ import team23.tartot.core.iDeck;
 import team23.tartot.core.iDog;
 import team23.tartot.core.iEcart;
 import team23.tartot.core.iFullDeck;
-import team23.tartot.core.iPlayer;
+import team23.tartot.core.States;
+import team23.tartot.core.GameState;
 import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
@@ -55,6 +48,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private boolean mInGame = false;
     private boolean mBoundToNetwork = false;
     private ApiManagerService mApiManagerService;
+    private States mState; //keep track of what we are doing
+    private GameState mGameState = GameState.PRE_START;
+
+    private HashMap<String,States> mPlayersState = new HashMap<String,States>();
+
     public GameService() {
     }
 
@@ -85,6 +83,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         Log.i("debug", "act bindService");
         bindService(networkIntent, mNetworkConnection, Context.BIND_AUTO_CREATE);
 
+        //initialize the game state:
+        setState(States.PRE_START);
+
         return START_NOT_STICKY;
     }
 
@@ -99,6 +100,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
             initialize();
+
+            //notify all players ready to deal
+            setState(States.DEAL);
             localBroadcast(BroadcastCode.READY_TO_START);
         }
 
@@ -164,6 +168,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            String senderId = null;
             switch (code){
                 //TODO utility of localBroadcast here?
                 //TODO ECART_RECEIVED need to be added
@@ -224,13 +229,17 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iCard ic = (iCard) intent.getSerializableExtra("card");
                     String p3 = ic.getPlayer();
                     Card c = ic.getCard();
-                    String senderId = intent.getStringExtra("participantId");
+                    senderId = intent.getStringExtra("participantId");
                     onPlayCard(p3, c);
                     Log.i("senderId",senderId+"");
                     Intent j6 = new Intent();
                     j6.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
                     localBroadcast(BroadcastCode.EXAMPLE, j6);
                     break;
+                case PLAYER_STATE_UPDATE:
+                    States s = (States) intent.getSerializableExtra("state");
+                    senderId = intent.getStringExtra("participantId");
+                    setState(s, senderId);
             }
         }
     };
@@ -300,6 +309,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
 
 
+    /**
+     * Called when we are ready to begin. i.e. when API Service is bound
+     * In charge of :
+     *
+     */
     public void initialize() {
         //{ [String username ; int status], ... }
         ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
@@ -1163,5 +1177,43 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             attackDeck.addCard(card);
         }
         startAnnounce();
+    }
+
+    /**
+    Update player state.
+     Check and update game state
+     */
+    private void setState(States s, String participantId){
+        //update player state
+        if (mApiManagerService == null){
+            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
+            return;
+        }
+        mApiManagerService.setState(s);
+
+        if (mMyParticipantId == null){
+            Log.i("debug", "can't set state "+s+", null participant id.");
+            return;
+        }
+        mPlayersState.put(participantId, s);
+
+        //update game state
+
+        //check if we are ready to deal
+        if (s==States.DEAL){
+            Set<String> ids = mPlayersState.keySet();
+            for (String id : ids){
+                if (mPlayersState.get(id) != States.DEAL){
+                    return;
+                }
+            }
+            mGameState = GameState.DEAL;
+            Log.i("log","GAME_STATE DEAL");
+            //TODO : check if we are the dealer. If so, we should deal the cards (shuffle and send the hand to each player)
+          }
+    }
+
+    private void setState(States s){
+        setState(s,mMyParticipantId);
     }
 }
