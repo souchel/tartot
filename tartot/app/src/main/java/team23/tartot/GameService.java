@@ -43,6 +43,7 @@ import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
 
+    //TODO: Pour Guillaume, c'est pas normal que certains attributs  du binding ne soient pas utilisés
     // Binder given to clients
     private final IBinder mBinder = new LocalBinderGame();
     private boolean mInGame = false;
@@ -52,7 +53,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private GameState mGameState = GameState.PRE_START;
 
     private HashMap<String,States> mPlayersState = new HashMap<String,States>();
-
+    private Bid mTopBid;
     public GameService() {
     }
 
@@ -274,7 +275,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     OnGoingFold onGoingFold ;
     int indexDealer ; //index dans le tableau des players ?
     public Deck chien;
-    Bid bid;
+    private Bid bid;
     private ArrayList<Announces> playersAnnounces;
     private boolean[] gotAnnounces = new boolean[4];
     private boolean[] saidBid = new boolean[4];
@@ -457,25 +458,48 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //bid phase
+    //called game state is BID and at each player turn
     private void onBidState() {
         if (position == playerTurn) {
-            askBid(bid);
+            askBid();
         }
     }
+
+    /**
+     * when we reveal the dog and the caller makes his ecart *lol*
+     */
+    private void onRevealDogState(){
+        //TODO: to code
+    }
+
+    private void onPlayingState(){
+        //TODO:code
+    }
+
+    private void onRoundEndState(){
+        //TODO:to code
+    }
+
     @Override
-    public void askBid(Bid bid) {
+    public void askBid() {
         Intent possibleBids = new Intent();
         ArrayList<Bid> bids = getPossibleBids();
         possibleBids.putExtra("bids", new iBids(bids));
         localBroadcast(BroadcastCode.ASK_BID, possibleBids);
     }
+
+    //called by the activity when the local player choses
     public void BidChosen(Bid b){
-        if (!(b == Bid.PASS)){
+
+        if (checkBid(b)){
             bid = b;
         }
+        else
+            bid=Bid.PASS;
         sendBid(b);
-        checkBidProgress();
+        setState(States.REVEAL_DOG);
+        //checkBidProgress();
+
     }
     private void checkBidProgress() {
         boolean check = true;
@@ -970,20 +994,23 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return bids;
     }
+
+    //que fait cette méthode ? On dirait qu'elle vérifie quand un joueur fait son bid qu'il a le droit
     //default (if bid null?) return false
     public boolean checkBid(Bid bid) {
-        Bid onGoingBid = bid;
-        switch (onGoingBid) {
+        switch (bid) {
+            case PASS:
+                return false;
             case SMALL :
-                if (bid == Bid.SMALL) {
+                if (mTopBid == Bid.SMALL) {
                     return false;
                 } break;
             case GUARD :
-                if (bid == Bid.SMALL || bid == Bid.GUARD) {
+                if (mTopBid == Bid.SMALL || mTopBid == Bid.GUARD) {
                     return false;
                 } break;
             case GUARD_WITHOUT :
-                if (bid == Bid.SMALL || bid == Bid.GUARD || bid == Bid.GUARD_WITHOUT) {
+                if (mTopBid == Bid.SMALL || mTopBid == Bid.GUARD || mTopBid == Bid.GUARD_WITHOUT) {
                     return false;
                 } break;
             case GUARD_AGAINST :
@@ -993,6 +1020,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return true;
     }
+
     //check if the next to play is supposed to be you
     public boolean checkMyTurn(int i) {
         if (position == i+1 || (position == 0 && i == 3)) {
@@ -1179,18 +1207,39 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         gotAnnounces[player.getPosition()] = true;
         checkAnnounceProgress();
     }
+
+
+    //called by the broadcast from APIManager when another player announce a bid
     @Override
     public void onBid(Bid newBid) {
+        //TODO: check that it's the correct player turn
+
+        //this is done externally in the setState. It would be better if done here
+        //update player state
+        //setState(States.REVEAL_DOG,newBid.getParticipantId());
+
+        //check if the bid is higher than the current bid
         if (checkBid(newBid)) {
             bid = newBid;
         }
         setBidActivity(newBid);
+
+
+        //TODO: je pense que la ligne qui suit est maladroite. Il faut utiliser le participantId
+        //pour référencer les joueurs (les positions ne sont peut être pas définies pareil par tous
+        //les joueurs.
         saidBid[newBid.getPlayerPosition()] = true;
-        checkBidProgress();
+
+
+
+        //mécanisme simplifier par le système de game state
+        /*checkBidProgress();
         if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
-            askBid(bid);
+            askBid();
         }
+        */
     }
+
     @Override
     public void onDeckReceived(Deck deck) {
         this.deck = deck;
@@ -1221,44 +1270,104 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
             return;
         }
-        mApiManagerService.setState(s);
 
         if (mMyParticipantId == null){
             Log.i("debug", "can't set state "+s+", null participant id.");
             return;
         }
-        mPlayersState.put(participantId, s);
 
-        //update game state
-
-        //check if we are ready to deal
-        if (s==States.DEAL){
-            Set<String> ids = mPlayersState.keySet();
-            for (String id : ids){
-                if (mPlayersState.get(id) != States.DEAL){
-                    return;
-                }
-            }
-            mGameState = GameState.DEAL;
-            Log.i("log","GAME_STATE DEAL");
-            onDealState();
-          }
-          else if (s==States.BID){
-            Set<String> ids = mPlayersState.keySet();
-            for (String id : ids){
-                if (mPlayersState.get(id) != States.BID){
-                    return;
-                }
-            }
-            mGameState = GameState.BID;
-            Log.i("log","GAME_STATE BID");
-            onBidState();
+        //if WE are changing state, we notify
+        if (participantId.equals(mMyParticipantId)) {
+            //TODO: On pourrait diffuser le state en même temps que la carte jouée ou le bid !
+            //=> diminution du traffic réseau
+            mApiManagerService.setState(s);
         }
 
+        mPlayersState.put(participantId, s);
 
+        //update game state if needed
+
+        //check if we are ready to deal
+        Set<String> ids = mPlayersState.keySet();
+        boolean changeState = true;
+        switch (s){
+            case DEAL:
+            for (String id : ids){
+                if (mPlayersState.get(id) != States.DEAL){
+                    changeState = false;
+                    break;
+                }
+            }
+            if (changeState) {
+                mGameState = GameState.DEAL;
+                Log.i("log", "GAME_STATE DEAL");
+            }
+            break;
+
+            case BID:
+            for (String id : ids){
+                if (mPlayersState.get(id) != States.BID){
+                    changeState = false;
+                    break;
+                }
+            }
+            if (changeState) {
+                //if everyone is in BID state, we switch game state to bid and call the nextState
+                mGameState = GameState.BID;
+                Log.i("log", "GAME_STATE BID");
+            }
+            break;
+
+            case REVEAL_DOG:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.REVEAL_DOG){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    //if everyone is in BID state, we switch game state to bid and call the nextState
+                    mGameState = GameState.REVEAL_DOG;
+                    Log.i("log", "GAME_STATE REVEAL_DOG");
+                }
+                break;
+        }
+        onState();
     }
 
     private void setState(States s){
         setState(s,mMyParticipantId);
     }
+
+
+    /**
+     * base state function.
+     * call the correct state function depending on the state we are in.
+     * SHOULD ONLY BE CALLED IN THE SETSTATE method ! (otherwise it may be called several times
+     * in a row and do strange things).
+     */
+    private void onState(){
+        switch (mGameState){
+            case PRE_START:
+                return;
+            case DEAL:
+                onDealState();
+                break;
+            case BID:
+                onBidState();
+                break;
+            case REVEAL_DOG:
+                onRevealDogState();
+                break;
+            case PLAYING:
+                onPlayingState();
+                break;
+            case ROUND_END:
+                onRoundEndState();
+                break;
+            default:
+                return;
+        }
+    }
 }
+

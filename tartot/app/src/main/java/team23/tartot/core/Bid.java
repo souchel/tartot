@@ -15,11 +15,16 @@ public enum Bid {
 	int multiplicant ;
 	//default -1, for unknown
 	private int playerPosition = -1;
-	
+	private String participantId;
 	public void setPlayerPosition(int playerToSet) {
 		playerPosition = playerToSet;
 	}
-
+	public void setParticipantId(String id){
+		participantId=id;
+	}
+	public String getParticipantId(){
+		return participantId;
+	}
 	public int getPlayerPosition() {
 		return playerPosition;
 	}

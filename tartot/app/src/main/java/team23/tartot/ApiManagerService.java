@@ -1015,6 +1015,7 @@ public class ApiManagerService extends Service {
                 }
                 else if (o instanceof Bid){
                     Bid b = (Bid) o;
+                    b.setParticipantId(senderId);
                     Log.i("TEXT", "bid");
                     Intent intent = new Intent();
                     intent.putExtra("bid", b);
