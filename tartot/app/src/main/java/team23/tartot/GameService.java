@@ -561,7 +561,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void distribute(int[] indexes)
     {
         //On distribue les cartes 3 par 3 aux 4 joueurs
-        for (int i = 1; i <= 24 ; i++)
+        for (int i = 1; i <= 4 ; i++)
         {
             //on donne 3 cartes au joueur i modulo 4
             for (int j = 1 ; j <= 3 ; j++)
