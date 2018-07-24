@@ -1015,6 +1015,7 @@ public class ApiManagerService extends Service {
                 }
                 else if (o instanceof Bid){
                     Bid b = (Bid) o;
+                    b.setParticipantId(senderId);
                     Log.i("TEXT", "bid");
                     Intent intent = new Intent();
                     intent.putExtra("bid", b);
@@ -1050,6 +1051,7 @@ public class ApiManagerService extends Service {
                     Log.i("CARD_RECEIVED", mCurrentRoom.getParticipantId(senderId) + "");
                     localBroadcast(BroadcastCode.CARD_RECEIVED, intent);
                 }
+                //forward the state update to the GameManager
                 else if (o instanceof States) {
                     Log.i("playerState",senderId+" "+(States) o);
                     Intent intent = new Intent();

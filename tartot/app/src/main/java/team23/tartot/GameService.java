@@ -43,6 +43,11 @@ import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
 
+    ////////////////
+    //Network code//
+    ////////////////
+
+    //TODO: Pour Guillaume, c'est pas normal que certains attributs  du binding ne soient pas utilisés
     // Binder given to clients
     private final IBinder mBinder = new LocalBinderGame();
     private boolean mInGame = false;
@@ -52,7 +57,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private GameState mGameState = GameState.PRE_START;
 
     private HashMap<String,States> mPlayersState = new HashMap<String,States>();
-
+    private Bid mTopBid;
     public GameService() {
     }
 
@@ -188,6 +193,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
                     String p = id.getPlayer();
+                    //update the deck in the Player attribute
                     onCardsDealt(h, p);
                     Intent j2 = new Intent();
                     j2.putExtra("text", "player: " + p + "should have his cards now");
@@ -261,19 +267,18 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-
-    //game manager implementation :
-
-
+    ////////////////////////////////////
+    //game manager implementation code//
+    ////////////////////////////////////
     private Player[] players;
     private Points stats ;
     int points;
     int oudlersNumber ;
     private Deck deck;
     OnGoingFold onGoingFold ;
-    int indexDealer ;
+    int indexDealer ; //index dans le tableau des players ?
     public Deck chien;
-    Bid bid;
+    private Bid bid;
     private ArrayList<Announces> playersAnnounces;
     private boolean[] gotAnnounces = new boolean[4];
     private boolean[] saidBid = new boolean[4];
@@ -290,6 +295,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
     //deprecated i think
+    /*
     public void initialize(String[] usernames) {
         deck = new Deck();
         players = new Player[usernames.length];
@@ -306,41 +312,204 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         bid = null;
         attackDeck = new Deck();
         defenseDeck = new Deck();
-    }
+    }*/
 
 
     /**
      * Called when we are ready to begin. i.e. when API Service is bound
      * In charge of :
+     * initialize player array. TODO:Check that the player order is the same everywhere because it iterate through HashMap which is an unordered structure
+     * mMyparticipantId
+     * position (our position)
+     * indexDealer (=first player in player array)
      *
+     *public
      */
     public void initialize() {
         //{ [String username ; int status], ... }
-        ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
+        ArrayList<HashMap<String, String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
         deck = new Deck();
         players = new Player[rawPlayersInfos.size()];
         mMyParticipantId = mApiManagerService.getMyParticipantId();
-        for (int i = 0 ; i < rawPlayersInfos.size(); i++)
-        {
+        for (int i = 0; i < rawPlayersInfos.size(); i++) {
             HashMap<String, String> rawInfos = rawPlayersInfos.get(i);
-            players[i] = new Player(rawInfos.get("username"), i, "participantId");
+            players[i] = new Player(rawInfos.get("username"), i, rawInfos.get("participantId"));
             //initialize the local player position
-            if(rawInfos.get("participantId").equals(mMyParticipantId)){
+            if (rawInfos.get("participantId").equals(mMyParticipantId)) {
                 position = i;
             }
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
-        indexDealer = 0 ;
+        indexDealer = 0;
         chien = new Deck();
         stats = new Points(players);
         bid = null;
+
+        //set up the first player to play (dealer+1)
+        playerTurn = indexDealer;
+        nextPlayer();
     }
+
+    //state management functions
+    /////////////////////////////
+    /**
+     * rename of startGame
+     * deal the cards if we are the dealer
+     * else wait
+     */
+    private void onDealState(){
+        if (position == indexDealer) {
+            Log.i("state","onDealState");
+            if (nbDone == 0) {
+                initializeDeck();
+                deck.shuffle();
+            }
+            distribute(getPositionDistribution());
+        } //else need to receive card before all ie use onCardsDelt method
+    }
+
+    //called game state is BID and at each player turn
+    private void onBidState() {
+        if (position == playerTurn) {
+            askBid();
+        }
+    }
+
+    /**
+     * when we reveal the dog and the caller makes his ecart *lol*
+     */
+    private void onRevealDogState(){
+        //TODO: to code
+    }
+
+    private void onPlayingState(){
+        //TODO:code
+    }
+
+    private void onRoundEndState(){
+        //TODO:to code
+    }
+
+
+    /**
+     Update player state.
+     Check and update game state
+     */
+    private void setState(States s, String participantId){
+        //update player state
+        if (mApiManagerService == null){
+            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
+            return;
+        }
+
+        if (mMyParticipantId == null){
+            Log.i("debug", "can't set state "+s+", null participant id.");
+            return;
+        }
+
+        //if WE are changing state, we notify
+        if (participantId.equals(mMyParticipantId)) {
+            //TODO: On pourrait diffuser le state en même temps que la carte jouée ou le bid !
+            //=> diminution du traffic réseau
+            mApiManagerService.setState(s);
+        }
+
+        mPlayersState.put(participantId, s);
+
+        //update game state if needed
+
+        //check if we are ready to deal
+        Set<String> ids = mPlayersState.keySet();
+        boolean changeState = true;
+        switch (s){
+            case DEAL:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.DEAL){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    mGameState = GameState.DEAL;
+                    Log.i("log", "GAME_STATE DEAL");
+                }
+                break;
+
+            case BID:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.BID){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    //if everyone is in BID state, we switch game state to bid and call the nextState
+                    mGameState = GameState.BID;
+                    Log.i("log", "GAME_STATE BID");
+                }
+                break;
+
+            case REVEAL_DOG:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.REVEAL_DOG){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    //if everyone is in BID state, we switch game state to bid and call the nextState
+                    mGameState = GameState.REVEAL_DOG;
+                    Log.i("log", "GAME_STATE REVEAL_DOG");
+                }
+                break;
+        }
+        onState();
+    }
+
+    private void setState(States s){
+        setState(s,mMyParticipantId);
+    }
+
+
+    /**
+     * base state function.
+     * call the correct state function depending on the state we are in.
+     * SHOULD ONLY BE CALLED IN THE SETSTATE method ! (otherwise it may be called several times
+     * in a row and do strange things).
+     */
+    private void onState(){
+        switch (mGameState){
+            case PRE_START:
+                return;
+            case DEAL:
+                onDealState();
+                break;
+            case BID:
+                onBidState();
+                break;
+            case REVEAL_DOG:
+                onRevealDogState();
+                break;
+            case PLAYING:
+                onPlayingState();
+                break;
+            case ROUND_END:
+                onRoundEndState();
+                break;
+            default:
+                return;
+        }
+    }
+
+    //all the rest that should be tidied
+    /////////////////////////////////////
 
     public Player getSelfPlayer(){
         return players[position];
     }
 
+    /*
     public void startGame() {
         playerTurn = indexDealer;
         nextPlayer(); //don't need this for distribution phase, so set up for first player to play
@@ -352,13 +521,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             distribute(getPositionDistribution());
         } //else need to receive card before all ie use onCardsDelt method
     }
+    */
 
-    //initialize
-    public void initializeGame()
-    {
-        initializeDeck();
-        deck.shuffle();
-    }
+
+
     public void initializeDeck()
     {
         for (Suit suit : Suit.values())
@@ -382,7 +548,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //distribution phase
     public void distribute(int[] indexes)
     {
         //On distribue les cartes 3 par 3 aux 4 joueurs
@@ -403,12 +568,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         //sending cards to player via network
         for (Player player : players) {
-            sendDeck(player.getHand().getCardList(), player.getUsername());
+            sendDeck(player.getHand().getCardList(), player.getUsername(), player.getParticipantId());
             sendDog(chien.getCardList());
         }
         addCardsActivity(players[position].getHand().getCardList());
-        startBid();
+
+        //next call is commented because startBid will be raised when the game state will change (when everyone is ready and have his cards)
+        //startBid();
     }
+
     public int[] getPositionDistribution() {
         //on cherche a savoir a quel moment on va mettre des cartes dans le chien
         //On cree une liste de moments qui ne peuvent pas exister
@@ -432,25 +600,28 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //bid phase
-    private void startBid() {
-        if (position == playerTurn) {
-            askBid(bid);
-        }
-    }
+
+
     @Override
-    public void askBid(Bid bid) {
+    public void askBid() {
         Intent possibleBids = new Intent();
         ArrayList<Bid> bids = getPossibleBids();
         possibleBids.putExtra("bids", new iBids(bids));
         localBroadcast(BroadcastCode.ASK_BID, possibleBids);
     }
+
+    //called by the activity when the local player choses
     public void BidChosen(Bid b){
-        if (!(b == Bid.PASS)){
+
+        if (checkBid(b)){
             bid = b;
         }
+        else
+            bid=Bid.PASS;
         sendBid(b);
-        checkBidProgress();
+        setState(States.REVEAL_DOG);
+        //checkBidProgress();
+
     }
     private void checkBidProgress() {
         boolean check = true;
@@ -945,20 +1116,23 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return bids;
     }
+
+    //que fait cette méthode ? On dirait qu'elle vérifie quand un joueur fait son bid qu'il a le droit
     //default (if bid null?) return false
     public boolean checkBid(Bid bid) {
-        Bid onGoingBid = bid;
-        switch (onGoingBid) {
+        switch (bid) {
+            case PASS:
+                return false;
             case SMALL :
-                if (bid == Bid.SMALL) {
+                if (mTopBid == Bid.SMALL) {
                     return false;
                 } break;
             case GUARD :
-                if (bid == Bid.SMALL || bid == Bid.GUARD) {
+                if (mTopBid == Bid.SMALL || mTopBid == Bid.GUARD) {
                     return false;
                 } break;
             case GUARD_WITHOUT :
-                if (bid == Bid.SMALL || bid == Bid.GUARD || bid == Bid.GUARD_WITHOUT) {
+                if (mTopBid == Bid.SMALL || mTopBid == Bid.GUARD || mTopBid == Bid.GUARD_WITHOUT) {
                     return false;
                 } break;
             case GUARD_AGAINST :
@@ -968,6 +1142,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         return true;
     }
+
     //check if the next to play is supposed to be you
     public boolean checkMyTurn(int i) {
         if (position == i+1 || (position == 0 && i == 3)) {
@@ -1008,9 +1183,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public String getUsernameWithPlayer(Player p){
         return p.getUsername();
     }
+
+    //TODO: remplacer par getPlayerWithid
     public Player getPlayerWithUsername(String username){
         for (Player player : players){
-            if (player.getUsername() == username){
+            if (player.getUsername().equals(username)){
                 return player;
             }
         }
@@ -1027,8 +1204,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void sendFullDeck(String username){
         mApiManagerService.sendObjectToAll(new iFullDeck(deck, username));
     }
-    public void sendDeck(ArrayList<Card> d, String username){
-        mApiManagerService.sendObjectToAll(new iDeck(d, username));
+
+    //TODO: send only to one player and not to everyone
+    public void sendDeck(ArrayList<Card> d, String username, String id){
+        mApiManagerService.sendObjectToAll(new iDeck(d, username, id));
     }
     public void sendBid(Bid b){
         mApiManagerService.sendObjectToAll(b);
@@ -1121,6 +1300,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         onGoingFold.addCard(card, player);
         checkFoldComplet();
     }
+
+    //TODO: refactor with participantId addressing
     @Override
     public void onCardsDealt(ArrayList<Card> cards, String username) {
         Player concernedPlayer = getPlayerWithUsername(username);
@@ -1129,11 +1310,12 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 player.setHand(cards);
             }
         }
+
+        //if it's our cards
         if (concernedPlayer.getPosition() == position){
             addCardsActivity(players[position].getHand().getCardList());
+            setState(States.BID);
         }
-        //TODO lancer startBid ssi tous les joueurs ont leur cartes pour éviter les bugs
-        startBid();
     }
     @Override
     public void onAnnounce(String username, ArrayList<Announces> announces) {
@@ -1147,18 +1329,39 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         gotAnnounces[player.getPosition()] = true;
         checkAnnounceProgress();
     }
+
+
+    //called by the broadcast from APIManager when another player announce a bid
     @Override
     public void onBid(Bid newBid) {
+        //TODO: check that it's the correct player turn
+
+        //this is done externally in the setState. It would be better if done here
+        //update player state
+        //setState(States.REVEAL_DOG,newBid.getParticipantId());
+
+        //check if the bid is higher than the current bid
         if (checkBid(newBid)) {
             bid = newBid;
         }
         setBidActivity(newBid);
+
+
+        //TODO: je pense que la ligne qui suit est maladroite. Il faut utiliser le participantId
+        //pour référencer les joueurs (les positions ne sont peut être pas définies pareil par tous
+        //les joueurs.
         saidBid[newBid.getPlayerPosition()] = true;
-        checkBidProgress();
+
+
+
+        //mécanisme simplifier par le système de game state
+        /*checkBidProgress();
         if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
-            askBid(bid);
+            askBid();
         }
+        */
     }
+
     @Override
     public void onDeckReceived(Deck deck) {
         this.deck = deck;
@@ -1179,41 +1382,5 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         startAnnounce();
     }
 
-    /**
-    Update player state.
-     Check and update game state
-     */
-    private void setState(States s, String participantId){
-        //update player state
-        if (mApiManagerService == null){
-            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
-            return;
-        }
-        mApiManagerService.setState(s);
-
-        if (mMyParticipantId == null){
-            Log.i("debug", "can't set state "+s+", null participant id.");
-            return;
-        }
-        mPlayersState.put(participantId, s);
-
-        //update game state
-
-        //check if we are ready to deal
-        if (s==States.DEAL){
-            Set<String> ids = mPlayersState.keySet();
-            for (String id : ids){
-                if (mPlayersState.get(id) != States.DEAL){
-                    return;
-                }
-            }
-            mGameState = GameState.DEAL;
-            Log.i("log","GAME_STATE DEAL");
-            //TODO : check if we are the dealer. If so, we should deal the cards (shuffle and send the hand to each player)
-          }
-    }
-
-    private void setState(States s){
-        setState(s,mMyParticipantId);
-    }
 }
+

@@ -25,6 +25,7 @@ public class Player {
 		//position?
 	}
 
+	//on est obligé d'avoir ce contructeur un peu bizarre aui initialise à moitié ?
 	public Player(String username)
 	{
 		this.username = username;
@@ -62,6 +63,7 @@ public class Player {
 	public int getPosition() {
 		return position;
 	}
+	public String getParticipantId(){ return mParticipantId;}
 
 
 
