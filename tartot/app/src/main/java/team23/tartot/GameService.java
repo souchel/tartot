@@ -43,6 +43,10 @@ import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
 
+    ////////////////
+    //Network code//
+    ////////////////
+
     //TODO: Pour Guillaume, c'est pas normal que certains attributs  du binding ne soient pas utilisés
     // Binder given to clients
     private final IBinder mBinder = new LocalBinderGame();
@@ -263,10 +267,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-
-    //game manager implementation :
-
-
+    ////////////////////////////////////
+    //game manager implementation code//
+    ////////////////////////////////////
     private Player[] players;
     private Points stats ;
     int points;
@@ -320,7 +323,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      * position (our position)
      * indexDealer (=first player in player array)
      *
-     *
+     *public
      */
     public void initialize() {
         //{ [String username ; int status], ... }
@@ -346,8 +349,161 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         //set up the first player to play (dealer+1)
         playerTurn = indexDealer;
         nextPlayer();
-
     }
+
+    //state management functions
+    /////////////////////////////
+    /**
+     * rename of startGame
+     * deal the cards if we are the dealer
+     * else wait
+     */
+    private void onDealState(){
+        if (position == indexDealer) {
+            Log.i("state","onDealState");
+            if (nbDone == 0) {
+                initializeDeck();
+                deck.shuffle();
+            }
+            distribute(getPositionDistribution());
+        } //else need to receive card before all ie use onCardsDelt method
+    }
+
+    //called game state is BID and at each player turn
+    private void onBidState() {
+        if (position == playerTurn) {
+            askBid();
+        }
+    }
+
+    /**
+     * when we reveal the dog and the caller makes his ecart *lol*
+     */
+    private void onRevealDogState(){
+        //TODO: to code
+    }
+
+    private void onPlayingState(){
+        //TODO:code
+    }
+
+    private void onRoundEndState(){
+        //TODO:to code
+    }
+
+
+    /**
+     Update player state.
+     Check and update game state
+     */
+    private void setState(States s, String participantId){
+        //update player state
+        if (mApiManagerService == null){
+            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
+            return;
+        }
+
+        if (mMyParticipantId == null){
+            Log.i("debug", "can't set state "+s+", null participant id.");
+            return;
+        }
+
+        //if WE are changing state, we notify
+        if (participantId.equals(mMyParticipantId)) {
+            //TODO: On pourrait diffuser le state en même temps que la carte jouée ou le bid !
+            //=> diminution du traffic réseau
+            mApiManagerService.setState(s);
+        }
+
+        mPlayersState.put(participantId, s);
+
+        //update game state if needed
+
+        //check if we are ready to deal
+        Set<String> ids = mPlayersState.keySet();
+        boolean changeState = true;
+        switch (s){
+            case DEAL:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.DEAL){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    mGameState = GameState.DEAL;
+                    Log.i("log", "GAME_STATE DEAL");
+                }
+                break;
+
+            case BID:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.BID){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    //if everyone is in BID state, we switch game state to bid and call the nextState
+                    mGameState = GameState.BID;
+                    Log.i("log", "GAME_STATE BID");
+                }
+                break;
+
+            case REVEAL_DOG:
+                for (String id : ids){
+                    if (mPlayersState.get(id) != States.REVEAL_DOG){
+                        changeState = false;
+                        break;
+                    }
+                }
+                if (changeState) {
+                    //if everyone is in BID state, we switch game state to bid and call the nextState
+                    mGameState = GameState.REVEAL_DOG;
+                    Log.i("log", "GAME_STATE REVEAL_DOG");
+                }
+                break;
+        }
+        onState();
+    }
+
+    private void setState(States s){
+        setState(s,mMyParticipantId);
+    }
+
+
+    /**
+     * base state function.
+     * call the correct state function depending on the state we are in.
+     * SHOULD ONLY BE CALLED IN THE SETSTATE method ! (otherwise it may be called several times
+     * in a row and do strange things).
+     */
+    private void onState(){
+        switch (mGameState){
+            case PRE_START:
+                return;
+            case DEAL:
+                onDealState();
+                break;
+            case BID:
+                onBidState();
+                break;
+            case REVEAL_DOG:
+                onRevealDogState();
+                break;
+            case PLAYING:
+                onPlayingState();
+                break;
+            case ROUND_END:
+                onRoundEndState();
+                break;
+            default:
+                return;
+        }
+    }
+
+    //all the rest that should be tidied
+    /////////////////////////////////////
 
     public Player getSelfPlayer(){
         return players[position];
@@ -367,21 +523,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     */
 
-    /**
-     * rename of startGame
-     * deal the cards if we are the dealer
-     * else wait
-     */
-    public void onDealState(){
-        if (position == indexDealer) {
-            Log.i("state","onDealState");
-            if (nbDone == 0) {
-                initializeDeck();
-                deck.shuffle();
-            }
-            distribute(getPositionDistribution());
-        } //else need to receive card before all ie use onCardsDelt method
-    }
+
 
     public void initializeDeck()
     {
@@ -458,27 +600,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //called game state is BID and at each player turn
-    private void onBidState() {
-        if (position == playerTurn) {
-            askBid();
-        }
-    }
 
-    /**
-     * when we reveal the dog and the caller makes his ecart *lol*
-     */
-    private void onRevealDogState(){
-        //TODO: to code
-    }
-
-    private void onPlayingState(){
-        //TODO:code
-    }
-
-    private void onRoundEndState(){
-        //TODO:to code
-    }
 
     @Override
     public void askBid() {
@@ -1260,114 +1382,5 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         startAnnounce();
     }
 
-    /**
-    Update player state.
-     Check and update game state
-     */
-    private void setState(States s, String participantId){
-        //update player state
-        if (mApiManagerService == null){
-            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
-            return;
-        }
-
-        if (mMyParticipantId == null){
-            Log.i("debug", "can't set state "+s+", null participant id.");
-            return;
-        }
-
-        //if WE are changing state, we notify
-        if (participantId.equals(mMyParticipantId)) {
-            //TODO: On pourrait diffuser le state en même temps que la carte jouée ou le bid !
-            //=> diminution du traffic réseau
-            mApiManagerService.setState(s);
-        }
-
-        mPlayersState.put(participantId, s);
-
-        //update game state if needed
-
-        //check if we are ready to deal
-        Set<String> ids = mPlayersState.keySet();
-        boolean changeState = true;
-        switch (s){
-            case DEAL:
-            for (String id : ids){
-                if (mPlayersState.get(id) != States.DEAL){
-                    changeState = false;
-                    break;
-                }
-            }
-            if (changeState) {
-                mGameState = GameState.DEAL;
-                Log.i("log", "GAME_STATE DEAL");
-            }
-            break;
-
-            case BID:
-            for (String id : ids){
-                if (mPlayersState.get(id) != States.BID){
-                    changeState = false;
-                    break;
-                }
-            }
-            if (changeState) {
-                //if everyone is in BID state, we switch game state to bid and call the nextState
-                mGameState = GameState.BID;
-                Log.i("log", "GAME_STATE BID");
-            }
-            break;
-
-            case REVEAL_DOG:
-                for (String id : ids){
-                    if (mPlayersState.get(id) != States.REVEAL_DOG){
-                        changeState = false;
-                        break;
-                    }
-                }
-                if (changeState) {
-                    //if everyone is in BID state, we switch game state to bid and call the nextState
-                    mGameState = GameState.REVEAL_DOG;
-                    Log.i("log", "GAME_STATE REVEAL_DOG");
-                }
-                break;
-        }
-        onState();
-    }
-
-    private void setState(States s){
-        setState(s,mMyParticipantId);
-    }
-
-
-    /**
-     * base state function.
-     * call the correct state function depending on the state we are in.
-     * SHOULD ONLY BE CALLED IN THE SETSTATE method ! (otherwise it may be called several times
-     * in a row and do strange things).
-     */
-    private void onState(){
-        switch (mGameState){
-            case PRE_START:
-                return;
-            case DEAL:
-                onDealState();
-                break;
-            case BID:
-                onBidState();
-                break;
-            case REVEAL_DOG:
-                onRevealDogState();
-                break;
-            case PLAYING:
-                onPlayingState();
-                break;
-            case ROUND_END:
-                onRoundEndState();
-                break;
-            default:
-                return;
-        }
-    }
 }
 
