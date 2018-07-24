@@ -323,6 +323,32 @@ public class GameActivity extends AppCompatActivity {
     }
 
     /**
+     * protected graphical method to update the deck so that there is always more card in the bottom than in the top
+     * @param player the player whose deck is to "graphically update" (not sure if it's useful)
+     */
+    protected void updatePlayerDeck(Player player) {
+        if (player.isEqual(myPlayer)) {
+            LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
+            LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
+            int amountUp = cardsUpLayout.getChildCount();
+            int amountDown = cardsDownLayout.getChildCount();
+            Log.i("updateDeck", "avant le while");
+            while (amountUp > amountDown) {
+                FrameLayout cardLayout = (FrameLayout) cardsUpLayout.getChildAt(amountUp-1);
+                Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
+                cardsUpLayout.removeViewAt(amountUp-1);
+
+                cardsDownLayout.addView(cardLayout, 0);
+
+
+                amountUp = cardsUpLayout.getChildCount();
+                amountDown = cardsDownLayout.getChildCount();
+                Log.i("updateDeck", "up : "+String.valueOf(amountUp) + " ; down : " +String.valueOf(amountDown));
+            }
+        }
+    }
+
+    /**
      * method called in the onCreate() of this Activity
      */
     protected void initializePlayersPlacement() {
@@ -599,7 +625,6 @@ public class GameActivity extends AppCompatActivity {
                 /*/
 
                 //Si les cartes sont à jouer dans l'écart
-                // /!\ pour la V1, on ne peut cliquer qu'une fois sur une carte pour la mettre dans l'écart. Si on s'est trompé c'est dans le cul
                 if (putOnEcart) {
                     LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
 
@@ -644,12 +669,12 @@ public class GameActivity extends AppCompatActivity {
 
                 } else {
                     //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
-                    //FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
+                    //TODO FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
                     FrameLayout cardFL = getCardLayoutByRelativePosition(0);
                     playCardInGameZone(value, suit, cardFL);
                     deleteCardFromDeck(card, myPlayer);
                 }
-
+                updatePlayerDeck(myPlayer);
                 }
             });
         }
@@ -666,8 +691,20 @@ public class GameActivity extends AppCompatActivity {
             cardKingIV.setImageBitmap(kingResizedBP);
             cardFL.addView(cardKingIV);
         } else if (value == "D") {
-            ImageView cardKingIV = new ImageView(getApplicationContext());
+            ImageView cardQueenIV = new ImageView(getApplicationContext());
             Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_queen);
+            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
+            cardQueenIV.setImageBitmap(kingResizedBP);
+            cardFL.addView(cardQueenIV);
+        } else if (value == "C") {
+            ImageView cardKingIV = new ImageView(getApplicationContext());
+            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_horseman);
+            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
+            cardKingIV.setImageBitmap(kingResizedBP);
+            cardFL.addView(cardKingIV);
+        } else if (value == "V") {
+            ImageView cardKingIV = new ImageView(getApplicationContext());
+            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_jack);
             Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
             cardKingIV.setImageBitmap(kingResizedBP);
             cardFL.addView(cardKingIV);
