@@ -77,9 +77,9 @@ public class GameActivity extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-        Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
+        //Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
         screenMetrixRatio = (float) height / 720;
-        Log.i("showMetrix", String.valueOf(screenMetrixRatio));
+        //Log.i("showMetrix", String.valueOf(screenMetrixRatio));
 
         normalLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
         halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
@@ -352,10 +352,10 @@ public class GameActivity extends AppCompatActivity {
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
             int amountUp = cardsUpLayout.getChildCount();
             int amountDown = cardsDownLayout.getChildCount();
-            Log.i("updateDeck", "avant le while");
+            //Log.i("updateDeck", "avant le while");
             while (amountUp > amountDown) {
                 FrameLayout cardLayout = (FrameLayout) cardsUpLayout.getChildAt(amountUp-1);
-                Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
+                //Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
                 cardsUpLayout.removeViewAt(amountUp-1);
 
                 cardsDownLayout.addView(cardLayout, 0);
@@ -363,7 +363,7 @@ public class GameActivity extends AppCompatActivity {
 
                 amountUp = cardsUpLayout.getChildCount();
                 amountDown = cardsDownLayout.getChildCount();
-                Log.i("updateDeck", "up : "+String.valueOf(amountUp) + " ; down : " +String.valueOf(amountDown));
+                //Log.i("updateDeck", "up : "+String.valueOf(amountUp) + " ; down : " +String.valueOf(amountDown));
             }
         }
     }
@@ -525,7 +525,7 @@ public class GameActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     chosenBid = thisBid;
-                    Log.i("bid", chosenBid.toString());
+                    //Log.i("bid", chosenBid.toString());
                     bidLayout.setVisibility(View.GONE);
                 }
             });
@@ -577,16 +577,16 @@ public class GameActivity extends AppCompatActivity {
                 addCardToLayout(currentCard, cardFL, false);
                 //we add the frameLayout to the horizontal LinearLayout depending on the number of card already displayed
                 if (cardNumber <= Math.round(NUMBER_OF_CARDS / 2)) {
-                    Log.i("dogToDeck", "card added up");
+                    //Log.i("dogToDeck", "card added up");
                     cardsDownLayout.addView(cardFL);
                 } else if (cardNumber < NUMBER_OF_CARDS) {
-                    Log.i("dogToDeck", "card added down");
+                    //Log.i("dogToDeck", "card added down");
                     cardsUpLayout.addView(cardFL);
                 } else {
                     //We have to refresh the layouts to have the correct current count of children
                     cardsUpLayout = findViewById(R.id.cards_up_layout);
                     cardsDownLayout = findViewById(R.id.cards_down_layout);
-                    Log.i("dogToDeck", "up: " + String.valueOf(cardsUpLayout.getChildCount()) + " ; down: " + String.valueOf(cardsDownLayout.getChildCount()));
+                    //Log.i("dogToDeck", "up: " + String.valueOf(cardsUpLayout.getChildCount()) + " ; down: " + String.valueOf(cardsDownLayout.getChildCount()));
                     if (cardsDownLayout.getChildCount() - cardsUpLayout.getChildCount() >= 1) {
                         cardsUpLayout.addView(cardFL);
                     } else {
@@ -1026,9 +1026,9 @@ public class GameActivity extends AppCompatActivity {
                 cardLayout = (FrameLayout) subLinearLayout.getChildAt(1);
             }
         } else if (playersAmount == 3) {
-            Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
+            //Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
         } else if (playersAmount == 5) {
-            Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
+            //Log.i("getCard", String.valueOf(playersAmount)+" joueurs");
         }
 
 
