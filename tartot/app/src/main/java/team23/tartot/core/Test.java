@@ -21,8 +21,8 @@ public class Test {
 		GameService gameManager ;
 		String[] usernames = {"Hugo", "Guillaume", "Paul", "Thomas"};
 		gameManager = new GameService();
-		gameManager.initialize(usernames);
-		gameManager.initializeGame();
+		//gameManager.initialize(usernames);
+		//gameManager.initializeGame();
 		System.out.println("deck une fois melange :" + gameManager.getDeck());
 		System.out.println("taille du paquet : "+ gameManager.getDeck().getCardList().size());
 		System.out.println("On coupe");
