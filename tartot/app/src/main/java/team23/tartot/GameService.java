@@ -12,20 +12,13 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import team23.tartot.core.Announces;
 import team23.tartot.core.Bid;
@@ -44,6 +37,8 @@ import team23.tartot.core.iDeck;
 import team23.tartot.core.iDog;
 import team23.tartot.core.iEcart;
 import team23.tartot.core.iFullDeck;
+import team23.tartot.core.States;
+import team23.tartot.core.GameState;
 import team23.tartot.network.iNetworkToCore;
 
 public class GameService extends Service implements iNetworkToCore, callbackGameManager {
@@ -53,6 +48,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private boolean mInGame = false;
     private boolean mBoundToNetwork = false;
     private ApiManagerService mApiManagerService;
+    private States mState; //keep track of what we are doing
+    private GameState mGameState = GameState.PRE_START;
+
+    private HashMap<String,States> mPlayersState = new HashMap<String,States>();
+
     public GameService() {
     }
 
@@ -83,6 +83,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         Log.i("debug", "act bindService");
         bindService(networkIntent, mNetworkConnection, Context.BIND_AUTO_CREATE);
 
+        //initialize the game state:
+        setState(States.PRE_START);
+
         return START_NOT_STICKY;
     }
 
@@ -97,6 +100,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
             initialize();
+
+            //notify all players ready to deal
+            setState(States.DEAL);
             localBroadcast(BroadcastCode.READY_TO_START);
         }
 
@@ -162,6 +168,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         @Override
         public void onReceive(Context context, Intent intent) {
             BroadcastCode code = (BroadcastCode) intent.getSerializableExtra("value");
+            String senderId = null;
             switch (code){
                 //TODO utility of localBroadcast here?
                 //TODO ECART_RECEIVED need to be added
@@ -222,13 +229,17 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iCard ic = (iCard) intent.getSerializableExtra("card");
                     String p3 = ic.getPlayer();
                     Card c = ic.getCard();
-                    String senderId = intent.getStringExtra("participantId");
+                    senderId = intent.getStringExtra("participantId");
                     onPlayCard(p3, c);
                     Log.i("senderId",senderId+"");
                     Intent j6 = new Intent();
                     j6.putExtra("text", "value: " + c.getValue() + ""+c.getSuit().toString() +" from " + senderId);
                     localBroadcast(BroadcastCode.EXAMPLE, j6);
                     break;
+                case PLAYER_STATE_UPDATE:
+                    States s = (States) intent.getSerializableExtra("state");
+                    senderId = intent.getStringExtra("participantId");
+                    setState(s, senderId);
             }
         }
     };
@@ -298,6 +309,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
 
 
+    /**
+     * Called when we are ready to begin. i.e. when API Service is bound
+     * In charge of :
+     *
+     */
     public void initialize() {
         //{ [String username ; int status], ... }
         ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
@@ -390,6 +406,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             sendDeck(player.getHand().getCardList(), player.getUsername());
             sendDog(chien.getCardList());
         }
+        addCardsActivity(players[position].getHand().getCardList());
         startBid();
     }
     public int[] getPositionDistribution() {
@@ -429,7 +446,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         localBroadcast(BroadcastCode.ASK_BID, possibleBids);
     }
     public void BidChosen(Bid b){
-        //TODO bid.PASS ? voir comment hugo le gère, il faudra ou non changer la bid en cours
+        if (!(b == Bid.PASS)){
+            bid = b;
+        }
         sendBid(b);
         checkBidProgress();
     }
@@ -442,9 +461,29 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         if (check) {
             if (bid == bid.PASS){
+                setDogActivity();
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 prepareNextRound();
+                hideActivity();
+                startRoundActivity(false, -1, null);
                 //TODO faire compter la pass dans les stats
             } else {
+                startRoundActivity(true, bid.getPlayerPosition(), bid);
+                if (bid == bid.SMALL || bid == bid.GUARD) {
+                    setDogActivity();
+                    try {
+                        TimeUnit.SECONDS.sleep(3);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (position == bid.getPlayerPosition()){
+                    addCardsActivity(chien.getCardList());
+                }
                 for (Player player : players) {
                     if (player.getPosition() == bid.getPlayerPosition()) {
                         player.setTeam(Team.ATTACK);
@@ -453,7 +492,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                         }
                     } else player.setTeam(Team.DEFENSE);
                 }
-                //TODO montrer le chien dans l'activity???
+                hideActivity();
                 //TODO demander au joueur de faire son ecart via l activite correspondante
                 //ecarter(cards);
             }
@@ -514,13 +553,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     @Override
     //méthode appelée quand le choix d'annonce est fait
-    public void askAnnounce(ArrayList<Announces> announces) {
+    public void askAnnounce(ArrayList<Announces> announces) { //TODO nom de méthode pas adpaté
         if (announces != null)
         {
             for (Announces announce : announces){
                 playersAnnounces.add(announce);
             }
         }
+        setAnnouncesActivity(position, announces);
         sendAnnounces(announces);
         checkAnnounceProgress();
     }
@@ -613,8 +653,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
     @Override
     //TODO no need callback method anymore?
-    public void continuFoldCalledBack(Card card)
-    {
+    public void continuFoldCalledBack(Card card) {
         if (checkCard(card, players[position]))
         {
             onGoingFold.addCard(card);
@@ -655,6 +694,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         checkAnnouncesEnd();
         //on suppose que bid contient le bid gagnant et pas juste le bid local
         stats.updatePointsAndBid(bid, attackOudlerNumber, playersAnnounces, pointsAttack);
+        setWinnerActivity(attackOudlerNumber, pointsAttack);
         prepareNextRound();
     }
 
@@ -662,7 +702,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
     //prepare next round methods
     public void reinitializeForNextRound() {
-        //le deck se réinitialise pas mais ce partage par des méthodes network
+        //le deck se réinitialise pas mais se partage par des méthodes network
         chien = new Deck();
         bid = null;
         playersAnnounces = null;
@@ -696,6 +736,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         if (indexDealer < 3) {
             indexDealer += 1;
         } else indexDealer = 0;
+        setDealerActivity(); //to change the dealer on the view in the activity
     }
     public void prepareNextRound() {
         reinitializeForNextRound();
@@ -981,7 +1022,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //sending methods
+    //sending methods to API
     //TODO useful? only one line each time
     public void sendFullDeck(String username){
         mApiManagerService.sendObjectToAll(new iFullDeck(deck, username));
@@ -1003,6 +1044,68 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     }
     public void sendCard(Card c){
         mApiManagerService.sendObjectToAll(new iCard(c, players[position].getUsername()));
+    }
+
+    //sending to local activity
+    public void setWinnerActivity(int attackOudlerNumber, double pointsAttack){
+        if (theAttackWins(oudlerNumberIntoPointsNeeded(attackOudlerNumber), pointsAttack)){
+            for (Player winner : players){
+                if (winner.getTeam() == Team.ATTACK){
+                    Intent intent = new Intent();
+                    intent.putExtra("winner", winner.getPosition());
+                    localBroadcast(BroadcastCode.SHOW_WINNER, intent);
+                }
+            }
+        } else{ //TODO c'est chelou d'afficher un winner pour la défense
+            if (players[0].getTeam() == Team.DEFENSE){
+                Intent intent = new Intent();
+                intent.putExtra("winner", 0);
+                localBroadcast(BroadcastCode.SHOW_WINNER, intent);
+            } else {
+                Intent intent = new Intent();
+                intent.putExtra("winner", 1);
+                localBroadcast(BroadcastCode.SHOW_WINNER, intent);
+            }
+        }
+    }
+    public void addCardsActivity(ArrayList<Card> cards){
+        Intent intent = new Intent();
+        ArrayList<Card> h = players[position].getHand().getCardList();
+        intent.putExtra("hand", cards);
+        localBroadcast(BroadcastCode.ADD_TO_HAND, intent);
+    }
+    public void setAnnouncesActivity(int playerID, ArrayList<Announces> announces){
+        Intent a = new Intent();
+        a.putExtra("player", playerID);
+        a.putExtra("announces", announces);
+        localBroadcast(BroadcastCode.ANNOUNCES, a);
+    }
+    public void setBidActivity(Bid b){
+        Intent intent = new Intent();
+        intent.putExtra("player", b.getPlayerPosition());
+        intent.putExtra("bid", b);
+        localBroadcast(BroadcastCode.SHOW_BID, intent);
+    }
+    public void setDogActivity(){
+        Intent dog = new Intent();
+        dog.putExtra("dog", chien.getCardList());
+        localBroadcast(BroadcastCode.SHOW_DOG, dog);
+    }
+    public void hideActivity(){
+        localBroadcast(BroadcastCode.HIDE);
+    }
+    //TODO 2nd arg useless?
+    public void startRoundActivity(Boolean start, int taker, Bid chosenBid){
+        Intent intent = new Intent();
+        intent.putExtra("start", start);
+        intent.putExtra("taker", taker);
+        intent.putExtra("bid", chosenBid);
+        localBroadcast(BroadcastCode.START_ROUND, intent);
+    }
+    public void setDealerActivity(){
+        Intent dealer = new Intent();
+        dealer.putExtra("dealer", indexDealer);
+        localBroadcast(BroadcastCode.SET_DEALER, dealer);
     }
 
 
@@ -1027,10 +1130,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             }
         }
         if (concernedPlayer.getPosition() == position){
-            Intent hand = new Intent();
-            ArrayList<Card> h = players[position].getHand().getCardList();
-            hand.putExtra("hand", h);
-            localBroadcast(BroadcastCode.ADD_TO_HAND, hand);
+            addCardsActivity(players[position].getHand().getCardList());
         }
         //TODO lancer startBid ssi tous les joueurs ont leur cartes pour éviter les bugs
         startBid();
@@ -1043,7 +1143,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 playersAnnounces.add(announces.get(i));
             }
         }
-        //TODO do something to make the activity show others announces
+        setAnnouncesActivity(player.getPosition(), announces);
         gotAnnounces[player.getPosition()] = true;
         checkAnnounceProgress();
     }
@@ -1052,6 +1152,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         if (checkBid(newBid)) {
             bid = newBid;
         }
+        setBidActivity(newBid);
         saidBid[newBid.getPlayerPosition()] = true;
         checkBidProgress();
         if (checkMyTurn(newBid.getPlayerPosition()) && !saidBid[position]) {
@@ -1076,5 +1177,43 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             attackDeck.addCard(card);
         }
         startAnnounce();
+    }
+
+    /**
+    Update player state.
+     Check and update game state
+     */
+    private void setState(States s, String participantId){
+        //update player state
+        if (mApiManagerService == null){
+            Log.i("debug", "can't set state "+s+", null reference on apimanagerService");
+            return;
+        }
+        mApiManagerService.setState(s);
+
+        if (mMyParticipantId == null){
+            Log.i("debug", "can't set state "+s+", null participant id.");
+            return;
+        }
+        mPlayersState.put(participantId, s);
+
+        //update game state
+
+        //check if we are ready to deal
+        if (s==States.DEAL){
+            Set<String> ids = mPlayersState.keySet();
+            for (String id : ids){
+                if (mPlayersState.get(id) != States.DEAL){
+                    return;
+                }
+            }
+            mGameState = GameState.DEAL;
+            Log.i("log","GAME_STATE DEAL");
+            //TODO : check if we are the dealer. If so, we should deal the cards (shuffle and send the hand to each player)
+          }
+    }
+
+    private void setState(States s){
+        setState(s,mMyParticipantId);
     }
 }

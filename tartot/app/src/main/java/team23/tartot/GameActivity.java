@@ -243,17 +243,37 @@ public class GameActivity extends AppCompatActivity {
                     //par exemple :
                     //initializeUI();
                     //ou bien
+                //TODO no idea why this case make the app crash in game
+                //case SHOW_WINNER:
+                //    onTurnEnded(mGameService.getPlayers()[(int) intent.getSerializableExtra("winner")]);
                 case ASK_BID:
                     iBids ibids = (iBids) intent.getSerializableExtra("bids");
                     if (ibids != null) {
                         ArrayList<Bid> bids = ibids.getBids();
                         onBidAsked(bids);
                     }
-
                     break;
                 case ADD_TO_HAND:
                     ArrayList<Card> cards = (ArrayList<Card>) intent.getSerializableExtra("hand");
                     addCardsToDeck(myPlayer, cards);
+                    break;
+                case ANNOUNCES:
+                    onAnnounces(mGameService.getPlayers()[(int) intent.getSerializableExtra("player")], (Announces[]) intent.getSerializableExtra("announces"));
+                    break;
+                case SHOW_BID:
+                    onBids(mGameService.getPlayers()[(int) intent.getSerializableExtra("player")], (Bid) intent.getSerializableExtra("bid"));
+                    break;
+                case SHOW_DOG:
+                    onShowDog((ArrayList<Card>) intent.getSerializableExtra("dog"));
+                    break;
+                case HIDE:
+                    onHideDogOrEcart();
+                    break;
+                case START_ROUND:
+                    onDoneStart((Boolean) intent.getSerializableExtra("start"), mGameService.getPlayers()[(int) intent.getSerializableExtra("taker")], (Bid) intent.getSerializableExtra("bid"));
+                    break;
+                case SET_DEALER:
+                    onNewDealer( mGameService.getPlayers()[(int) intent.getSerializableExtra("dealer")]);
                     break;
             }
 
@@ -543,8 +563,6 @@ public class GameActivity extends AppCompatActivity {
      * @param hand an ArrayList of Cards.
      */
     public void addCardsToDeck (Player player, ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
-        //TODO GAMESERVICE: need add dog to?
-
         if (player.isEqual(myPlayer)) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
@@ -840,7 +858,6 @@ public class GameActivity extends AppCompatActivity {
      * @param winner
      */
     public void onTurnEnded (Player winner) {
-        //TODO GAMESERVICE
         //TODO CLEAN THE MIDDLEGAMEZONE DEPENDING ON THE GAMEZONE INITIALIZATION !
         LinearLayout middleGameZone = findViewById(R.id.middle_game_zone);
         for (int i=0; i<middleGameZone.getChildCount(); i++) {
@@ -868,7 +885,7 @@ public class GameActivity extends AppCompatActivity {
      * @return the Bid chosen
      */
     public void onBidAsked(ArrayList<Bid> possibleBids) {
-        //TODO GAMESERVICE
+        //TODO GAMESERVICE send selected bid back, see at getchosenbid
         LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         //bidsLayout.removeAllViews();
         for (int i =0; i<bidsLayout.getChildCount(); i++) {
@@ -1083,7 +1100,7 @@ public class GameActivity extends AppCompatActivity {
      * @param announces array of announces
      */
     public void onAnnounces(Player player, Announces[] announces) {
-        //TODO GAMESERVICE
+        //TODO take care of this [] or arraylist pb
         String announcStr = "";
         for (int i = 0; i<announces.length; i++) {
             announcStr = announcStr + announces[i].toString(getApplicationContext());
@@ -1100,7 +1117,7 @@ public class GameActivity extends AppCompatActivity {
      * @param bid
      */
     public void onBids(Player player, Bid bid) {
-        //TODO GAMESERVICE
+      //TODO je sais plus pk, mais les bid contiennent l'info du joueur l'ayant fait, donc l'attribut player devrait ps être utile (faudra juste faire gaffe quand le service reçoit la bid de l'activity de bien set ça, je crois que c pas fait encore)
         addStrToPlayerBATextView(player, bid.toString(getApplicationContext()));
     }
 
@@ -1120,7 +1137,6 @@ public class GameActivity extends AppCompatActivity {
      * @param dog an ArrayList of (3 or 6) Cards
      */
     public void onShowDog(ArrayList<Card> dog) {
-        //TODO GAMESERVICE
         LinearLayout dAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
         LinearLayout dogAndEcartLayout = (LinearLayout) dAndEcartLayout.getChildAt(0);
         dogAndEcartLayout.removeAllViews();
@@ -1139,7 +1155,7 @@ public class GameActivity extends AppCompatActivity {
      * public method to hide the dog or the ecart layout
      */
     public void onHideDogOrEcart() {
-        //TODO GAMESERVICE
+        //TODO optimisation, don't use a service callback just for that
         LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
         dogAndEcartLayout.setVisibility(View.GONE);
     }
@@ -1151,7 +1167,7 @@ public class GameActivity extends AppCompatActivity {
      * @param bid the bid which has been taken (if start == false: bid == Null)
      */
     public void onDoneStart(boolean start, Player taker, Bid bid) {
-        //TODO GAMESERVICE
+        //TODO shouldn't it do nothing if start == false? (so just don't trigger the method)
         //LinearLayout bidsLayout = findViewById(R.id.bids_layout);
         //bidsLayout.removeAllViews();
         for (int i =0; i<playersAmount; i++) {
@@ -1173,7 +1189,6 @@ public class GameActivity extends AppCompatActivity {
      * @param dealer the player who is the dealer
      */
     public void onNewDealer(Player dealer) {
-        //TODO GAMESERVICE
         initializeGameBoard(playersAmount);
         int relativePos = getRelativePositionByPlayer(dealer);
         TextView takerTV = (TextView) findPlayerLayoutByRelativePosition(playersAmount, relativePos).getChildAt(0);
@@ -1202,6 +1217,3 @@ public class GameActivity extends AppCompatActivity {
         return ecart;
     }
 }
-
-
-
