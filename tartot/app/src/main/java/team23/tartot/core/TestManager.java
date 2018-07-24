@@ -11,7 +11,7 @@ public class TestManager {
 	public void main(String[] args) throws IOException {
 		String[] usernames = {"Hugo", "Gui", "Paul", "blu","Laure"};
 		GameService gameManager = new GameService();
-		gameManager.initialize(usernames);
+		//gameManager.initialize(usernames);
 		Player laure = new Player("Laure",4,""+4);
 		Player paul = new Player("Paul",2,""+2);
 		Player hugo = new Player("Hugo",0,""+0);
