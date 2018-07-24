@@ -188,6 +188,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
                     String p = id.getPlayer();
+                    //update the deck in the Player attribute
                     onCardsDealt(h, p);
                     Intent j2 = new Intent();
                     j2.putExtra("text", "player: " + p + "should have his cards now");
@@ -271,7 +272,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     int oudlersNumber ;
     private Deck deck;
     OnGoingFold onGoingFold ;
-    int indexDealer ;
+    int indexDealer ; //index dans le tableau des players ?
     public Deck chien;
     Bid bid;
     private ArrayList<Announces> playersAnnounces;
@@ -290,6 +291,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
     //deprecated i think
+    /*
     public void initialize(String[] usernames) {
         deck = new Deck();
         players = new Player[usernames.length];
@@ -306,41 +308,51 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         bid = null;
         attackDeck = new Deck();
         defenseDeck = new Deck();
-    }
+    }*/
 
 
     /**
      * Called when we are ready to begin. i.e. when API Service is bound
      * In charge of :
+     * initialize player array. TODO:Check that the player order is the same everywhere because it iterate through HashMap which is an unordered structure
+     * mMyparticipantId
+     * position (our position)
+     * indexDealer (=first player in player array)
+     *
      *
      */
     public void initialize() {
         //{ [String username ; int status], ... }
-        ArrayList<HashMap<String,String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
+        ArrayList<HashMap<String, String>> rawPlayersInfos = mApiManagerService.getPlayersInRoomInfos();
         deck = new Deck();
         players = new Player[rawPlayersInfos.size()];
         mMyParticipantId = mApiManagerService.getMyParticipantId();
-        for (int i = 0 ; i < rawPlayersInfos.size(); i++)
-        {
+        for (int i = 0; i < rawPlayersInfos.size(); i++) {
             HashMap<String, String> rawInfos = rawPlayersInfos.get(i);
-            players[i] = new Player(rawInfos.get("username"), i, "participantId");
+            players[i] = new Player(rawInfos.get("username"), i, rawInfos.get("participantId"));
             //initialize the local player position
-            if(rawInfos.get("participantId").equals(mMyParticipantId)){
+            if (rawInfos.get("participantId").equals(mMyParticipantId)) {
                 position = i;
             }
             gotAnnounces[i] = false;
             saidBid[i] = false;
         }
-        indexDealer = 0 ;
+        indexDealer = 0;
         chien = new Deck();
         stats = new Points(players);
         bid = null;
+
+        //set up the first player to play (dealer+1)
+        playerTurn = indexDealer;
+        nextPlayer();
+
     }
 
     public Player getSelfPlayer(){
         return players[position];
     }
 
+    /*
     public void startGame() {
         playerTurn = indexDealer;
         nextPlayer(); //don't need this for distribution phase, so set up for first player to play
@@ -352,13 +364,24 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             distribute(getPositionDistribution());
         } //else need to receive card before all ie use onCardsDelt method
     }
+    */
 
-    //initialize
-    public void initializeGame()
-    {
-        initializeDeck();
-        deck.shuffle();
+    /**
+     * rename of startGame
+     * deal the cards if we are the dealer
+     * else wait
+     */
+    public void onDealState(){
+        if (position == indexDealer) {
+            Log.i("state","onDealState");
+            if (nbDone == 0) {
+                initializeDeck();
+                deck.shuffle();
+            }
+            distribute(getPositionDistribution());
+        } //else need to receive card before all ie use onCardsDelt method
     }
+
     public void initializeDeck()
     {
         for (Suit suit : Suit.values())
@@ -382,7 +405,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
 
-    //distribution phase
     public void distribute(int[] indexes)
     {
         //On distribue les cartes 3 par 3 aux 4 joueurs
@@ -403,12 +425,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         //sending cards to player via network
         for (Player player : players) {
-            sendDeck(player.getHand().getCardList(), player.getUsername());
+            sendDeck(player.getHand().getCardList(), player.getUsername(), player.getParticipantId());
             sendDog(chien.getCardList());
         }
         addCardsActivity(players[position].getHand().getCardList());
-        startBid();
+
+        //next call is commented because startBid will be raised when the game state will change (when everyone is ready and have his cards)
+        //startBid();
     }
+
     public int[] getPositionDistribution() {
         //on cherche a savoir a quel moment on va mettre des cartes dans le chien
         //On cree une liste de moments qui ne peuvent pas exister
@@ -433,7 +458,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
 
     //bid phase
-    private void startBid() {
+    private void onBidState() {
         if (position == playerTurn) {
             askBid(bid);
         }
@@ -1008,9 +1033,11 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public String getUsernameWithPlayer(Player p){
         return p.getUsername();
     }
+
+    //TODO: remplacer par getPlayerWithid
     public Player getPlayerWithUsername(String username){
         for (Player player : players){
-            if (player.getUsername() == username){
+            if (player.getUsername().equals(username)){
                 return player;
             }
         }
@@ -1027,8 +1054,10 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void sendFullDeck(String username){
         mApiManagerService.sendObjectToAll(new iFullDeck(deck, username));
     }
-    public void sendDeck(ArrayList<Card> d, String username){
-        mApiManagerService.sendObjectToAll(new iDeck(d, username));
+
+    //TODO: send only to one player and not to everyone
+    public void sendDeck(ArrayList<Card> d, String username, String id){
+        mApiManagerService.sendObjectToAll(new iDeck(d, username, id));
     }
     public void sendBid(Bid b){
         mApiManagerService.sendObjectToAll(b);
@@ -1121,6 +1150,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         onGoingFold.addCard(card, player);
         checkFoldComplet();
     }
+
+    //TODO: refactor with participantId addressing
     @Override
     public void onCardsDealt(ArrayList<Card> cards, String username) {
         Player concernedPlayer = getPlayerWithUsername(username);
@@ -1129,11 +1160,12 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 player.setHand(cards);
             }
         }
+
+        //if it's our cards
         if (concernedPlayer.getPosition() == position){
             addCardsActivity(players[position].getHand().getCardList());
+            setState(States.BID);
         }
-        //TODO lancer startBid ssi tous les joueurs ont leur cartes pour éviter les bugs
-        startBid();
     }
     @Override
     public void onAnnounce(String username, ArrayList<Announces> announces) {
@@ -1209,8 +1241,21 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             }
             mGameState = GameState.DEAL;
             Log.i("log","GAME_STATE DEAL");
-            //TODO : check if we are the dealer. If so, we should deal the cards (shuffle and send the hand to each player)
+            onDealState();
           }
+          else if (s==States.BID){
+            Set<String> ids = mPlayersState.keySet();
+            for (String id : ids){
+                if (mPlayersState.get(id) != States.BID){
+                    return;
+                }
+            }
+            mGameState = GameState.BID;
+            Log.i("log","GAME_STATE BID");
+            onBidState();
+        }
+
+
     }
 
     private void setState(States s){
