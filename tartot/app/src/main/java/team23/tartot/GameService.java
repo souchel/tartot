@@ -359,13 +359,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      * else wait
      */
     private void onDealState(){
-        if (position == indexDealer) {
+        if (position == indexDealer && mPlayersState.get(mMyParticipantId) == States.DEAL) {
             Log.i("state","onDealState");
             if (nbDone == 0) {
                 initializeDeck();
                 deck.shuffle();
             }
             distribute(getPositionDistribution());
+            setState(States.REVEAL_DOG);
         } //else need to receive card before all ie use onCardsDelt method
     }
 
@@ -380,6 +381,14 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      * when we reveal the dog and the caller makes his ecart *lol*
      */
     private void onRevealDogState(){
+        //TODO: to code
+        //condition depending on the bid
+        //if small or guard
+            // the dealer sends the dog to everyone
+            // each player displays the dog
+            // the guy who bet the most makes his ecart through the activity and keeps it
+    }
+    private void onAnnounceState(){
         //TODO: to code
     }
 
@@ -464,6 +473,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 }
                 break;
         }
+        //TODO: continue the states
         onState();
     }
 
@@ -557,7 +567,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             for (int j = 1 ; j <= 3 ; j++)
             {
                 Card card = deck.removeCardByIndex(0);
-                players[(i + indexDealer )%4].getHand().addCard(card);
+                players[(i + indexDealer )% (players.length)].getHand().addCard(card);
 
             }
             //si c est l un des tours ou on est cense mettre dans le chien, on met une carte dans le chien
@@ -1371,6 +1381,8 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void onDog(ArrayList<Card> cards){
         this.chien = new Deck(cards);
     }
+
+    //called by APIManager by broadcasts
     public void onEcart(ArrayList<Card> cards){
         if (bid.getMultiplicant() == 6){
             for (Card card : cards){

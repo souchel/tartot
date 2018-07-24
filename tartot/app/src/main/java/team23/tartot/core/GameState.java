@@ -5,6 +5,7 @@ public enum GameState {
 	DEAL,
     BID,
     REVEAL_DOG,
+    ANNOUNCE,
     PLAYING,
     ROUND_END
 }
