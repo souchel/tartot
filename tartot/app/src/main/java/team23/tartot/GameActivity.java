@@ -199,12 +199,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void startGameService(){
-        boolean running = isServiceRunning(GameService.class);
-        Log.d("debug", "game activity, service running ? " + running);
-        if(running == false){
-            Intent intent = new Intent(this, GameService.class);
-            startService(intent);
-        }
+        Intent intent = new Intent(this, GameService.class);
+        startService(intent);
     }
 
     private boolean isServiceRunning(Class<?> serviceClass) {

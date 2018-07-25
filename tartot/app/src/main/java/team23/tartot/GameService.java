@@ -203,13 +203,15 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     Log.i("GameServBroadcastRcv", "DECK_RECEIVED");
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
+                    String ownerId = id.getmParticipantId();
+                    if (!mMyParticipantId.equals((String) intent.getSerializableExtra("ownerId"))) {
+                        Log.i("GameService", "hand from other player ignored");
+                        break;
+                    }
                     String p = id.getPlayer();
                     //update the deck in the Player attribute
                     onCardsDealt(h, p);
-                    /*
-                    Intent j2 = new Intent();
-                    j2.putExtra("text", "player: " + p + "should have his cards now");
-                    localBroadcast(BroadcastCode.EXAMPLE, j2);*/
+                    setState(States.REVEAL_DOG);
                     break;
                 case BID_RECEIVED:
                     Log.i("GameServBroadcastRcv", "BID_RECEIVED");
@@ -376,7 +378,9 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     private void onDealState(){
         Log.i("deal state", "GameService.onDealState");
         if (position == indexDealer && mPlayersState.get(mMyParticipantId) == States.DEAL) {
-            Log.i("state","onDealState");
+            Log.i("comment","We are the dealer");
+
+            //If it's the first turn, we shuffle
             if (nbDone == 0) {
                 initializeDeck();
                 deck.shuffle();
@@ -577,7 +581,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
     public void distribute(int[] indexes)
     {
-        //On distribue les cartes 3 par 3 aux 4 joueurs
+        //On distribue les cartes 3 par 3 aux joueurs
         for (int i = 1; i <= 6 ; i++)
         {
             //on donne 3 cartes au joueur i modulo 4
@@ -599,9 +603,6 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             sendDog(chien.getCardList());
         }
         addCardsActivity(players[position].getHand().getCardList());
-
-        //next call is commented because startBid will be raised when the game state will change (when everyone is ready and have his cards)
-        //startBid();
     }
 
     public int[] getPositionDistribution() {

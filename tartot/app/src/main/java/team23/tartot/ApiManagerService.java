@@ -227,6 +227,10 @@ public class ApiManagerService extends Service {
     }
 
     public ArrayList<String> getIds(){
+        if (mCurrentRoom == null) {
+            Log.e("apiManager","no current room");
+            return null;
+        }
         return mCurrentRoom.getParticipantIds();
     }
 
@@ -468,7 +472,7 @@ public class ApiManagerService extends Service {
             // Update UI and internal state based on room updates.
             if (i == GamesCallbackStatusCodes.OK && room != null) {
                 mCurrentRoom = room;
-                Log.d(TAG, "Room " + mCurrentRoom.getRoomId()+ " created.");
+                Log.d("ApiManager", "Room " + mCurrentRoom.getRoomId()+ " created.");
                 showWaitingRoom(4);
 
                 //notify the activity
@@ -948,8 +952,6 @@ public class ApiManagerService extends Service {
                                 recordMessageToken(task.getResult());
                             }
                         });
-                Log.i("message", "sendReliable");
-
             }
         }
     }
@@ -958,7 +960,6 @@ public class ApiManagerService extends Service {
     //put the message in queue
     synchronized void recordMessageToken(int tokenId) {
         pendingMessageSet.add(tokenId);
-        Log.i("message", "recordMessageToken");
     }
 
     //callback raised when the message with tokenId tokenId is sent
@@ -983,7 +984,6 @@ public class ApiManagerService extends Service {
             public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
                 byte[] buf = realTimeMessage.getMessageData();
                 String senderId = realTimeMessage.getSenderParticipantId();
-                Log.d(TAG, "Message received: " + buf.toString());
 
                 ByteArrayInputStream bis = new ByteArrayInputStream(buf);
                 ObjectInput in = null;
@@ -1002,53 +1002,55 @@ public class ApiManagerService extends Service {
                     }
                 }
 
-                //add the decode routine for each type of object we could receive !
+                //add the decode routine fo$$
+                //
+                // r each type of object we could receive !
                 if (o instanceof iFullDeck){
                     iFullDeck ifd = (iFullDeck) o;
-                    Log.i("text", "full deck");
+                    Log.i("ApiManager", "msgRcvHandler : full deck");
                     Intent intent = new Intent();
                     intent.putExtra("fulldeck", ifd);
                     localBroadcast(BroadcastCode.FULL_DECK_RECEIVED, intent);
                 }
                 else if (o instanceof iDeck){
-                    iDeck id = (iDeck) o;
-                    Log.i("text", "hand");
+                    iDeck ide = (iDeck) o;
+                    Log.i("ApiManager", "msgRcvHandler : hand of " + ide.getmParticipantId());
                     Intent intent = new Intent();
-                    intent.putExtra("hand", id);
+                    intent.putExtra("hand", ide);
                     localBroadcast(BroadcastCode.DECK_RECEIVED, intent);
                 }
                 else if (o instanceof Bid){
                     Bid b = (Bid) o;
                     b.setParticipantId(senderId);
-                    Log.i("TEXT", "bid");
+                    Log.i("ApiManager", "msgRcvHandler : bid");
                     Intent intent = new Intent();
                     intent.putExtra("bid", b);
                     localBroadcast(BroadcastCode.BID_RECEIVED, intent);
                 }
                 else if (o instanceof iDog){
                     iDog idog = (iDog) o;
-                    Log.i("TEXT", "dog");
+                    Log.i("ApiManager", "msgRcvHandler : dog");
                     Intent intent = new Intent();
                     intent.putExtra("dog", idog);
                     localBroadcast(BroadcastCode.DOG_RECEIVED, intent);
                 }
                 else if (o instanceof iEcart){
                     iEcart iecart = (iEcart) o;
-                    Log.i("TEXT", "ecart");
+                    Log.i("ApiManager", "msgRcvHandler : ecart");
                     Intent intent = new Intent();
                     intent.putExtra("ecart", iecart);
                     localBroadcast(BroadcastCode.ECART_RECEIVED, intent);
                 }
                 else if (o instanceof iAnnounces){
                     iAnnounces a = (iAnnounces) o;
-                    Log.i("text","announces received");
+                    Log.i("ApiManager","msgRcvHandler : announces");
                     Intent intent = new Intent();
                     intent.putExtra("announces", a);
                     localBroadcast(BroadcastCode.ANNOUNCE_RECEIVED, intent);
                 }
                 else if (o instanceof iCard) {
                     iCard c = (iCard) o;
-                    Log.i("DECODAGE", c.getCard().getValue() + " ");
+                    Log.i("ApiManager", c.getCard().getValue() + " ");
                     Intent intent = new Intent();
                     intent.putExtra("card", c);
                     intent.putExtra("participantId", senderId);
@@ -1057,7 +1059,7 @@ public class ApiManagerService extends Service {
                 }
                 //forward the state update to the GameManager
                 else if (o instanceof States) {
-                    Log.i("playerState",senderId+" "+(States) o);
+                    Log.i("ApiManager","msgRcvHandler : " + senderId+" "+(States) o);
                     Intent intent = new Intent();
                     intent.putExtra("state", (States) o);
                     intent.putExtra("participantId", senderId);
