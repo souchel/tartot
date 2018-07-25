@@ -85,6 +85,13 @@ public class GameActivity extends AppCompatActivity {
         halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
 
         super.onCreate(savedInstanceState);
+        /*
+        if (savedInstanceState != null) {
+            for (int i=0; i<savedInstanceState.size(); i++) {
+                Log.i("nom de joueurs", "joueur " + savedInstanceState.getString(String.valueOf(i)) + " récupéré");
+            }
+        }*/
+
         setContentView(R.layout.activity_game);
 
         //hide action bar
@@ -143,6 +150,7 @@ public class GameActivity extends AppCompatActivity {
             }
         });
 
+
         /*/
         findViewById(R.id.show_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,6 +163,17 @@ public class GameActivity extends AppCompatActivity {
             }
         });/*/
     }
+
+    /*
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.i("nom de joueurs", "avant la boucle");
+        for(int i=0; i < playersAmount; i++) {
+            Player p = playersList[i];
+            savedInstanceState.putString(String.valueOf(p.getPosition()), p.getUsername());
+            Log.i("nom de joueurs", p.getUsername() + " ajoutés");
+        }
+        super.onSaveInstanceState(savedInstanceState);
+    }*/
 
     public void onStart() {
         super.onStart();
