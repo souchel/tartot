@@ -106,6 +106,13 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mBoundToNetwork = true;
             initialize();
 
+            //initialize player states
+            ArrayList<String> ids = mApiManagerService.getIds();
+            for (String id : ids){
+                if (!mPlayersState.containsKey(id))
+                    mPlayersState.put(id, States.PRE_START);
+            }
+
             //notify all players ready to deal
             setState(States.DEAL);
             localBroadcast(BroadcastCode.READY_TO_START);
@@ -178,6 +185,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 //TODO utility of localBroadcast here?
                 //TODO ECART_RECEIVED need to be added
                 case FULL_DECK_RECEIVED:
+                    Log.i("GameServBroadcastRcv", "FULL_DECK_RECEIVED");
                     iFullDeck ifd = (iFullDeck) intent.getSerializableExtra("fulldeck");
                     Deck fullDeck = ifd.getDeck();
                     String pfd = ifd.getPlayer();
@@ -185,21 +193,26 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     if (getPlayerWithUsername(pfd).getPosition() == indexDealer){
                         onDeckReceived(fullDeck);
                     }
+                    /*
                     Intent j1 = new Intent();
                     j1.putExtra("text", "fulldeck should be distributed");
                     localBroadcast(BroadcastCode.EXAMPLE, j1);
+                    */
                     break;
                 case DECK_RECEIVED:
+                    Log.i("GameServBroadcastRcv", "DECK_RECEIVED");
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
                     String p = id.getPlayer();
                     //update the deck in the Player attribute
                     onCardsDealt(h, p);
+                    /*
                     Intent j2 = new Intent();
                     j2.putExtra("text", "player: " + p + "should have his cards now");
-                    localBroadcast(BroadcastCode.EXAMPLE, j2);
+                    localBroadcast(BroadcastCode.EXAMPLE, j2);*/
                     break;
                 case BID_RECEIVED:
+                    Log.i("GameServBroadcastRcv", "BID_RECEIVED");
                     Bid b = (Bid) intent.getSerializableExtra("bid");
                     onBid(b);
                     Intent j3 = new Intent();
@@ -207,6 +220,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     localBroadcast(BroadcastCode.EXAMPLE, j3);
                     break;
                 case DOG_RECEIVED:
+                    Log.i("GameServBroadcastRcv", "DOG_RECEIVED");
                     iDog idog = (iDog) intent.getSerializableExtra("dog");
                     ArrayList<Card> dog = idog.getDog();
                     onDog(dog);
@@ -245,6 +259,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                 case PLAYER_STATE_UPDATE:
                     States s = (States) intent.getSerializableExtra("state");
                     senderId = intent.getStringExtra("participantId");
+                    Log.i("GameServBroadcastRcv", "PLAYER_STATE_UPDATE "+senderId+" "+s);
                     setState(s, senderId);
             }
         }
@@ -359,6 +374,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      * else wait
      */
     private void onDealState(){
+        Log.i("deal state", "GameService.onDealState");
         if (position == indexDealer && mPlayersState.get(mMyParticipantId) == States.DEAL) {
             Log.i("state","onDealState");
             if (nbDone == 0) {
@@ -434,6 +450,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         switch (s){
             case DEAL:
                 for (String id : ids){
+                    Log.i("ids",ids.toString());
                     if (mPlayersState.get(id) != States.DEAL){
                         changeState = false;
                         break;
@@ -561,7 +578,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
     public void distribute(int[] indexes)
     {
         //On distribue les cartes 3 par 3 aux 4 joueurs
-        for (int i = 1; i <= 4 ; i++)
+        for (int i = 1; i <= 6 ; i++)
         {
             //on donne 3 cartes au joueur i modulo 4
             for (int j = 1 ; j <= 3 ; j++)

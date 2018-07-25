@@ -226,6 +226,10 @@ public class ApiManagerService extends Service {
         return silentSignInTask;
     }
 
+    public ArrayList<String> getIds(){
+        return mCurrentRoom.getParticipantIds();
+    }
+
     //used to push actions to the activities (on events coming from the network for example)
     private void localBroadcast(BroadcastCode value){
         Intent intent = new Intent();
