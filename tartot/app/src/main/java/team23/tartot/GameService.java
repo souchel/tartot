@@ -105,6 +105,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
             mApiManagerService = binder.getService();
             mBoundToNetwork = true;
             initialize();
+            mApiManagerService.forwardBuffer();
 
             //initialize player states
             ArrayList<String> ids = mApiManagerService.getIds();
@@ -204,7 +205,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
                     iDeck id = (iDeck) intent.getSerializableExtra("hand");
                     ArrayList<Card> h = id.getDeck();
                     String ownerId = id.getmParticipantId();
-                    if (!mMyParticipantId.equals((String) intent.getSerializableExtra("ownerId"))) {
+                    if (!mMyParticipantId.equals(ownerId)) {
                         Log.i("GameService", "hand from other player ignored");
                         break;
                     }
@@ -376,7 +377,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      * else wait
      */
     private void onDealState(){
-        Log.i("deal state", "GameService.onDealState");
+        Log.i("deal state", "GameService.onDealState "+position + " " + indexDealer);
         if (position == indexDealer && mPlayersState.get(mMyParticipantId) == States.DEAL) {
             Log.i("comment","We are the dealer");
 
@@ -599,6 +600,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
         }
         //sending cards to player via network
         for (Player player : players) {
+            Log.i("GameService","making hand for " + player.getUsername() + player.getParticipantId());
             sendDeck(player.getHand().getCardList(), player.getUsername(), player.getParticipantId());
             sendDog(chien.getCardList());
         }
