@@ -109,14 +109,18 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
 
             //initialize player states
             ArrayList<String> ids = mApiManagerService.getIds();
-            for (String id : ids){
-                if (!mPlayersState.containsKey(id))
-                    mPlayersState.put(id, States.PRE_START);
+            //if we try to connect directly offline (for test purpose) ids will be null
+            if (ids != null) {
+                for (String id : ids) {
+                    if (!mPlayersState.containsKey(id))
+                        mPlayersState.put(id, States.PRE_START);
+                }
+
+                //notify all players ready to deal
+                setState(States.DEAL);
+                localBroadcast(BroadcastCode.READY_TO_START);
             }
 
-            //notify all players ready to deal
-            setState(States.DEAL);
-            localBroadcast(BroadcastCode.READY_TO_START);
         }
 
 
@@ -378,6 +382,7 @@ public class GameService extends Service implements iNetworkToCore, callbackGame
      */
     private void onDealState(){
         Log.i("deal state", "GameService.onDealState "+position + " " + indexDealer);
+
         if (position == indexDealer && mPlayersState.get(mMyParticipantId) == States.DEAL) {
             Log.i("comment","We are the dealer");
 

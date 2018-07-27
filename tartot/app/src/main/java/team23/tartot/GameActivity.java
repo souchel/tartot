@@ -75,7 +75,7 @@ public class GameActivity extends AppCompatActivity {
         //TODO USE THIS 5 LINES (in CardView)
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
+        final int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
         //Log.i("showMetrix", String.valueOf(height) + ", "+ String.valueOf(width));
         screenMetrixRatio = (float) height / 720;
@@ -110,23 +110,28 @@ public class GameActivity extends AppCompatActivity {
         initializeGameBoard(playersAmount); //initialize the centered zone where, where the cards played will be shown and the places where the player wil be. There is a ConstraintLayout in the xml and x FrameLayout will be created to place the played cards correctly in front of each player.
         initializeBidsLayout();
 
+
+        deck.shuffle();
+        hand = new ArrayList<>();
+
+
+        cleanDeck();
+
+        for(int i = 0; i < NUMBER_OF_CARDS; i++) {
+            hand.add(deck.getCardList().get(i));
+            addCardsToDeck(myPlayer, hand);
+            hand.remove(0);
+        }
+
+
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deck.shuffle();
-                hand = new ArrayList<>();
 
-                for(int i = 0; i < NUMBER_OF_CARDS; i++) {
-                    hand.add(deck.getCardList().get(i));
-                }
 
+                /*
                 setPutOnEcart(true);
-
-                cleanDeck();
-
-                addCardsToDeck(myPlayer, hand);
-
 
 
                 ArrayList<Bid> possibleBids = new ArrayList<>();
@@ -136,16 +141,16 @@ public class GameActivity extends AppCompatActivity {
                 possibleBids.add(Bid.GUARD_AGAINST);
                 onBidAsked(possibleBids);
 
-                /*/
+
                 ArrayList<Card> dog = new ArrayList<>();
                 dog.add(new Card(Suit.TRUMP, 21));
                 dog.add(new Card(Suit.TRUMP, 1));
                 dog.add(new Card(Suit.TRUMP, 22));
                 onShowDog(dog);
-                /*/
 
                 Announces[] announces = {Announces.MISERY};
                 onAnnounces(myPlayer, announces);
+                */
 
             }
         });
@@ -578,11 +583,14 @@ public class GameActivity extends AppCompatActivity {
      * @param hand an ArrayList of Cards.
      */
     public void addCardsToDeck (Player player, ArrayList<Card> hand) { //it could be the distribution or the addition of the dog into the player's deck
+        //if the cards are indeed for me
         if (player.isEqual(myPlayer)) {
+            //we initialize the layouts for the deck
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
             cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(CARD_HEIGHT *screenMetrixRatio) / 2));
 
+            //for each cards that we should get
             for (int j = 0; j < hand.size(); j++) {
                 Card currentCard = hand.get(j);
 
