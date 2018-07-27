@@ -111,23 +111,21 @@ public class GameActivity extends AppCompatActivity {
         initializeBidsLayout();
 
 
-        deck.shuffle();
-        hand = new ArrayList<>();
-
-
-        cleanDeck();
-
-        for(int i = 0; i < NUMBER_OF_CARDS; i++) {
-            hand.add(deck.getCardList().get(i));
-            addCardsToDeck(myPlayer, hand);
-            hand.remove(0);
-        }
-
-
         /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                deck.shuffle();
+                hand = new ArrayList<>();
+
+
+                cleanDeck();
+
+                for(int i = 0; i < NUMBER_OF_CARDS; i++) {
+                    hand.add(deck.getCardList().get(i));
+                    addCardsToDeck(myPlayer, hand);
+                    hand.remove(0);
+                }
 
 
                 /*
