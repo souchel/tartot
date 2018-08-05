@@ -38,6 +38,7 @@ import team23.tartot.core.Deck;
 import team23.tartot.core.Player;
 import team23.tartot.core.Suit;
 import team23.tartot.core.iBids;
+import team23.tartot.graphical.CardLayout;
 
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
@@ -631,6 +632,9 @@ public class GameActivity extends AppCompatActivity {
         final String suit = card.getSuit().toString();
 
         final Card thisCard = card;
+
+        //CardLayout cl = new CardLayout(getApplicationContext(), card);
+        //cl.setVisibility(View.VISIBLE);
 
 
         //WE DEAL WITH THE BACKGROUND, deprecated: to make the card displaying faster, we merged the card background and color
