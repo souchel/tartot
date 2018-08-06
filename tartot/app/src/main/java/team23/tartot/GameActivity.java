@@ -45,7 +45,7 @@ public class GameActivity extends AppCompatActivity {
     final private static int CARD_HEIGHT = 180;
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
-    final private static int NUMBER_OF_CARDS = 17;
+    final private static int NUMBER_OF_CARDS = 9;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
@@ -112,21 +112,37 @@ public class GameActivity extends AppCompatActivity {
         initializeBidsLayout();
 
 
-        /*/ ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button /*/
+        // ClickListener of a button that should create (graphically) a Card with a FrameLayout with inside it imageViews and button
         findViewById(R.id.test_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 deck.shuffle();
                 hand = new ArrayList<>();
 
-
                 cleanDeck();
 
+                LinearLayout ll = findViewById(R.id.cards_up_layout);
+
+                for(int i = 0; i < NUMBER_OF_CARDS; i++) {
+                    //hand.add(deck.getCardList().get(i));
+                    CardLayout testLayout = new CardLayout(getApplicationContext(), deck.getCardList().get(i), screenMetrixRatio);
+                    ll.addView(testLayout);
+                }
+
+
+
+                //addCardsToDeck(myPlayer, hand);
+
+
+
+
+                /*
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
                     hand.add(deck.getCardList().get(i));
                     addCardsToDeck(myPlayer, hand);
-                    hand.remove(0);
-                }
+
+                }*/
+
 
 
                 /*
@@ -1069,18 +1085,17 @@ public class GameActivity extends AppCompatActivity {
         int cardIndex = -1;
         for (int i=0; i<cards_layout.getChildCount(); i++) {
             //we recuperate the FrameLayout of the Card
-            FrameLayout cardFL = (FrameLayout) cards_layout.getChildAt(i);
+            CardLayout cardLayout = (CardLayout) cards_layout.getChildAt(i);
 
             //we recuperate the color of the card from the contentDescription of the colorIV
-            ImageView colorIV = (ImageView) cardFL.getChildAt(0);
+            ImageView colorIV = (ImageView) cardLayout.getChildAt(0);
             String color = colorIV.getContentDescription().toString();
 
             //we recuperate the value from the valueTV
-            TextView valueTV = (TextView) cardFL.getChildAt(1);
+            TextView valueTV = (TextView) cardLayout.getChildAt(1);
             String value = valueTV.getText().toString();
 
             if ((card.getSuit().toString() == color) && (card.valueToString() == value)) {
-                Log.i("deletecard", "trouvé à la position : " + String.valueOf(i));
                 cardIndex = i;
             }
         }

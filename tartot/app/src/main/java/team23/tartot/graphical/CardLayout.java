@@ -24,31 +24,43 @@ public class CardLayout extends LinearLayout {
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
 
-    FrameLayout.LayoutParams normalLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
-    FrameLayout.LayoutParams halfLayoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT/2);
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
 
     private Card card;
     private String value = "13";
     private String suit = "h";
 
-    ImageView cardColorIV = new ImageView(getContext());
-    TextView cardValueUpTV = new TextView(getContext());
-    TextView cardValueDownTV = new TextView(getContext());
 
 
-    public CardLayout(Context context, Card card, float screenMetrixRatio, int maxCardAmount) {
+    public CardLayout(Context context, Card card, float screenMetrixRatio) {
         super(context);
         this.card = card;
         this.value = card.valueToString();
         this.suit = card.getSuit().toString();
 
-        this.cardColorIV = createCardColor();
+        layoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
+        FrameLayout fl = new FrameLayout(getContext());
+        fl.setLayoutParams(layoutParams);
 
-        this.cardValueUpTV = createTVforValue(true, getTextSize(suit));
-        this.cardValueDownTV = createTVforValue(false, getTextSize(suit));
+        this.setLayoutParams(layoutParams);
 
-        normalLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio));
-        halfLayoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*screenMetrixRatio), Math.round(CARD_HEIGHT*screenMetrixRatio/2));
+        /*
+        if (card.isHead()) {
+            this.addView(createCardHead(suit), layoutParams);
+        }
+
+        this.addView(createCardColor(), layoutParams);
+
+        this.addView(createTVforValue(true, getTextSize(suit)));
+        this.addView(createTVforValue(false, getTextSize(suit)));
+        */
+
+        fl.addView(createCardColor());
+        fl.addView(createTVforValue(true, getTextSize(suit)));
+        fl.addView(createTVforValue(false, getTextSize(suit)));
+        this.addView(fl);
+
+
     }
 
     /**
@@ -143,7 +155,7 @@ public class CardLayout extends LinearLayout {
      * @param textSize int which corresponds to the textSize (a small one for normal cards and a big one for Trumps)
      * @return the TextView that corresponds to the value and that will be add to the FrameLayout
      */
-    protected TextView createTVforValue(boolean position, int textSize) {
+    private TextView createTVforValue(boolean position, int textSize) {
         boolean color = suitIntoColor(suit);
 
         TextView cardValueTV = new TextView(getContext());
@@ -174,11 +186,18 @@ public class CardLayout extends LinearLayout {
         return cardValueTV;
     }
 
-    public FrameLayout.LayoutParams getNormalLayoutParams() {
-        return normalLayoutParams;
+    private ImageView createCardHead(String head) {
+        ImageView cardHeadIV = new ImageView(getContext());
+        Bitmap headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_king);
+        switch (head) {
+            case "R": headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_king); break;
+            case "D": headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_queen); break;
+            case "C": headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_horseman); break;
+            case "V": headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_jack); break;
+        }
+        Bitmap headResizedBP = getResizedBitmap(headBP, CARD_WIDTH, CARD_HEIGHT);
+        cardHeadIV.setImageBitmap(headResizedBP);
+        return cardHeadIV;
     }
 
-    public FrameLayout.LayoutParams getHalfLayoutParams() {
-        return halfLayoutParams;
-    }
 }

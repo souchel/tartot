@@ -69,4 +69,8 @@ public class Card implements Serializable{
 		} else return false;
 	}
 
+	public boolean isHead() {
+		return (this.value == 11 || this.value == 12 || this.value == 13 || this.value == 14) && this.suit != Suit.TRUMP ;
+	}
+
 }
