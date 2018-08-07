@@ -45,7 +45,7 @@ public class GameActivity extends AppCompatActivity {
     final private static int CARD_HEIGHT = 180;
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
-    final private static int NUMBER_OF_CARDS = 9;
+    final private static int NUMBER_OF_CARDS = 22;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
@@ -121,20 +121,12 @@ public class GameActivity extends AppCompatActivity {
 
                 cleanDeck();
 
-                LinearLayout ll = findViewById(R.id.cards_up_layout);
-
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
-                    //hand.add(deck.getCardList().get(i));
-                    CardLayout testLayout = new CardLayout(getApplicationContext(), deck.getCardList().get(i), screenMetrixRatio);
-                    ll.addView(testLayout);
+                    hand.add(deck.getCardList().get(i));
                 }
 
-
-
-                //addCardsToDeck(myPlayer, hand);
-
-
-
+                addCardsToDeck(myPlayer, hand);
+                addCardsToDeck(myPlayer, deck.getCardList().get(0));
 
                 /*
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
@@ -142,46 +134,8 @@ public class GameActivity extends AppCompatActivity {
                     addCardsToDeck(myPlayer, hand);
 
                 }*/
-
-
-
-                /*
-                setPutOnEcart(true);
-
-
-                ArrayList<Bid> possibleBids = new ArrayList<>();
-                //possibleBids.add(Bid.SMALL);
-                possibleBids.add(Bid.GUARD);
-                possibleBids.add(Bid.GUARD_WITHOUT);
-                possibleBids.add(Bid.GUARD_AGAINST);
-                onBidAsked(possibleBids);
-
-
-                ArrayList<Card> dog = new ArrayList<>();
-                dog.add(new Card(Suit.TRUMP, 21));
-                dog.add(new Card(Suit.TRUMP, 1));
-                dog.add(new Card(Suit.TRUMP, 22));
-                onShowDog(dog);
-
-                Announces[] announces = {Announces.MISERY};
-                onAnnounces(myPlayer, announces);
-                */
-
             }
         });
-
-
-        /*/
-        findViewById(R.id.show_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Player p = myPlayer;
-                Card c = new Card(Suit.DIAMOND, 12);
-                Log.i("showC", c.toString());
-                onShowCard(c,p);
-                Log.i("showC", "onShowCard done");
-            }
-        });/*/
     }
 
     /*
@@ -589,6 +543,13 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
+    public void addCardsToDeck(Player player, Card card) {
+        ArrayList<Card> hand = new ArrayList<>();
+        hand.add(card);
+
+        addCardsToDeck(player, hand);
+    }
+
 
     /**
      * public method SHOULD BE CALLED IN THE ONCREATE() OF THIS ACTIVITY to trigger when the cards are distributed. All the Cards in the player's hand are graphically created:
@@ -604,31 +565,32 @@ public class GameActivity extends AppCompatActivity {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
             cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(CARD_HEIGHT *screenMetrixRatio) / 2));
+            cardNumber = cardsDownLayout.getChildCount() + cardsUpLayout.getChildCount();
+            Log.i("test", String.valueOf(cardNumber));
 
             //for each cards that we should get
             for (int j = 0; j < hand.size(); j++) {
+                Log.i("test", String.valueOf(cardNumber));
                 Card currentCard = hand.get(j);
+                //We create the CardLayout for one Card
+                CardLayout cardLayout = new CardLayout(getApplicationContext(), currentCard, screenMetrixRatio);
 
-                //We create a (in the future several) FrameLayout for one Card
-                final FrameLayout cardFL = new FrameLayout(getApplicationContext());
-
-                addCardToLayout(currentCard, cardFL, false);
                 //we add the frameLayout to the horizontal LinearLayout depending on the number of card already displayed
-                if (cardNumber <= Math.round(NUMBER_OF_CARDS / 2)) {
+                if (cardNumber < Math.round(NUMBER_OF_CARDS / 2)) {
                     //Log.i("dogToDeck", "card added up");
-                    cardsDownLayout.addView(cardFL);
-                } else if (cardNumber < NUMBER_OF_CARDS) {
+                    cardsDownLayout.addView(cardLayout);
+                } else if (cardNumber < NUMBER_OF_CARDS || cardNumber == Math.round(NUMBER_OF_CARDS/2)) {
                     //Log.i("dogToDeck", "card added down");
-                    cardsUpLayout.addView(cardFL);
+                    cardsUpLayout.addView(cardLayout);
                 } else {
                     //We have to refresh the layouts to have the correct current count of children
                     cardsUpLayout = findViewById(R.id.cards_up_layout);
                     cardsDownLayout = findViewById(R.id.cards_down_layout);
                     //Log.i("dogToDeck", "up: " + String.valueOf(cardsUpLayout.getChildCount()) + " ; down: " + String.valueOf(cardsDownLayout.getChildCount()));
                     if (cardsDownLayout.getChildCount() - cardsUpLayout.getChildCount() >= 1) {
-                        cardsUpLayout.addView(cardFL);
+                        cardsUpLayout.addView(cardLayout);
                     } else {
-                        cardsDownLayout.addView(cardFL);
+                        cardsDownLayout.addView(cardLayout);
                     }
                 }
                 cardNumber++;
@@ -1132,6 +1094,7 @@ public class GameActivity extends AppCompatActivity {
 
         cardsUpLayout.removeAllViews();
         cardsDownLayout.removeAllViews();
+        cardNumber = 0;
     }
 
     /**

@@ -6,16 +6,20 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.opengl.Visibility;
+import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import team23.tartot.R;
 import team23.tartot.core.Card;
 
 /**
  * Created by Hugo Selle on 05/08/2018.
+ * This class is made to make the project more OOP and to mitigate (in code) the GameActivity
  */
 
 public class CardLayout extends LinearLayout {
@@ -24,7 +28,7 @@ public class CardLayout extends LinearLayout {
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
 
-    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
+    private FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
 
     private Card card;
     private String value = "13";
@@ -44,22 +48,15 @@ public class CardLayout extends LinearLayout {
 
         this.setLayoutParams(layoutParams);
 
-        /*
         if (card.isHead()) {
-            this.addView(createCardHead(suit), layoutParams);
+            fl.addView(createCardHead(suit));
         }
-
-        this.addView(createCardColor(), layoutParams);
-
-        this.addView(createTVforValue(true, getTextSize(suit)));
-        this.addView(createTVforValue(false, getTextSize(suit)));
-        */
 
         fl.addView(createCardColor());
         fl.addView(createTVforValue(true, getTextSize(suit)));
         fl.addView(createTVforValue(false, getTextSize(suit)));
+        fl.addView(createCardButton());
         this.addView(fl);
-
 
     }
 
@@ -186,6 +183,11 @@ public class CardLayout extends LinearLayout {
         return cardValueTV;
     }
 
+    /**
+     * create the ImageView that corresponds to the head /!\ it's important to check that's it is a head with Card.isHead() before using this method: R = Guillaume -> card_king, D = Laure -> card_queen, C = Paul -> card_horseman, V = Hugo -> card_jack
+     * @param head the string that corresponds to the head ("R", "D", "C", "V").
+     * @return the ImageView
+     */
     private ImageView createCardHead(String head) {
         ImageView cardHeadIV = new ImageView(getContext());
         Bitmap headBP = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.card_king);
@@ -200,4 +202,33 @@ public class CardLayout extends LinearLayout {
         return cardHeadIV;
     }
 
+    /**
+     * create the button on top of the layout to make the card clickable
+     * @return the transparent button with onClickListener
+     */
+    private Button createCardButton() {
+        Button cardButton = new Button(getContext());
+        cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
+        cardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                putInvisible();
+                //Toast.makeText(getContext(), "test", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return cardButton;
+    }
+
+
+    public Card getCard() {
+        return this.card;
+    }
+
+    public void putInvisible() {
+        this.setVisibility(View.GONE);
+    }
+
+    public void putVisible() {
+        this.setVisibility(View.VISIBLE);
+    }
 }
