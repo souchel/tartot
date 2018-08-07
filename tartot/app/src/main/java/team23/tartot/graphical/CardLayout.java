@@ -48,11 +48,11 @@ public class CardLayout extends LinearLayout {
 
         this.setLayoutParams(layoutParams);
 
+        fl.addView(createCardColor());
+
         if (card.isHead()) {
             fl.addView(createCardHead(suit));
         }
-
-        fl.addView(createCardColor());
         fl.addView(createTVforValue(true, getTextSize(suit)));
         fl.addView(createTVforValue(false, getTextSize(suit)));
         fl.addView(createCardButton());
