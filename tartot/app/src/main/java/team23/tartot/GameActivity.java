@@ -1,5 +1,6 @@
 package team23.tartot;
 
+import android.animation.ObjectAnimator;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -13,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.IBinder;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -134,6 +136,25 @@ public class GameActivity extends AppCompatActivity {
                     addCardsToDeck(myPlayer, hand);
 
                 }*/
+            }
+        });
+
+        findViewById(R.id.log).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CardLayout cl = (CardLayout) ((LinearLayout) findViewById(R.id.cards_down_layout)).getChildAt(0);
+                cl.putInvisible();
+                Card cardToCopy = cl.getCard();
+                CardLayout clnew = new CardLayout(getApplicationContext(), cardToCopy, screenMetrixRatio);
+                ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+                ConstraintLayout mainLayout = (ConstraintLayout) findViewById(R.id.main_layout);
+                lp.bottomToBottom = R.id.main_layout;
+                lp.leftToLeft = R.id.main_layout;
+                lp.rightToRight = R.id.main_layout;
+                (mainLayout).addView(clnew, -1, lp);
+                ObjectAnimator animation = ObjectAnimator.ofFloat(clnew, "translationY", -250f*screenMetrixRatio);
+                animation.setDuration(1500);
+                animation.start();
             }
         });
     }
@@ -283,6 +304,7 @@ public class GameActivity extends AppCompatActivity {
             onConnectedToGameService();
 
             // Example button to explain sending mecanism
+            /*
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -290,7 +312,7 @@ public class GameActivity extends AppCompatActivity {
                     //TODO : test button to send data
                     mGameService.exampleMessage();
                 }
-            });
+            });*/
         }
 
         @Override

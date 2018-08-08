@@ -1,5 +1,6 @@
 package team23.tartot.graphical;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -212,8 +213,7 @@ public class CardLayout extends LinearLayout {
         cardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                putInvisible();
-                //Toast.makeText(getContext(), "test", Toast.LENGTH_SHORT).show();
+                //putInvisible();
             }
         });
         return cardButton;
