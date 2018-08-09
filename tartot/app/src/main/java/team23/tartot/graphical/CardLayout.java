@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.opengl.Visibility;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import team23.tartot.GameActivity;
 import team23.tartot.R;
 import team23.tartot.core.Card;
 
@@ -32,7 +34,7 @@ public class CardLayout extends LinearLayout {
     private FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
 
     private Card card;
-    private String value = "13";
+    private String value = "23";
     private String suit = "h";
 
 
@@ -52,7 +54,7 @@ public class CardLayout extends LinearLayout {
         fl.addView(createCardColor());
 
         if (card.isHead()) {
-            fl.addView(createCardHead(suit));
+            fl.addView(createCardHead(value));
         }
         fl.addView(createTVforValue(true, getTextSize(suit)));
         fl.addView(createTVforValue(false, getTextSize(suit)));
@@ -213,7 +215,8 @@ public class CardLayout extends LinearLayout {
         cardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //putInvisible();
+                //TODO activiate the method onShowCard(Card, Player)
+                putInvisible();
             }
         });
         return cardButton;

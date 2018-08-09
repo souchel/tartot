@@ -45,8 +45,6 @@ import team23.tartot.graphical.CardLayout;
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
     final private static int CARD_HEIGHT = 180;
-    final private static int TEXT_SIZE_NORMAL = 12;
-    final private static int TEXT_SIZE_TRUMP = 8;
     final private static int NUMBER_OF_CARDS = 22;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
@@ -136,25 +134,6 @@ public class GameActivity extends AppCompatActivity {
                     addCardsToDeck(myPlayer, hand);
 
                 }*/
-            }
-        });
-
-        findViewById(R.id.log).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CardLayout cl = (CardLayout) ((LinearLayout) findViewById(R.id.cards_down_layout)).getChildAt(0);
-                cl.putInvisible();
-                Card cardToCopy = cl.getCard();
-                CardLayout clnew = new CardLayout(getApplicationContext(), cardToCopy, screenMetrixRatio);
-                ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
-                ConstraintLayout mainLayout = (ConstraintLayout) findViewById(R.id.main_layout);
-                lp.bottomToBottom = R.id.main_layout;
-                lp.leftToLeft = R.id.main_layout;
-                lp.rightToRight = R.id.main_layout;
-                (mainLayout).addView(clnew, -1, lp);
-                ObjectAnimator animation = ObjectAnimator.ofFloat(clnew, "translationY", -250f*screenMetrixRatio);
-                animation.setDuration(1500);
-                animation.start();
             }
         });
     }
@@ -304,7 +283,7 @@ public class GameActivity extends AppCompatActivity {
             onConnectedToGameService();
 
             // Example button to explain sending mecanism
-            /*
+
             Button logBtn = findViewById(R.id.log);
             logBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -312,7 +291,7 @@ public class GameActivity extends AppCompatActivity {
                     //TODO : test button to send data
                     mGameService.exampleMessage();
                 }
-            });*/
+            });
         }
 
         @Override
@@ -633,28 +612,6 @@ public class GameActivity extends AppCompatActivity {
 
         final Card thisCard = card;
 
-        //CardLayout cl = new CardLayout(getApplicationContext(), card);
-        //cl.setVisibility(View.VISIBLE);
-
-
-        //WE DEAL WITH THE BACKGROUND, deprecated: to make the card displaying faster, we merged the card background and color
-        //ImageView cardBackgroundIV = createCardBackground();
-
-        //WE DEAL WITH THE COLOR
-        ImageView cardColorIV = createCardColor(suit, value);
-
-
-        //WE DEAL WITH THE VALUE
-        TextView cardValueUpTV = new TextView(getApplicationContext());
-        TextView cardValueDownTV = new TextView(getApplicationContext());
-        //We create the 2 textViews, one for the value up and one for the one down
-        if (suit != "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_NORMAL));
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
-        } else if (suit == "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, Math.round(TEXT_SIZE_TRUMP));
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
-        }
         //We create a button for the action
         Button cardButton = new Button(getApplicationContext());
         cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
@@ -689,7 +646,7 @@ public class GameActivity extends AppCompatActivity {
 
                         Log.i("dogToDeck", "end of call in addCardToLayout");
 
-                        int index = findFLIndexInDeckByCard(card, ecartLayout);
+                        int index = findCardLayoutIndexByCard(card, ecartLayout);
                         if (index != -1) {
                             ecartLayout.removeViewAt(index);
                         }
@@ -714,7 +671,7 @@ public class GameActivity extends AppCompatActivity {
                     //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
                     //TODO FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
                     FrameLayout cardFL = getCardLayoutByRelativePosition(0);
-                    playCardInGameZone(value, suit, cardFL);
+                    onShowCard(card, cardFL);
                     deleteCardFromDeck(card, myPlayer);
                 }
                 updatePlayerDeck(myPlayer);
@@ -722,161 +679,12 @@ public class GameActivity extends AppCompatActivity {
             });
         }
 
-        // we add the image view
-        //cardFL.addView(cardBackgroundIV); optimization of the cards loading !
-        cardFL.addView(cardColorIV);
-        cardFL.addView(cardValueUpTV);
-        cardFL.addView(cardValueDownTV);
-        if (value == "R") {
-            ImageView cardKingIV = new ImageView(getApplicationContext());
-            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_king);
-            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
-            cardKingIV.setImageBitmap(kingResizedBP);
-            cardFL.addView(cardKingIV);
-        } else if (value == "D") {
-            ImageView cardQueenIV = new ImageView(getApplicationContext());
-            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_queen);
-            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
-            cardQueenIV.setImageBitmap(kingResizedBP);
-            cardFL.addView(cardQueenIV);
-        } else if (value == "C") {
-            ImageView cardKingIV = new ImageView(getApplicationContext());
-            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_horseman);
-            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
-            cardKingIV.setImageBitmap(kingResizedBP);
-            cardFL.addView(cardKingIV);
-        } else if (value == "V") {
-            ImageView cardKingIV = new ImageView(getApplicationContext());
-            Bitmap kingBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_jack);
-            Bitmap kingResizedBP = getResizedBitmap(kingBP, CARD_WIDTH, CARD_HEIGHT);
-            cardKingIV.setImageBitmap(kingResizedBP);
-            cardFL.addView(cardKingIV);
-        }
         cardFL.addView(cardButton);
 
         //we set Layout Parameters
         //TODO SET LAYOUT PARAMS DEPENDING ON THE AMOUNT OF CARDS INITIALLY IN THE PLAYERS' HAND
         cardFL.setLayoutParams(normalLayoutParams);
     }
-
-    /**
-     * specific method for this Activity to create ImageView to display card color with background
-     * @param suit is a String that results for the toString() of the Suit enum and is the initial letter of the suit : s, h, d, c, t
-     * @return the ImageView that corresponds to the color and that will be add to the FrameLayout
-     */
-    protected ImageView createCardColor (String suit, String value) {
-        //we initialize the Bitmap with the image of spades
-        Bitmap cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades);
-
-        CharSequence contentDescription[] = new String[1];
-
-
-        //we set the good image that corresponds to our suit
-        if (suit == "s") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_spades_big);
-            contentDescription[0] = "s";
-        } else if (suit == "h") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_hearts_big);
-            contentDescription[0] = "h";
-        } else if (suit == "d") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_diamonds_big);
-            contentDescription[0] = "d";
-        } else if (suit == "c") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_color_clubs_big);
-            contentDescription[0] = "c";
-        } else if (suit == "t") {
-            cardColorBP = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.card_border_style);
-            contentDescription[0] = "t";
-        }
-
-        //we resize the Bitmap with the private class and we add it to the ImageView
-        Bitmap cardColorResizedBP = getResizedBitmap(cardColorBP, CARD_WIDTH, CARD_HEIGHT);
-        ImageView cardColorIV = new ImageView(getApplicationContext());
-        cardColorIV.setImageBitmap(cardColorResizedBP);
-
-        //we set the contentDescription, that will be used to find back the card (for deletion)
-        cardColorIV.setContentDescription(contentDescription[0]);
-        return cardColorIV;
-    }
-
-    /**
-     * this protected method is to transform the suit into a color
-     * @param suit a String which can be (s, h, d, c, t) and comes from the method toString() of the Card enum
-     * @return the boolean color : true = red & false = black
-     */
-    protected boolean suitIntoColor (String suit) {
-        boolean color = false; //true corresponds to red, false is black
-        if (suit == "d" || suit == "h") {
-            color = true;
-        }
-        return color;
-    }
-
-    /**
-     * this private method is to resize the Bitmap and has been found here https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
-     * @param bm the Bitmap to resize
-     * @param newWidth the new width of the Bitmap
-     * @param newHeight the new height of the Bitmap
-     * @return the resized Bitmap
-     */
-    private Bitmap getResizedBitmap (Bitmap bm, int newWidth, int newHeight) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        // CREATE A MATRIX FOR THE MANIPULATION
-        Matrix matrix = new Matrix();
-        // RESIZE THE BIT MAP
-        matrix.postScale(scaleWidth, scaleHeight);
-
-        // "RECREATE" THE NEW BITMAP
-        Bitmap resizedBitmap = Bitmap.createBitmap(
-                bm, 0, 0, width, height, matrix, false);
-        bm.recycle();
-        return resizedBitmap;
-    }
-
-    /**
-     * specific method for this Activity to create TextView dynamically to display card value
-     * @param value String resulting of valueToString() from the class Card
-     * @param color boolean which corresponds to the textColor: red if true and black if false
-     * @param position boolean which corresponds to the textRotation: up if true and down if false
-     * @param textSize int which corresponds to the textSize (a small one for normal cards and a big one for Trumps)
-     * @return the TextView that corresponds to the value and that will be add to the FrameLayout
-     */
-    protected TextView createTVforValue(String value, boolean color, boolean position, int textSize) {
-        TextView cardValueTV = new TextView(getApplicationContext());
-
-        //we set the card value
-        cardValueTV.setText(value);
-
-        //we set the value color (red or black)
-        if (color == true) { //true means red, false means black
-            cardValueTV.setTextColor(getResources().getColor(R.color.red));
-        } else {
-            cardValueTV.setTextColor(getResources().getColor(R.color.black));
-        }
-
-        //we set the value position (up or down)
-        if (position == false) {//true means up, false means down
-            cardValueTV.setRotation(180);
-        }
-
-        //we set padding
-        cardValueTV.setPadding(6,-3,0,0);
-        cardValueTV.setTextSize(Math.round(CARD_HEIGHT/textSize));
-        if (textSize == 10) {
-            cardValueTV.setTypeface(Typeface.DEFAULT_BOLD);
-            //cardValueTV.setHintTextColor(getResources().getColor(R.color.highlight));
-
-        }
-        return cardValueTV;
-    }
-
-    protected void setLayoutParams(FrameLayout.LayoutParams layoutParams, int width, int height) {
-        layoutParams = new FrameLayout.LayoutParams(width,height);
-    }
-
 
     /**
      * public method triggered when the turn is ended to show the winner and to clean the dashboard
@@ -960,6 +768,35 @@ public class GameActivity extends AppCompatActivity {
         return bidButton;
     }
 
+    private void playCard(Card card) {
+        //We try to find the cardLayout in the deck by the card we want to play
+        LinearLayout topLayout = findViewById(R.id.cards_up_layout);
+        int position = findCardLayoutIndexByCard(card, topLayout);
+
+        CardLayout cl = new CardLayout(getApplicationContext(), card, screenMetrixRatio);
+        if (position != -1) {
+            cl = (CardLayout) topLayout.getChildAt(position);
+        } else {
+            LinearLayout bottomLayout = findViewById(R.id.cards_down_layout);
+            position = findCardLayoutIndexByCard(card, bottomLayout);
+            if (position != -1) {
+                cl = (CardLayout) bottomLayout.getChildAt(position);
+            }
+        }
+        cl.putInvisible();
+
+        CardLayout clnew = new CardLayout(getApplication(), card, screenMetrixRatio);
+        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        ConstraintLayout mainLayout = (ConstraintLayout) findViewById(R.id.main_layout);
+        lp.bottomToBottom = R.id.main_layout;
+        lp.leftToLeft = R.id.main_layout;
+        lp.rightToRight = R.id.main_layout;
+        (mainLayout).addView(clnew, -1, lp);
+        ObjectAnimator animation = ObjectAnimator.ofFloat(clnew, "translationY", -260f*screenMetrixRatio);
+        animation.setDuration(1500);
+        animation.start();
+    }
+
     //TODO put this at the right place, what do you send me exactly when someone pass?
     //TODO answer of Hugo: when someone pass, I send you a Bid.PASS...
     public Bid getChosenBid() {
@@ -975,13 +812,20 @@ public class GameActivity extends AppCompatActivity {
     public void onShowCard(Card card, Player player) {
         //TODO GAMESERVICE : need a Card and a Player
         int relativePosition = getRelativePositionByPlayer(player);
-
         FrameLayout cardLayout = getCardLayoutByRelativePosition(relativePosition);
 
-        String suit = card.getSuit().toString();
-        String value = card.valueToString();
+        playCard(card);
 
-        playCardInGameZone(value, suit, cardLayout);
+        onShowCard(card, cardLayout);
+    }
+
+    /**
+     * protected method triggered when a Card is played: directly by us when the card is Clicked (undoable in the future) and triggered by gGameService when someone else play
+     * @param playedCardLayout  FrameLayout where the Player can play his Card: found with getCardLayoutByRelativePosition(
+     */
+    public void onShowCard(Card card, FrameLayout playedCardLayout) {
+        CardLayout cl = new CardLayout(getApplicationContext(), card, screenMetrixRatio);
+        playedCardLayout.addView(cl);
     }
 
     /**
@@ -996,33 +840,6 @@ public class GameActivity extends AppCompatActivity {
         int relativePosition = playerPosition - myPosition;
 
         return relativePosition;
-    }
-
-    /**
-     * protected method triggered when a Card is played: directly by us when the card is Clicked (undoable in the future) and triggered by gGameService when someone else play
-     * @param value String which corresponds to the value of the Card played
-     * @param suit String which corresponds to the color of the Card played
-     * @param playedCardLayout  FrameLayout where the Player can play his Card: found with getCardLayoutByRelativePosition(
-     */
-    protected void playCardInGameZone(String value, String suit, FrameLayout playedCardLayout) {
-
-        //ImageView cardBackgroundIV = createCardBackground();
-        ImageView cardColorIV = createCardColor(suit, value);
-        TextView cardValueUpTV = new TextView(getApplicationContext());
-        TextView cardValueDownTV = new TextView(getApplicationContext());
-        //We create the 2 textViews, one for the value up and one for the one down
-        if (suit != "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_NORMAL);
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_NORMAL);
-        } else if (suit == "t") {
-            cardValueUpTV = createTVforValue(value, suitIntoColor(suit), true, TEXT_SIZE_TRUMP);
-            cardValueDownTV = createTVforValue(value, suitIntoColor(suit), false, TEXT_SIZE_TRUMP);
-        }
-
-        //playedCardLayout.addView(cardBackgroundIV);
-        playedCardLayout.addView(cardColorIV);
-        playedCardLayout.addView(cardValueUpTV);
-        playedCardLayout.addView(cardValueDownTV);
     }
 
 
@@ -1065,21 +882,13 @@ public class GameActivity extends AppCompatActivity {
      * @param card
      * @return
      */
-    protected int findFLIndexInDeckByCard(Card card, LinearLayout cards_layout) {
+    protected int findCardLayoutIndexByCard(Card card, LinearLayout cards_layout) {
         int cardIndex = -1;
-        for (int i=0; i<cards_layout.getChildCount(); i++) {
+        for (int i=0; i < cards_layout.getChildCount(); i++) {
             //we recuperate the FrameLayout of the Card
             CardLayout cardLayout = (CardLayout) cards_layout.getChildAt(i);
 
-            //we recuperate the color of the card from the contentDescription of the colorIV
-            ImageView colorIV = (ImageView) cardLayout.getChildAt(0);
-            String color = colorIV.getContentDescription().toString();
-
-            //we recuperate the value from the valueTV
-            TextView valueTV = (TextView) cardLayout.getChildAt(1);
-            String value = valueTV.getText().toString();
-
-            if ((card.getSuit().toString() == color) && (card.valueToString() == value)) {
+            if (cardLayout.getCard() == card) {
                 cardIndex = i;
             }
         }
@@ -1095,12 +904,12 @@ public class GameActivity extends AppCompatActivity {
     public void deleteCardFromDeck(Card card, Player player) {
         if (player.isEqual(myPlayer)) {
             LinearLayout up = findViewById(R.id.cards_up_layout);
-            int cardFLIndex = findFLIndexInDeckByCard(card, up);
+            int cardFLIndex = findCardLayoutIndexByCard(card, up);
             if (cardFLIndex != -1) {
                 up.removeViewAt(cardFLIndex);
             } else {
                 LinearLayout down = findViewById(R.id.cards_down_layout);
-                cardFLIndex = findFLIndexInDeckByCard(card, down);
+                cardFLIndex = findCardLayoutIndexByCard(card, down);
                 if (cardFLIndex != -1) {
                     down.removeViewAt(cardFLIndex);
                 }
@@ -1168,7 +977,7 @@ public class GameActivity extends AppCompatActivity {
 
         for (int i=0; i<dog.size(); i++) {
             FrameLayout cardLayout = new FrameLayout(getApplicationContext());
-            playCardInGameZone(dog.get(i).valueToString(), dog.get(i).getSuit().toString(), cardLayout);
+            onShowCard(dog.get(i), cardLayout);
             dogAndEcartLayout.addView(cardLayout);
         }
 
