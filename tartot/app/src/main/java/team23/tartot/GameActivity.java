@@ -338,22 +338,39 @@ public class GameActivity extends AppCompatActivity {
         if (player.isEqual(myPlayer)) {
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
-            int amountUp = cardsUpLayout.getChildCount();
-            int amountDown = cardsDownLayout.getChildCount();
-            //Log.i("updateDeck", "avant le while");
+            int amountUp = getAmountVisible(cardsUpLayout);
+            int amountDown = getAmountVisible(cardsDownLayout);
+            Log.i("updateDeck", "avant le while");
             while (amountUp > amountDown) {
-                FrameLayout cardLayout = (FrameLayout) cardsUpLayout.getChildAt(amountUp-1);
-                //Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
-                cardsUpLayout.removeViewAt(amountUp-1);
+                int i = 1;
+                CardLayout cardLayout = (CardLayout) cardsUpLayout.getChildAt(amountUp-i);
+                while (cardLayout.getVisibility() != View.VISIBLE) {
+                    cardLayout = (CardLayout) cardsUpLayout.getChildAt(amountUp-i);
+                    i--;
+                }
 
-                cardsDownLayout.addView(cardLayout, 0);
+                Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
+                cardLayout.putInvisible();
+
+                Log.i("updateDeck", "putInvisible");
+                addCardsToDeck(myPlayer, cardLayout.getCard());
+                Log.i("updateDeck", "we add the cardLayout");
 
 
-                amountUp = cardsUpLayout.getChildCount();
-                amountDown = cardsDownLayout.getChildCount();
-                //Log.i("updateDeck", "up : "+String.valueOf(amountUp) + " ; down : " +String.valueOf(amountDown));
+                amountUp = getAmountVisible(cardsUpLayout);
+                amountDown =  getAmountVisible(cardsDownLayout);
             }
         }
+    }
+
+    protected int getAmountVisible(LinearLayout ll) {
+        int amount = 0;
+        for (int i = 0; i < ll.getChildCount(); i++) {
+            if (ll.getChildAt(i).getVisibility() == View.VISIBLE) {
+                amount ++;
+            }
+        }
+        return amount;
     }
 
     /**
@@ -640,43 +657,6 @@ public class GameActivity extends AppCompatActivity {
                     FrameLayout cardLayout = new FrameLayout(getApplicationContext());
                     cardLayout.setLayoutParams(normalLayoutParams);
                     //playCardInGameZone(value, suit, cardLayout);
-
-                    //if the Card is in the DogLayout, we add in back to the game
-                    if (cardFL.getParent() == ecartLayout) {
-                        ArrayList<Card> cardList = new ArrayList<>();
-                        cardList.add(card);
-
-                        addCardsToDeck(myPlayer, cardList);
-
-                        int index = findCardLayoutIndexByCard(card, ecartLayout);
-                        if (index != -1) {
-                            ecartLayout.removeViewAt(index);
-                        }
-
-                        ecart.remove(card);
-
-                        //else, we want to add the card in the DogLayout
-                    } else if (ecartLayout.getChildCount() < dogNumber) {
-                        //TODO CHECK IF THE CARD CAN BE ADDED IN THE DOG (ASK SERVICE ?)
-                        if (!(value=="21" || value=="*" || value=="R" || (value == "1" && value == "t"))) {
-                            onShowCard(card, cardLayout);
-                            ecartLayout.addView(cardLayout);
-
-                            CardLayout cl = findCardLayoutInDeck(card);
-                            cl.putInvisible();
-
-                            ecart.add(card);
-                        }
-                    }
-
-
-
-                } else {
-                    //we recuperate the FrameLayout with relative pos which is always 0 because it's the card played by us
-                    //TODO FOR TEST ONLY: WE SHOULDNT DO THAT HERE AND WE SHOULD WAIT FOR THE GO (OR NO GO) OF THE SERVICE
-                    FrameLayout cardFL = getCardLayoutByRelativePosition(0);
-                    onShowCard(card, cardFL);
-                    deleteCardFromDeck(card, myPlayer);
                 }
                 updatePlayerDeck(myPlayer);
                 }
@@ -844,6 +824,9 @@ public class GameActivity extends AppCompatActivity {
             playCard(card);
             //onShowCard(card, cardLayout);
 
+        }
+        if (player == myPlayer) {
+            updatePlayerDeck(myPlayer);
         }
     }
 
