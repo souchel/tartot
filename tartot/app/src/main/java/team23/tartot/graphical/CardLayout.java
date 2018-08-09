@@ -2,6 +2,7 @@ package team23.tartot.graphical;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import team23.tartot.GameActivity;
+import team23.tartot.GameService;
 import team23.tartot.R;
 import team23.tartot.core.Card;
 
@@ -37,7 +39,7 @@ public class CardLayout extends LinearLayout {
     private String value = "23";
     private String suit = "h";
 
-
+    private Button button;
 
     public CardLayout(Context context, Card card, float screenMetrixRatio) {
         super(context);
@@ -58,7 +60,9 @@ public class CardLayout extends LinearLayout {
         }
         fl.addView(createTVforValue(true, getTextSize(suit)));
         fl.addView(createTVforValue(false, getTextSize(suit)));
-        fl.addView(createCardButton());
+
+        button = createCardButton();
+        fl.addView(button);
         this.addView(fl);
 
     }
@@ -212,19 +216,22 @@ public class CardLayout extends LinearLayout {
     private Button createCardButton() {
         Button cardButton = new Button(getContext());
         cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
+        /*
         cardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO activiate the method onShowCard(Card, Player)
-                putInvisible();
+                //putInvisible();
             }
-        });
+        });*/
         return cardButton;
     }
 
-
     public Card getCard() {
         return this.card;
+    }
+
+    public Button getButton() {
+        return this.button;
     }
 
     public void putInvisible() {
@@ -234,4 +241,5 @@ public class CardLayout extends LinearLayout {
     public void putVisible() {
         this.setVisibility(View.VISIBLE);
     }
+
 }
