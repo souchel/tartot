@@ -45,7 +45,7 @@ import team23.tartot.graphical.CardLayout;
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
     final private static int CARD_HEIGHT = 180;
-    final private static int NUMBER_OF_CARDS = 23;
+    final private static int NUMBER_OF_CARDS = 22;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
@@ -120,13 +120,16 @@ public class GameActivity extends AppCompatActivity {
                 hand = new ArrayList<>();
 
                 cleanDeck();
-
-                for(int i = 0; i < NUMBER_OF_CARDS; i++) {
+                int i=0;
+                while (i < NUMBER_OF_CARDS) {
                     hand.add(deck.getCardList().get(i));
+                    i++;
                 }
-
                 addCardsToDeck(myPlayer, hand);
-                //addCardsToDeck(myPlayer, deck.getCardList().get(0));
+                i++;
+                addCardsToDeck(myPlayer, deck.getCardList().get(i));
+                i++;
+                addCardsToDeck(myPlayer, deck.getCardList().get(i));
 
                 /*
                 for(int i = 0; i < NUMBER_OF_CARDS; i++) {
@@ -349,13 +352,9 @@ public class GameActivity extends AppCompatActivity {
                     i--;
                 }
 
-                Log.i("updateDeck", "récupération de la carte : "+String.valueOf(cardLayout));
                 cardLayout.putInvisible();
 
-                Log.i("updateDeck", "putInvisible");
                 addCardsToDeck(myPlayer, cardLayout.getCard());
-                Log.i("updateDeck", "we add the cardLayout");
-
 
                 amountUp = getAmountVisible(cardsUpLayout);
                 amountDown =  getAmountVisible(cardsDownLayout);
@@ -579,7 +578,6 @@ public class GameActivity extends AppCompatActivity {
             //we initialize the layouts for the deck
             LinearLayout cardsUpLayout = findViewById(R.id.cards_up_layout);
             LinearLayout cardsDownLayout = findViewById(R.id.cards_down_layout);
-            cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(CARD_HEIGHT *screenMetrixRatio) / 2));
             cardNumber = cardsDownLayout.getChildCount() + cardsUpLayout.getChildCount();
             Log.i("test", String.valueOf(cardNumber));
 
@@ -588,8 +586,12 @@ public class GameActivity extends AppCompatActivity {
                 Log.i("test", String.valueOf(cardNumber));
                 final Card currentCard = hand.get(j);
                 //We create the CardLayout for one Card
-                final CardLayout cardLayout = new CardLayout(getApplicationContext(), currentCard, screenMetrixRatio);
+                final CardLayout cardLayout = new CardLayout(getApplicationContext(), currentCard, screenMetrixRatio, playersAmount);
                 final Button cardButton = cardLayout.getButton();
+
+                cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(cardLayout.getLayoutParams().height) / 2));
+                cardsUpLayout.setPadding(0, 0, 0, - Math.round( Math.round(cardLayout.getLayoutParams().height) / 2));
+
                 cardButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -909,17 +911,16 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private LinearLayout findLinearLayoutbyCard(Card card) {
-        LinearLayout topLayout = findViewById(R.id.cards_up_layout);
-        int position = findCardLayoutIndexByCard(card, topLayout);
+        LinearLayout bottomLayout = findViewById(R.id.cards_down_layout);
+        int position = findCardLayoutIndexByCard(card, bottomLayout);
 
-        CardLayout cl = new CardLayout(getApplicationContext(), card, screenMetrixRatio);
         if (position != -1) {
-            return  topLayout;
+            return  bottomLayout;
         } else {
-            LinearLayout bottomLayout = findViewById(R.id.cards_down_layout);
-            position = findCardLayoutIndexByCard(card, bottomLayout);
+            LinearLayout topLayout = findViewById(R.id.cards_up_layout);
+            position = findCardLayoutIndexByCard(card, topLayout);
             if (position != -1) {
-                return bottomLayout;
+                return topLayout;
             } else {
                 return null;
             }

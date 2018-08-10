@@ -21,6 +21,7 @@ import team23.tartot.GameActivity;
 import team23.tartot.GameService;
 import team23.tartot.R;
 import team23.tartot.core.Card;
+import team23.tartot.core.Suit;
 
 /**
  * Created by Hugo Selle on 05/08/2018.
@@ -32,6 +33,7 @@ public class CardLayout extends LinearLayout {
     final private static int CARD_HEIGHT = 180;
     final private static int TEXT_SIZE_NORMAL = 12;
     final private static int TEXT_SIZE_TRUMP = 8;
+    private int maxCardsAmount = 30;
 
     private FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(CARD_WIDTH,CARD_HEIGHT);
 
@@ -43,6 +45,7 @@ public class CardLayout extends LinearLayout {
 
     public CardLayout(Context context, Card card, float screenMetrixRatio) {
         super(context);
+        //constructor(card, screenMetrixRatio);
         this.card = card;
         this.value = card.valueToString();
         this.suit = card.getSuit().toString();
@@ -64,6 +67,43 @@ public class CardLayout extends LinearLayout {
         button = createCardButton();
         fl.addView(button);
         this.addView(fl);
+    }
+
+    public CardLayout(Context context, Card card, float screenMetrixRatio, int playersAmount) {
+        super(context);
+        int dogAmount = 6;
+        if (playersAmount == 5) {
+            dogAmount = 3;
+        }
+        maxCardsAmount = (78 - dogAmount) / playersAmount + dogAmount;
+        float textSizeRatio = 18f / maxCardsAmount;
+        float newRatio = screenMetrixRatio * textSizeRatio;
+        this.card = card;
+        this.value = card.valueToString();
+        this.suit = card.getSuit().toString();
+
+        layoutParams = new FrameLayout.LayoutParams(Math.round(CARD_WIDTH*newRatio), Math.round(CARD_HEIGHT*newRatio));
+        FrameLayout fl = new FrameLayout(getContext());
+        fl.setLayoutParams(layoutParams);
+
+        this.setLayoutParams(layoutParams);
+
+        fl.addView(createCardColor());
+
+        if (card.isHead()) {
+            fl.addView(createCardHead(value));
+        }
+        fl.addView(createTVforValue(true, Math.round(getTextSize(suit)/textSizeRatio)));
+        fl.addView(createTVforValue(false,  Math.round(getTextSize(suit)/textSizeRatio)));
+
+        button = createCardButton();
+        fl.addView(button);
+        this.addView(fl);
+
+        //constructor(card, newRatio);
+    }
+
+    private void constructor(Card card, float screenMetrixRatio) {
 
     }
 
@@ -238,8 +278,7 @@ public class CardLayout extends LinearLayout {
         this.setVisibility(View.GONE);
     }
 
-    public void putVisible() {
-        this.setVisibility(View.VISIBLE);
+    public void destroy() {
+        this.removeAllViews();
     }
-
 }
