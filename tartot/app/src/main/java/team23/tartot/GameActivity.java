@@ -45,7 +45,7 @@ import team23.tartot.graphical.CardLayout;
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
     final private static int CARD_HEIGHT = 180;
-    final private static int NUMBER_OF_CARDS = 22;
+    final private static int NUMBER_OF_CARDS = 18;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
@@ -131,26 +131,9 @@ public class GameActivity extends AppCompatActivity {
                 i++;
                 addCardsToDeck(myPlayer, deck.getCardList().get(i));
 
-                /*
-                for(int i = 0; i < NUMBER_OF_CARDS; i++) {
-                    hand.add(deck.getCardList().get(i));
-                    addCardsToDeck(myPlayer, hand);
-
-                }*/
             }
         });
     }
-
-    /*
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.i("nom de joueurs", "avant la boucle");
-        for(int i=0; i < playersAmount; i++) {
-            Player p = playersList[i];
-            savedInstanceState.putString(String.valueOf(p.getPosition()), p.getUsername());
-            Log.i("nom de joueurs", p.getUsername() + " ajoutés");
-        }
-        super.onSaveInstanceState(savedInstanceState);
-    }*/
 
     public void onStart() {
         super.onStart();
@@ -622,55 +605,6 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * protected method to visually add a (un)clickable Card in a certain FrameLayout
-     * @param card
-     * @param fl the FrameLayout containing 3 childes: 0 = ImageView colorIV, 1 = TextView valueTV, 2 = Button button
-     * @param unclickable
-     */
-    protected void addCardToLayout(final Card card, final FrameLayout fl, boolean unclickable) {
-        final FrameLayout cardFL = fl;
-        final String value = card.valueToString();
-        final String suit = card.getSuit().toString();
-
-        final Card thisCard = card;
-
-        //We create a button for the action
-        Button cardButton = new Button(getApplicationContext());
-        cardButton.setBackgroundColor(getResources().getColor(R.color.transparent));
-        if (!unclickable) {
-            cardButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                /*/
-                TextView testTV = findViewById(R.id.textViewTest);
-                testTV.setText(value+" de "+ suit);
-                /*/
-
-                //Si les cartes sont à jouer dans l'écart
-                if (putOnEcart) {
-                    LinearLayout dogAndEcartLayout = findViewById(R.id.dog_and_ecart_layout);
-
-                    dogAndEcartLayout.setVisibility(View.VISIBLE);
-
-                    LinearLayout ecartLayout = findViewById(R.id.card_layout);
-
-                    //((Button) dogAndEcartLayout.getChildAt(1)).setVisibility(View.VISIBLE);
-                    FrameLayout cardLayout = new FrameLayout(getApplicationContext());
-                    cardLayout.setLayoutParams(normalLayoutParams);
-                    //playCardInGameZone(value, suit, cardLayout);
-                }
-                updatePlayerDeck(myPlayer);
-                }
-            });
-        }
-
-        cardFL.addView(cardButton);
-
-        //we set Layout Parameters
-        //TODO SET LAYOUT PARAMS DEPENDING ON THE AMOUNT OF CARDS INITIALLY IN THE PLAYERS' HAND
-        cardFL.setLayoutParams(normalLayoutParams);
-    }
 
     /**
      * public method triggered when the turn is ended to show the winner and to clean the dashboard

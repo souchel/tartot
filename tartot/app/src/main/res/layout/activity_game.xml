@@ -203,9 +203,10 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:paddingVertical="-30dp"
+        app:layout_constraintBottom_toTopOf="@+id/deck_layout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.07"
+        app:layout_constraintHorizontal_bias="0.67"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView

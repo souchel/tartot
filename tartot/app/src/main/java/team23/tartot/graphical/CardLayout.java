@@ -45,7 +45,7 @@ public class CardLayout extends LinearLayout {
 
     public CardLayout(Context context, Card card, float screenMetrixRatio) {
         super(context);
-        //constructor(card, screenMetrixRatio);
+
         this.card = card;
         this.value = card.valueToString();
         this.suit = card.getSuit().toString();
@@ -76,6 +76,9 @@ public class CardLayout extends LinearLayout {
             dogAmount = 3;
         }
         maxCardsAmount = (78 - dogAmount) / playersAmount + dogAmount;
+        if (playersAmount == 2) {
+            maxCardsAmount = 16;
+        }
         float textSizeRatio = 18f / maxCardsAmount;
         float newRatio = screenMetrixRatio * textSizeRatio;
         this.card = card;
@@ -100,12 +103,8 @@ public class CardLayout extends LinearLayout {
         fl.addView(button);
         this.addView(fl);
 
-        //constructor(card, newRatio);
     }
 
-    private void constructor(Card card, float screenMetrixRatio) {
-
-    }
 
     /**
      * this private method is to resize the Bitmap and has been found here https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
