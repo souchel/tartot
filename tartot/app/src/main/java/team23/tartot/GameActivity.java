@@ -45,7 +45,7 @@ import team23.tartot.graphical.CardLayout;
 public class GameActivity extends AppCompatActivity {
     final private static int CARD_WIDTH = 80;
     final private static int CARD_HEIGHT = 180;
-    final private static int NUMBER_OF_CARDS = 18;
+    final private static int NUMBER_OF_CARDS = 22;
     final private static int BID_BUTTON_HEIGHT = 77;
     final private static int BID_BUTTON_WIDTH = 530;
     float screenMetrixRatio = 1f;
@@ -572,8 +572,8 @@ public class GameActivity extends AppCompatActivity {
                 final CardLayout cardLayout = new CardLayout(getApplicationContext(), currentCard, screenMetrixRatio, playersAmount);
                 final Button cardButton = cardLayout.getButton();
 
-                cardsDownLayout.setPadding(0, 0, 0, - Math.round( Math.round(cardLayout.getLayoutParams().height) / 2));
-                cardsUpLayout.setPadding(0, 0, 0, - Math.round( Math.round(cardLayout.getLayoutParams().height) / 2));
+                cardsDownLayout.setPadding(0, 0, 0, - Math.round( cardLayout.getLayoutParams().height / 2));
+                cardsUpLayout.setPadding(0, 0, 0, - Math.round( cardLayout.getLayoutParams().height / 2));
 
                 cardButton.setOnClickListener(new View.OnClickListener() {
                     @Override

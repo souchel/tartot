@@ -79,7 +79,7 @@ public class CardLayout extends LinearLayout {
         if (playersAmount == 2) {
             maxCardsAmount = 16;
         }
-        float textSizeRatio = 18f / maxCardsAmount;
+        float textSizeRatio = 24f / maxCardsAmount;
         float newRatio = screenMetrixRatio * textSizeRatio;
         this.card = card;
         this.value = card.valueToString();
